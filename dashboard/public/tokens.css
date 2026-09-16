@@ -1,0 +1,194 @@
+/* tokens.css — generated from the Claude Design canvas "dealersource dashboard" (version 1789594870-84ef).
+   Implementers change exactly one line: --accent. See README.md. */
+
+/* dealersource dashboard tokens
+   ---------------------------------------------------------------
+   Every CSS custom property the dashboard uses lives here.
+   Implementers change ONE token: --accent (see README.md).
+   Everything else, including all semantic status colours, is fixed.
+   Neutral ramp and type come from the Lumigrid "Calm Confidence"
+   design system (Hanken Grotesk / IBM Plex Mono, cool ink-on-ice
+   neutrals, hairline borders, 0.625rem base radius).
+   --------------------------------------------------------------- */
+
+:root, .ds-root {
+  color-scheme: light dark;
+
+  /* ---- The one implementer token ------------------------------ */
+  --accent: #D97757;                 /* claude-solution accent (terracotta), the only line changed. */
+
+  /* ---- Derived from --accent (do not set by hand) -------------- */
+  /* accent-fg: the accent as TEXT and icon colour. Mixed toward the
+     page foreground so it clears 4.5:1 on --surface for any hue with
+     L between ~35% and ~80%. Use it for links, rank numbers, "view
+     evidence", active nav labels. Never put text on a raw --accent fill. */
+  --accent-fg: color-mix(in oklab, var(--accent) 60%, var(--fg));
+  /* accent-soft: wash for selected rows, selected marker, popup header. */
+  --accent-soft: color-mix(in oklab, var(--accent) 12%, var(--surface));
+  /* accent as a 2px ring/rail (focus, selected card, rank marker).
+     Graphical UI element: needs 3:1 against --surface, which any hue
+     with L below ~75% gives in light theme. */
+  --accent-ring: var(--accent);
+
+  /* ---- Type ---------------------------------------------------- */
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --text-xs: 0.75rem;     /* 12px  captions, table meta */
+  --text-sm: 0.8125rem;   /* 13px  table body, chips, evidence rows */
+  --text-md: 0.9375rem;   /* 15px  body, card body */
+  --text-lg: 1.125rem;    /* 18px  card titles, section titles */
+  --text-xl: 1.375rem;    /* 22px  page title */
+  --text-num: 1.625rem;   /* 26px  stage counts, big numbers (mono) */
+  --leading-tight: 1.2;
+  --leading-body: 1.5;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --tracking-caps: 0.08em;
+
+  /* ---- Spacing (4px base) -------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --gutter: 16px;              /* phone side gutter, fixed */
+  --gutter-desktop: 24px;
+  --container-max: 1440px;
+  --sidebar-map-w: 400px;      /* shortlist map column on desktop */
+  --topbar-h: 52px;
+
+  /* ---- Radius / border / shadow -------------------------------- */
+  --radius-sm: 4px;
+  --radius: 0.625rem;          /* 10px base, from the design system */
+  --radius-pill: 9999px;
+  --border-w: 1px;
+  --shadow-sm: 0 1px 2px rgba(17, 27, 40, 0.05);
+  --shadow-md: 0 2px 8px rgba(17, 27, 40, 0.06), 0 1px 2px rgba(17, 27, 40, 0.04);
+  --shadow-popup: 0 12px 32px rgba(17, 27, 40, 0.14), 0 2px 6px rgba(17, 27, 40, 0.08);
+
+  /* ---- Motion -------------------------------------------------- */
+  --duration-fast: 150ms;
+  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* ---- Neutral surfaces, light --------------------------------- */
+  --bg: #F6F8FA;               /* page background (body has this explicitly) */
+  --surface: #FFFFFF;          /* cards, tables, popups */
+  --surface-2: #F1F4F7;        /* table header, quiet sections, thumbnails */
+  --surface-3: #E7ECF0;        /* hover rows, stage strip */
+  --border: #DCE2E8;
+  --border-strong: #C4CCD5;
+  --fg: #111B28;               /* primary text  16.3:1 on --bg */
+  --fg-muted: #4E5661;         /* secondary text  7.0:1 */
+  --fg-faint: #6B7480;         /* captions, timestamps  4.7:1 on --surface */
+  --map-bg: #E9EDF1;           /* map container before tiles load */
+
+  /* ---- Semantic status (FIXED, never change) ------------------- */
+  /* Each status has: -fg (text/icon), -bg (chip fill), -line (border/marker). */
+  --pass-fg: #146C3A;   --pass-bg: #DDF3E4;   --pass-line: #2E9C5B;
+  --fail-fg: #A32222;   --fail-bg: #FBE3E3;   --fail-line: #D63B3B;
+  --pending-fg: #7A4A00; --pending-bg: #FCEBC5; --pending-line: #C27F05;
+  --stale-fg: #5B6470;  --stale-bg: #EBEEF2;  --stale-line: #9AA3AE;
+  /* stale hatch: 45deg lines drawn over stale chips and evidence rows */
+  --stale-hatch: repeating-linear-gradient(135deg, transparent 0 4px, rgba(91, 100, 112, 0.18) 4px 5px);
+  --paused-bg: #B42323;  --paused-fg: #FFFFFF;   /* full-width banner, both themes */
+  --failed-bg: #B42323;  --failed-fg: #FFFFFF;   /* "last run failed" banner shares the red */
+  --warn-bg: #FCEBC5;    --warn-fg: #7A4A00;  --warn-line: #C27F05;  /* provider errors, expiring soon */
+  --info-bg: #E8EEF6;    --info-fg: #2B3A4E;  --info-line: #9AA9BC;  /* neutral notice */
+
+  /* ---- Score bar factor shades (accent at five opacities) ------ */
+  --factor-1: color-mix(in oklab, var(--accent) 100%, transparent);
+  --factor-2: color-mix(in oklab, var(--accent) 78%, var(--surface));
+  --factor-3: color-mix(in oklab, var(--accent) 58%, var(--surface));
+  --factor-4: color-mix(in oklab, var(--accent) 40%, var(--surface));
+  --factor-5: color-mix(in oklab, var(--accent) 24%, var(--surface));
+  --score-track: var(--surface-3);
+
+  /* ---- Focus ---------------------------------------------------- */
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent-ring);
+
+  /* ---- Z-index ---------------------------------------------------- */
+  --z-topbar: 20;
+  --z-popup: 30;
+}
+
+/* ---- Dark theme: follows the OS unless data-theme="light" ------ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]), .ds-root:not([data-theme="light"]) {
+    --accent-fg: color-mix(in oklab, var(--accent) 70%, var(--fg));
+    --accent-soft: color-mix(in oklab, var(--accent) 18%, var(--surface));
+
+    --bg: #0C121A;
+    --surface: #131A23;
+    --surface-2: #1A212B;
+    --surface-3: #222A34;
+    --border: #28303A;
+    --border-strong: #3A434E;
+    --fg: #ECEFF2;
+    --fg-muted: #A5ABB2;
+    --fg-faint: #8A929C;
+    --map-bg: #161D26;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-popup: 0 12px 32px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+
+    --pass-fg: #7FDBA3;   --pass-bg: #0F2E1D;   --pass-line: #3FA86A;
+    --fail-fg: #F49A9A;   --fail-bg: #3C1515;   --fail-line: #D85151;
+    --pending-fg: #F2C266; --pending-bg: #382A0A; --pending-line: #D5A02C;
+    --stale-fg: #A2A9B3;  --stale-bg: #222932;  --stale-line: #5A6470;
+    --stale-hatch: repeating-linear-gradient(135deg, transparent 0 4px, rgba(162, 169, 179, 0.22) 4px 5px);
+    --warn-bg: #382A0A;   --warn-fg: #F2C266;  --warn-line: #D5A02C;
+    --info-bg: #1B2430;   --info-fg: #C9D3E0;  --info-line: #3E4C5C;
+
+    --factor-2: color-mix(in oklab, var(--accent) 72%, var(--surface));
+    --factor-3: color-mix(in oklab, var(--accent) 52%, var(--surface));
+    --factor-4: color-mix(in oklab, var(--accent) 36%, var(--surface));
+    --factor-5: color-mix(in oklab, var(--accent) 22%, var(--surface));
+  }
+}
+
+/* ---- Dark theme: explicit toggle ------------------------------- */
+:root[data-theme="dark"], .ds-root[data-theme="dark"] {
+  --accent-fg: color-mix(in oklab, var(--accent) 70%, var(--fg));
+  --accent-soft: color-mix(in oklab, var(--accent) 18%, var(--surface));
+
+  --bg: #0C121A;
+  --surface: #131A23;
+  --surface-2: #1A212B;
+  --surface-3: #222A34;
+  --border: #28303A;
+  --border-strong: #3A434E;
+  --fg: #ECEFF2;
+  --fg-muted: #A5ABB2;
+  --fg-faint: #8A929C;
+  --map-bg: #161D26;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-popup: 0 12px 32px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+
+  --pass-fg: #7FDBA3;   --pass-bg: #0F2E1D;   --pass-line: #3FA86A;
+  --fail-fg: #F49A9A;   --fail-bg: #3C1515;   --fail-line: #D85151;
+  --pending-fg: #F2C266; --pending-bg: #382A0A; --pending-line: #D5A02C;
+  --stale-fg: #A2A9B3;  --stale-bg: #222932;  --stale-line: #5A6470;
+  --stale-hatch: repeating-linear-gradient(135deg, transparent 0 4px, rgba(162, 169, 179, 0.22) 4px 5px);
+  --warn-bg: #382A0A;   --warn-fg: #F2C266;  --warn-line: #D5A02C;
+  --info-bg: #1B2430;   --info-fg: #C9D3E0;  --info-line: #3E4C5C;
+
+  --factor-2: color-mix(in oklab, var(--accent) 72%, var(--surface));
+  --factor-3: color-mix(in oklab, var(--accent) 52%, var(--surface));
+  --factor-4: color-mix(in oklab, var(--accent) 36%, var(--surface));
+  --factor-5: color-mix(in oklab, var(--accent) 22%, var(--surface));
+}
+
+/* dealersource dashboard: reference component stylesheet
+   ---------------------------------------------------------------
+   Consumes tokens.css. Nothing in here hard-codes a colour; every
+   colour is a var(). Teams may port these rules into their own
+   stack, but class names and states are the contract components.html
+   documents. Layout breakpoints: 720px (phone/tablet), 1080px (desktop). */
+
+/* ---- Base ------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
