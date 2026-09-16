@@ -110,7 +110,8 @@ describe("golden-v1 fixture run (spec sections 13 and 14)", () => {
     }
     // Pending zoning for PITT-0008 shows an open case with the recipient.
     const p8 = run1.report!.sites.find((s) => s.parcel_id === "PITT-0008")!;
-    expect(p8.open_cases).toEqual([{ case_type: "zoning", status: "awaiting_reply", recipient: "planning@aydennc.gov" }]);
+    expect(p8.open_cases).toHaveLength(1);
+    expect(p8.open_cases[0]).toMatchObject({ case_type: "zoning", status: "awaiting_reply", recipient: "planning@aydennc.gov" });
   });
 
   it("re-running the same fixture day produces zero outbound messages and the same shortlist", () => {

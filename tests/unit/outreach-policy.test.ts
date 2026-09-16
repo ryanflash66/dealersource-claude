@@ -19,7 +19,8 @@ describe("outreach policy (spec section 6)", () => {
     expect(d1.messages).toHaveLength(1);
     expect(d1.messages[0]).toMatchObject({ case_type: "rent", to: "owner@landlord.test", listing_id: "L1", template_id: "leasing-initial-rent" });
     expect(d1.report.sites[0]!.gates.rent.status).toBe("pending");
-    expect(d1.report.sites[0]!.open_cases).toEqual([{ case_type: "rent", status: "awaiting_reply", recipient: "owner@landlord.test" }]);
+    expect(d1.report.sites[0]!.open_cases).toHaveLength(1);
+    expect(d1.report.sites[0]!.open_cases[0]).toMatchObject({ case_type: "rent", status: "awaiting_reply", recipient: "owner@landlord.test" });
 
     // Same address, same site, inside followup_days (5): nothing.
     expect((await day(fx, out, "2026-09-17")).messages).toHaveLength(0);

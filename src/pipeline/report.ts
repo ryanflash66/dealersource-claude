@@ -22,6 +22,10 @@ export interface ContractReport {
     rent_max: number;
     shared_lot: string;
     office_required: boolean;
+    min_vehicle_display: number;
+    flood_high_risk_zones: string[];
+    followup_days: number;
+    max_followups: number;
     weights: Record<string, number>;
   };
   exceptions: string[];
@@ -44,7 +48,16 @@ export interface ContractSite {
   score: number | null;
   rank: number | null;
   metrics: ScoreRow["metrics"];
-  open_cases: Array<{ case_type: CaseType; status: string; recipient: string }>;
+  open_cases: Array<{
+    case_type: CaseType;
+    status: string;
+    recipient: string;
+    opened_at: string;
+    last_contacted_at: string | null;
+    followups_sent: number;
+    next_action: string;
+    next_action_at: string | null;
+  }>;
   // dashboard extras
   stage: string;
   jurisdiction: string | null;
@@ -119,7 +132,17 @@ export async function report(ctx: RunContext): Promise<{ counter: StageCounter; 
     const sc = scores.get(site.id);
     const open = cases
       .filter((k) => k.site_id === site.id && (k.status === "open" || k.status === "awaiting_reply" || k.status === "escalated"))
-      .map((k) => ({ case_type: k.type, status: k.status, recipient: (k.contact_id && contacts.get(k.contact_id)?.email) || (k.type === "zoning" ? site.planning_email : site.contact_email) || "none" }));
+      .map((k) => ({
+        case_type: k.type,
+        status: k.status,
+        recipient: (k.contact_id && contacts.get(k.contact_id)?.email) || (k.type === "zoning" ? site.planning_email : site.contact_email) || "none",
+        // dashboard extras (schema allows additional keys)
+        opened_at: k.opened_at,
+        last_contacted_at: k.last_contacted_at,
+        followups_sent: k.followups_sent,
+        next_action: k.next_action,
+        next_action_at: k.next_action_at,
+      }));
     const images = (evidence.find((e) => e.site_id === site.id && e.fact === "imagery")?.value as { images?: Array<{ url: string; kind: string }> } | undefined)?.images ?? [];
     contractSites.push({
       site_id: site.id,
@@ -188,6 +211,10 @@ export async function report(ctx: RunContext): Promise<{ counter: StageCounter; 
       rent_max: ctx.config.business.rent.max_monthly,
       shared_lot: ctx.config.business.site.shared_lot,
       office_required: ctx.config.business.site.office_required,
+      min_vehicle_display: ctx.config.business.site.min_vehicle_display,
+      flood_high_risk_zones: ctx.config.business.flood.high_risk_zones,
+      followup_days: ctx.config.business.mail.followup_days,
+      max_followups: ctx.config.business.mail.max_followups,
       weights: ctx.config.business.score.weights,
     },
     exceptions,
