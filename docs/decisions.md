@@ -96,9 +96,24 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
     report payload and `sites` include leasing/planning emails so the owner can act; protect
     the Vercel deployment (password or Supabase auth) if that matters.
 
-20. **Dashboard template.** The shared design template (`prompts/dashboard-design`) was still
-    "not yet published" at every milestone check, so the dashboard is the functional build
-    per section 9 with the assigned accent `#D97757` as `--accent`.
+20. **Dashboard template.** The shared design template (`prompts/dashboard-design`, published
+    2026-09-16) is implemented: `dashboard/public/tokens.css` is the template file with only
+    `--accent: #D97757` changed (verified by `diff`), `dashboard.css` is byte-identical, and
+    the shell plus the four views reproduce `components.html` and `pages/*.html` markup and
+    class names, driven by `report.json` / `messages.json` / `run.json`. Small additions live
+    in `dashboard/public/styles.css` (footer clearance, marker button reset, plain-text source
+    cell). Deviations, all because the report holds a single run:
+    - Exceptions "Sites dropped since last run" renders the empty state: there is no previous
+      report to diff against. Two extra sections ("Cases needing a human", "Other run notes")
+      surface escalated cases and run errors/warnings that section 9 requires on this view.
+    - Config "Search area" is expressed as drive-time from home base (no county list exists).
+    - The map has no home-base marker offline: the report carries the address only; MapLibre +
+      PMTiles mounts when `PMTILES_URL` is set, otherwise the static preview stays.
+    - `report.json` gained extra keys the template needs (`open_cases[].opened_at`,
+      `followups_sent`, `next_action`; `business.flood_high_risk_zones`, etc.); the contract
+      schema allows additional properties and the golden test still validates.
+    - Non-http evidence sources (stored email replies, fixture files) render as plain mono text
+      instead of an external link, since there is nothing to open.
 
 21. **Manual pause switch.** Section 6 defines automatic pauses only; `mail.paused` /
     `DEALERSOURCE_PAUSE_SENDING=1` adds the operator kill switch the README's
