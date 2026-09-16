@@ -2,5 +2,14 @@ node_modules/
 dist/
 .env
 .env.*
+!.env.example
 *.log
 .DS_Store
+# Local pipeline state and generated reports (fixture runs write here)
+.dealersource/
+out/
+dashboard/public/data/
+dashboard/public/app.js
+dashboard/public/app.js.map
+.vercel/
+coverage/
