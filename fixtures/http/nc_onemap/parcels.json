@@ -1,0 +1,72 @@
+{
+  "_note": "Recorded shape of NC OneMap NC1Map_Parcels FeatureServer/0/query?f=json (attributes abridged to the fields the adapter reads).",
+  "fixtures": [
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "NC1Map_Parcels/FeatureServer/0/query\\?geometry=-77\\.4(?:,|%2C)35\\.577(?:&|$)"
+      },
+      "response": {
+        "json": {
+          "objectIdFieldName": "OBJECTID",
+          "geometryType": "esriGeometryPolygon",
+          "spatialReference": {
+            "wkid": 4326
+          },
+          "features": [
+            {
+              "attributes": {
+                "OBJECTID": 1187221,
+                "PARNO": "4676.01",
+                "ALTPARNO": "35770-77400",
+                "CNTYNAME": "PITT",
+                "OWNNAME": "MEMORIAL DRIVE HOLDINGS LLC",
+                "SITEADD": "2400 S MEMORIAL DR",
+                "MUNICIPALITY": "GREENVILLE",
+                "GISACRES": 0.62,
+                "PARUSEDESC": "COMMERCIAL"
+              },
+              "geometry": {
+                "rings": [
+                  [
+                    [
+                      -77.4006,
+                      35.5766
+                    ],
+                    [
+                      -77.3994,
+                      35.5766
+                    ],
+                    [
+                      -77.3994,
+                      35.5774
+                    ],
+                    [
+                      -77.4006,
+                      35.5774
+                    ],
+                    [
+                      -77.4006,
+                      35.5766
+                    ]
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "NC1Map_Parcels/FeatureServer/0/query"
+      },
+      "response": {
+        "json": {
+          "features": []
+        }
+      }
+    }
+  ]
+}

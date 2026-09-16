@@ -1,0 +1,27 @@
+{
+  "_note": "Recorded shape of FEMA NFHL MapServer/28 (S_FLD_HAZ_AR) polygon query. The AE polygon covers the western third of the test parcel.",
+  "fixtures": [
+    {
+      "match": { "method": "POST", "url_pattern": "hazards\\.fema\\.gov/arcgis/rest/services/public/NFHL/MapServer/28/query", "body_pattern": "-77\\.4006" },
+      "response": {
+        "json": {
+          "geometryType": "esriGeometryPolygon",
+          "features": [
+            {
+              "attributes": { "FLD_ZONE": "AE", "ZONE_SUBTY": null, "SFHA_TF": "T" },
+              "geometry": { "rings": [[[-77.41, 35.57], [-77.4002, 35.57], [-77.4002, 35.58], [-77.41, 35.58], [-77.41, 35.57]]] }
+            },
+            {
+              "attributes": { "FLD_ZONE": "X", "ZONE_SUBTY": "AREA OF MINIMAL FLOOD HAZARD", "SFHA_TF": "F" },
+              "geometry": { "rings": [[[-77.4002, 35.57], [-77.39, 35.57], [-77.39, 35.58], [-77.4002, 35.58], [-77.4002, 35.57]]] }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": { "method": "POST", "url_pattern": "NFHL/MapServer/28/query" },
+      "response": { "json": { "features": [{ "attributes": { "FLD_ZONE": "X", "ZONE_SUBTY": "AREA OF MINIMAL FLOOD HAZARD", "SFHA_TF": "F" }, "geometry": { "rings": [[[-78, 35], [-76, 35], [-76, 36], [-78, 36], [-78, 35]]] } }] } }
+    }
+  ]
+}

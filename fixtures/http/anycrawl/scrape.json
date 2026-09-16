@@ -1,0 +1,21 @@
+{
+  "_note": "Recorded shape of a self-hosted AnyCrawl POST /v1/scrape response and a robots.txt fetch.",
+  "fixtures": [
+    { "match": { "method": "GET", "url_pattern": "/robots\\.txt$" }, "response": { "body": "User-agent: *\nDisallow: /admin\nDisallow: /search\n", "content_type": "text/plain" } },
+    {
+      "match": { "method": "POST", "url_pattern": "/v1/scrape$", "body_pattern": "available-properties" },
+      "response": {
+        "json": {
+          "success": true,
+          "data": {
+            "url": "https://www.greenvillenc.gov/business/economic-development/available-properties",
+            "status_code": 200,
+            "html": "<html><body><h1>Available Properties</h1><ul><li class=\"prop\"><h3>Former tire shop</h3><p>2400 S Memorial Dr, Greenville, NC 27834</p><p>Paved corner lot with 900 sq ft office. Room for 6 display vehicles. $800/month base rent.</p><p>Contact: <a href=\"mailto:leasing@broker-a.test\">leasing@broker-a.test</a> (252) 555-0100</p></li><li class=\"prop\"><h3>Downtown storefront</h3><p>210 W Main St, Washington, NC 27889</p><p>Storefront, no office, rear parking for 2 vehicles. $950 per month.</p></li></ul></body></html>",
+            "metadata": { "title": "Available Properties", "statusCode": 200 }
+          }
+        }
+      }
+    },
+    { "match": { "method": "POST", "url_pattern": "/v1/scrape$" }, "response": { "json": { "success": false, "error": "fetch failed" }, "status": 502 } }
+  ]
+}

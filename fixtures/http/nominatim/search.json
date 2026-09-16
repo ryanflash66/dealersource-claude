@@ -1,0 +1,25 @@
+{
+  "_note": "Recorded shape of a self-hosted Nominatim /search?format=jsonv2&addressdetails=1 response.",
+  "fixtures": [
+    {
+      "match": { "method": "GET", "url_pattern": "/search\\?q=2400\\+S\\+Memorial" },
+      "response": {
+        "json": [
+          {
+            "place_id": 118230,
+            "licence": "Data (c) OpenStreetMap contributors, ODbL 1.0",
+            "osm_type": "way",
+            "osm_id": 92411020,
+            "lat": "35.5770412",
+            "lon": "-77.4000891",
+            "category": "building",
+            "type": "commercial",
+            "display_name": "2400, South Memorial Drive, Greenville, Pitt County, North Carolina, 27834, United States",
+            "address": { "house_number": "2400", "road": "South Memorial Drive", "city": "Greenville", "county": "Pitt County", "state": "North Carolina", "postcode": "27834", "country_code": "us" }
+          }
+        ]
+      }
+    },
+    { "match": { "method": "GET", "url_pattern": "/search\\?q=" }, "response": { "json": [] } }
+  ]
+}

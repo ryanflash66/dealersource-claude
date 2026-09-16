@@ -1,0 +1,24 @@
+{
+  "_note": "Recorded shape of OpenRouteService v2 directions and isochrones (abridged).",
+  "fixtures": [
+    {
+      "match": { "method": "POST", "url_pattern": "api\\.openrouteservice\\.org/v2/directions/driving-car" },
+      "response": {
+        "json": {
+          "bbox": [-77.4, 35.577, -77.366, 35.6],
+          "routes": [{ "summary": { "distance": 8240.5, "duration": 612.3 }, "bbox": [-77.4, 35.577, -77.366, 35.6], "way_points": [0, 144] }],
+          "metadata": { "attribution": "openrouteservice.org | OpenStreetMap contributors", "service": "routing" }
+        }
+      }
+    },
+    {
+      "match": { "method": "POST", "url_pattern": "api\\.openrouteservice\\.org/v2/isochrones/driving-car" },
+      "response": {
+        "json": {
+          "type": "FeatureCollection",
+          "features": [{ "type": "Feature", "properties": { "group_index": 0, "value": 3600 }, "geometry": { "type": "Polygon", "coordinates": [[[-77.9, 35.2], [-76.9, 35.2], [-76.9, 36.0], [-77.9, 36.0], [-77.9, 35.2]]] } }]
+        }
+      }
+    }
+  ]
+}

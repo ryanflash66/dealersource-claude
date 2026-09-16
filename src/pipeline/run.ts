@@ -6,7 +6,7 @@ import { stableId } from "../core/ids.js";
 import { Logger, levelFromEnv } from "../core/logger.js";
 import type { RunRow, Stage } from "../core/types.js";
 import { CostLedger } from "../http/cost-ledger.js";
-import { installNetworkGuard, uninstallNetworkGuard } from "../http/network-guard.js";
+import { installNetworkGuard } from "../http/network-guard.js";
 import { buildProviders, type BuildOptions } from "../providers/registry.js";
 import { makeStore } from "../store/index.js";
 import type { Store } from "../store/store.js";
@@ -72,7 +72,7 @@ export async function runPipeline(opts: RunOptions): Promise<RunResult> {
   const runId = stableId("run", runDate, clock.iso(), String(Math.random()));
   const logger = (opts.logger ?? new Logger(levelFromEnv(env))).child({ run_id: runId });
 
-  if (offline) installNetworkGuard();
+  const releaseGuard = offline ? installNetworkGuard() : () => undefined;
   const ledger = new CostLedger();
   const hosts = new Set<string>();
   try {
@@ -162,7 +162,7 @@ export async function runPipeline(opts: RunOptions): Promise<RunResult> {
     if (offline && hosts.size) throw new OfflineNetworkViolation(`offline run contacted hosts: ${[...hosts].join(", ")}`);
     return { run: runJson, report: contractReport, messages, config, ctx };
   } finally {
-    if (offline) uninstallNetworkGuard();
+    releaseGuard();
   }
 }
 

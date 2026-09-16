@@ -1,0 +1,55 @@
+{
+  "_note": "Recorded shape of NCDOT AADT stations FeatureServer/0/query with a distance buffer (two stations, nearest wins).",
+  "fixtures": [
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "NCDOT_AADT_Stations/FeatureServer/0/query\\?geometry=-77\\.4(?:,|%2C)35\\.577(?:&|$)"
+      },
+      "response": {
+        "json": {
+          "geometryType": "esriGeometryPoint",
+          "features": [
+            {
+              "attributes": {
+                "OBJECTID": 9101,
+                "AADT": 5000,
+                "ROUTE": "Side St",
+                "YEAR": 2024,
+                "LOCATION": "Side St at Memorial"
+              },
+              "geometry": {
+                "x": -77.403,
+                "y": 35.579
+              }
+            },
+            {
+              "attributes": {
+                "OBJECTID": 9102,
+                "AADT": 32000,
+                "ROUTE": "S Memorial Dr",
+                "YEAR": 2024,
+                "LOCATION": "S Memorial Dr south of Greenville Blvd"
+              },
+              "geometry": {
+                "x": -77.4002,
+                "y": 35.5772
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "NCDOT_AADT_Stations/FeatureServer/0/query"
+      },
+      "response": {
+        "json": {
+          "features": []
+        }
+      }
+    }
+  ]
+}

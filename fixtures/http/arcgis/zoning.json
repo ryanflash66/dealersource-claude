@@ -1,0 +1,74 @@
+{
+  "_note": "Recorded shape of a municipal ArcGIS zoning FeatureServer point query (Greenville).",
+  "fixtures": [
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "gis\\.greenvillenc\\.gov/arcgis/rest/services/Planning/Zoning/FeatureServer/0/query\\?geometry=-77\\.4(?:,|%2C)35\\.577(?:&|$)"
+      },
+      "response": {
+        "json": {
+          "features": [
+            {
+              "attributes": {
+                "OBJECTID": 5521,
+                "ZONING": "CH",
+                "ZONE_DESC": "Heavy Commercial",
+                "ORD_NO": "20-011"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "gis\\.greenvillenc\\.gov/arcgis/rest/services/Planning/Zoning/FeatureServer/0/query\\?geometry=-77\\.38(?:,|%2C)35\\.61(?:&|$)"
+      },
+      "response": {
+        "json": {
+          "features": [
+            {
+              "attributes": {
+                "OBJECTID": 5522,
+                "ZONING": "MO",
+                "ZONE_DESC": "Medical-Office"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "gis\\.greenvillenc\\.gov/arcgis/rest/services/Planning/Zoning/FeatureServer/0/query\\?geometry=-77\\.39(?:,|%2C)35\\.6(?:&|$)"
+      },
+      "response": {
+        "json": {
+          "features": [
+            {
+              "attributes": {
+                "OBJECTID": 5523,
+                "ZONING": "R6",
+                "ZONE_DESC": "Residential"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "/Zoning/FeatureServer/0/query"
+      },
+      "response": {
+        "json": {
+          "features": []
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+# dealersource :: local Postgres/PostGIS + PostgREST stack
+#
+# This is the "local Postgres/PostGIS option" for the database layer, so the
+# schema in supabase/migrations is testable without a hosted Supabase project.
+#
+#   docker compose up -d
+#
+# On FIRST start the postgres image runs every file in
+# /docker-entrypoint-initdb.d in filename order as the postgres superuser, so
+# ./supabase/migrations/20260916000000_init.sql and ..._rls.sql are applied
+# automatically (that is why the RLS migration creates the anon /
+# authenticated / service_role roles idempotently: they do not exist here, but
+# hosted Supabase already has them). Init scripts only run against an EMPTY data
+# volume; to re-apply after a schema change either `docker compose down -v`
+# (destroys local data) or run:
+#
+#   DATABASE_URL=postgres://postgres:dealersource@localhost:54322/dealersource \
+#     node scripts/apply-migrations.mjs
+#
+# Note: mounting the migrations folder over /docker-entrypoint-initdb.d hides
+# the postgis image's own 10_postgis.sh (which only creates a template_postgis
+# database). The init migration runs `create extension if not exists postgis`
+# itself, so nothing is lost.
+#
+# Pointing the pipeline at this stack
+# -----------------------------------
+#   SUPABASE_URL=http://localhost:3000
+#   SUPABASE_SERVICE_ROLE_KEY=<JWT with {"role":"service_role"} signed HS256 with PGRST_JWT_SECRET>
+#
+# PostgREST switches to the role named in the JWT; service_role has BYPASSRLS
+# and full grants (see 20260916000100_rls.sql). Requests with no Authorization
+# header run as `anon` (dashboard reads, RLS-limited). Mint a service_role JWT
+# with nothing but node's crypto module (valid one year):
+#
+#   node -e "const c=require('crypto'),s=process.env.PGRST_JWT_SECRET||'dealersource-local-dev-secret-change-me-32chars',b=o=>Buffer.from(JSON.stringify(o)).toString('base64url'),h=b({alg:'HS256',typ:'JWT'}),p=b({role:'service_role',exp:Math.floor(Date.now()/1e3)+31536000});console.log(h+'.'+p+'.'+c.createHmac('sha256',s).update(h+'.'+p).digest('base64url'))"
+#
+# Swap role:'service_role' for role:'anon' to mint SUPABASE_ANON_KEY for the
+# dashboard. The secret must be at least 32 characters (PostgREST requirement).
+# These defaults are for LOCAL DEVELOPMENT ONLY; override POSTGRES_PASSWORD and
+# PGRST_JWT_SECRET in the environment for anything reachable from a network.
+
+name: dealersource
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: dealersource-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dealersource}
+      POSTGRES_DB: dealersource
+    ports:
+      - "54322:5432"
+    volumes:
+      - dealersource-db-data:/var/lib/postgresql/data
+      - ./supabase/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dealersource"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  postgrest:
+    image: postgrest/postgrest:v12.2.3
+    container_name: dealersource-postgrest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      PGRST_DB_URI: postgres://postgres:${POSTGRES_PASSWORD:-dealersource}@db:5432/dealersource
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${PGRST_JWT_SECRET:-dealersource-local-dev-secret-change-me-32chars}
+      PGRST_OPENAPI_SERVER_PROXY_URI: http://localhost:3000
+
+volumes:
+  dealersource-db-data:

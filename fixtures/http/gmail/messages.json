@@ -1,0 +1,132 @@
+{
+  "_note": "Recorded shape of Gmail API token refresh, users.messages.send, list and get (format=full).",
+  "fixtures": [
+    {
+      "match": {
+        "method": "POST",
+        "url_pattern": "oauth2\\.googleapis\\.com/token"
+      },
+      "response": {
+        "json": {
+          "access_token": "ya29.test-access",
+          "expires_in": 3599,
+          "scope": "https://www.googleapis.com/auth/gmail.modify",
+          "token_type": "Bearer"
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "POST",
+        "url_pattern": "gmail\\.googleapis\\.com/gmail/v1/users/me/messages/send"
+      },
+      "response": {
+        "json": {
+          "id": "18c1f2a3b4c5d6e7",
+          "threadId": "18c1f2a3b4c5d6e7",
+          "labelIds": [
+            "SENT"
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "gmail\\.googleapis\\.com/gmail/v1/users/me/messages\\?q="
+      },
+      "response": {
+        "json": {
+          "messages": [
+            {
+              "id": "m-reply-1",
+              "threadId": "18c1f2a3b4c5d6e7"
+            },
+            {
+              "id": "m-bounce-1",
+              "threadId": "t-bounce"
+            }
+          ],
+          "resultSizeEstimate": 2
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "gmail\\.googleapis\\.com/gmail/v1/users/me/messages/m-reply-1"
+      },
+      "response": {
+        "json": {
+          "id": "m-reply-1",
+          "threadId": "18c1f2a3b4c5d6e7",
+          "internalDate": "1758038520000",
+          "payload": {
+            "mimeType": "multipart/alternative",
+            "headers": [
+              {
+                "name": "From",
+                "value": "Tenth Street Owner <owner@tenth-street-props.test>"
+              },
+              {
+                "name": "To",
+                "value": "dealer@example.test"
+              },
+              {
+                "name": "Subject",
+                "value": "Re: Inquiry about 3100 E 10th St [DS-2D276E]"
+              },
+              {
+                "name": "Date",
+                "value": "Tue, 16 Sep 2026 14:02:00 -0400"
+              }
+            ],
+            "parts": [
+              {
+                "mimeType": "text/plain",
+                "body": {
+                  "data": "VGhhbmtzIGZvciByZWFjaGluZyBvdXQuIEJhc2UgcmVudCBpcyAkODUwIHBlciBtb250aCwgdGVuYW50IHBheXMgdXRpbGl0aWVzLiBUaGUgb2ZmaWNlIGFuZCBmZW5jZWQgbG90IGFyZSBpbmNsdWRlZC4"
+                }
+              },
+              {
+                "mimeType": "text/html",
+                "body": {
+                  "data": "PHA-VGhhbmtzIGZvciByZWFjaGluZyBvdXQuIEJhc2UgcmVudCBpcyAkODUwIHBlciBtb250aC48L3A-"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "gmail\\.googleapis\\.com/gmail/v1/users/me/messages/m-bounce-1"
+      },
+      "response": {
+        "json": {
+          "id": "m-bounce-1",
+          "threadId": "t-bounce",
+          "internalDate": "1758038600000",
+          "payload": {
+            "mimeType": "text/plain",
+            "headers": [
+              {
+                "name": "From",
+                "value": "Mail Delivery Subsystem <mailer-daemon@googlemail.com>"
+              },
+              {
+                "name": "Subject",
+                "value": "Delivery Status Notification (Failure) [DS-AAAAAA]"
+              }
+            ],
+            "body": {
+              "data": "QWRkcmVzcyBub3QgZm91bmQu"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "_note": "Recorded shape of Overpass API [out:json] responses for shop=car and office=estate_agent around a point.",
+  "fixtures": [
+    {
+      "match": { "method": "POST", "url_pattern": "overpass", "body_pattern": "shop.*%3D.*car|shop%22%3D%22car|shop\"=\"car" },
+      "response": {
+        "json": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62",
+          "elements": [
+            { "type": "node", "id": 4129001, "lat": 35.5801, "lon": -77.4011, "tags": { "shop": "car", "name": "Coastal Motors", "second_hand": "only" } },
+            { "type": "way", "id": 55102, "center": { "lat": 35.5852, "lon": -77.4103 }, "tags": { "shop": "car", "name": "Memorial Auto Sales" } }
+          ]
+        }
+      }
+    },
+    {
+      "match": { "method": "POST", "url_pattern": "overpass", "body_pattern": "estate_agent" },
+      "response": {
+        "json": {
+          "version": 0.6,
+          "elements": [
+            { "type": "node", "id": 7710021, "lat": 35.5912, "lon": -77.3701, "tags": { "office": "estate_agent", "name": "Tarheel Commercial", "website": "https://tarheel-commercial.example" } },
+            { "type": "node", "id": 7710022, "lat": 35.6011, "lon": -77.3801, "tags": { "office": "estate_agent", "name": "No Website Realty" } }
+          ]
+        }
+      }
+    }
+  ]
+}

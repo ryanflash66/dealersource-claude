@@ -1,0 +1,10 @@
+{
+  "_note": "Recorded shape of a self-hosted Valhalla /route and /isochrone (abridged).",
+  "fixtures": [
+    { "match": { "method": "POST", "url_pattern": "/route$" }, "response": { "json": { "trip": { "status": 0, "units": "kilometers", "summary": { "time": 540, "length": 9.1, "has_toll": false } } } } },
+    {
+      "match": { "method": "POST", "url_pattern": "/isochrone$" },
+      "response": { "json": { "type": "FeatureCollection", "features": [{ "type": "Feature", "properties": { "contour": 60 }, "geometry": { "type": "Polygon", "coordinates": [[[-77.9, 35.2], [-76.9, 35.2], [-76.9, 36.0], [-77.9, 36.0], [-77.9, 35.2]]] } }] } }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "_note": "Recorded shape of https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?format=json (values abridged).",
+  "fixtures": [
+    {
+      "match": { "method": "GET", "url_pattern": "geocoding\\.geo\\.census\\.gov/geocoder/locations/onelineaddress\\?address=2400\\+S\\+Memorial" },
+      "response": {
+        "json": {
+          "result": {
+            "input": { "address": { "address": "2400 S Memorial Dr, Greenville, NC 27834" }, "benchmark": { "id": "4", "benchmarkName": "Public_AR_Current", "isDefault": true } },
+            "addressMatches": [
+              {
+                "tigerLine": { "side": "L", "tigerLineId": "76230101" },
+                "coordinates": { "x": -77.4000, "y": 35.5770 },
+                "addressComponents": { "zip": "27834", "streetName": "MEMORIAL", "preType": "", "city": "GREENVILLE", "preDirection": "S", "suffixDirection": "", "fromAddress": "2400", "state": "NC", "suffixType": "DR", "toAddress": "2498" },
+                "matchedAddress": "2400 S MEMORIAL DR, GREENVILLE, NC, 27834"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "match": { "method": "GET", "url_pattern": "geocoding\\.geo\\.census\\.gov/geocoder/locations/onelineaddress" },
+      "response": { "json": { "result": { "addressMatches": [] } } }
+    }
+  ]
+}

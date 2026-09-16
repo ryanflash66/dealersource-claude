@@ -1,0 +1,6 @@
+{
+  "buildCommand": "npm run dashboard:build",
+  "outputDirectory": "dashboard/public",
+  "framework": null,
+  "installCommand": "npm install"
+}

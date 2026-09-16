@@ -1,0 +1,16 @@
+{
+  "_note": "Recorded shape of Mapillary Graph API /images?fields=id,thumb_1024_url,captured_at,compass_angle&bbox=...",
+  "fixtures": [
+    {
+      "match": { "method": "GET", "url_pattern": "graph\\.mapillary\\.com/images\\?" },
+      "response": {
+        "json": {
+          "data": [
+            { "id": "498120343216713", "thumb_1024_url": "https://scontent-example.mapillary.com/thumb_1024/498120343216713.jpg", "captured_at": 1718035200000, "compass_angle": 182.4 },
+            { "id": "498120343216714", "thumb_1024_url": "https://scontent-example.mapillary.com/thumb_1024/498120343216714.jpg", "captured_at": 1718035205000, "compass_angle": 184.1 }
+          ]
+        }
+      }
+    }
+  ]
+}

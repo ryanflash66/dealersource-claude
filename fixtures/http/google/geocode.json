@@ -1,0 +1,25 @@
+{
+  "_note": "PAID adapter fixture (Google Geocoding). Only reachable in tests that flip paid_enabled.",
+  "fixtures": [
+    {
+      "match": { "method": "GET", "url_pattern": "maps\\.googleapis\\.com/maps/api/geocode/json" },
+      "response": {
+        "json": {
+          "status": "OK",
+          "results": [
+            {
+              "formatted_address": "2400 S Memorial Dr, Greenville, NC 27834, USA",
+              "geometry": { "location": { "lat": 35.5770, "lng": -77.4000 }, "location_type": "ROOFTOP" },
+              "address_components": [
+                { "long_name": "2400", "short_name": "2400", "types": ["street_number"] },
+                { "long_name": "Greenville", "short_name": "Greenville", "types": ["locality", "political"] },
+                { "long_name": "27834", "short_name": "27834", "types": ["postal_code"] }
+              ],
+              "place_id": "ChIJtest"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

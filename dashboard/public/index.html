@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DealerSource Dashboard</title>
+  <meta name="description" content="Viable site shortlist, pipeline, exceptions and configuration for the DealerSource site-finding pipeline.">
+  <link rel="stylesheet" href="./styles.css">
+  <!-- config.js is generated at build time and may be absent; a 404 here is harmless. -->
+  <script src="./config.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#shortlist">DealerSource</a>
+      <nav aria-label="Views" id="nav">
+        <a href="#shortlist" data-view="shortlist">Shortlist</a>
+        <a href="#pipeline" data-view="pipeline">Pipeline</a>
+        <a href="#exceptions" data-view="exceptions">Exceptions</a>
+        <a href="#config" data-view="config">Config</a>
+      </nav>
+      <div class="run-info">
+        <span id="source-badge" class="badge badge-neutral" title="Where the report data was loaded from">loading&hellip;</span>
+        <span id="run-meta" class="run-meta"></span>
+      </div>
+    </div>
+  </header>
+
+  <main id="view" aria-live="polite">
+    <p class="muted">Loading report&hellip;</p>
+  </main>
+
+  <footer class="footer">
+    <span>Read-only dashboard. Gates: <span class="gate gate-pass">pass</span> <span class="gate gate-fail">fail</span> <span class="gate gate-pending">pending</span></span>
+  </footer>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

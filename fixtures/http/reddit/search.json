@@ -1,0 +1,33 @@
+{
+  "_note": "Recorded shape of Reddit OAuth token + /r/<subs>/search listing (abridged).",
+  "fixtures": [
+    { "match": { "method": "POST", "url_pattern": "www\\.reddit\\.com/api/v1/access_token" }, "response": { "json": { "access_token": "test-token", "token_type": "bearer", "expires_in": 86400, "scope": "*" } } },
+    {
+      "match": { "method": "GET", "url_pattern": "oauth\\.reddit\\.com/r/.*/search\\?q=for\\+lease" },
+      "response": {
+        "json": {
+          "kind": "Listing",
+          "data": {
+            "after": null,
+            "children": [
+              {
+                "kind": "t3",
+                "data": {
+                  "id": "abc123",
+                  "title": "Old tire place on Memorial for lease",
+                  "selftext": "Sign says for lease at 2400 S Memorial Dr, Greenville, NC 27834. Owner wants $800/mo, has an office.",
+                  "permalink": "/r/greenvillenc/comments/abc123/old_tire_place_on_memorial_for_lease/",
+                  "url": "https://www.reddit.com/r/greenvillenc/comments/abc123/old_tire_place_on_memorial_for_lease/",
+                  "created_utc": 1757980800,
+                  "subreddit": "greenvillenc",
+                  "author": "ecu_pirate"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    { "match": { "method": "GET", "url_pattern": "oauth\\.reddit\\.com/r/.*/search" }, "response": { "json": { "kind": "Listing", "data": { "children": [] } } } }
+  ]
+}
