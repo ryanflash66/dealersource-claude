@@ -8,17 +8,16 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p dashboard/tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p dashboard/tsconfig.json --noEmit",
     "pipeline": "tsx src/cli.ts run",
-    "pipeline:offline": "tsx src/cli.ts run --offline",
+    "pipeline:golden": "tsx src/cli.ts run --offline --fixtures fixtures/golden-v1 --out out/golden --run-date 2026-09-16",
     "sources:check": "tsx src/cli.ts sources check",
     "sources:discover": "tsx src/cli.ts sources discover",
-    "dashboard:build": "tsc -p dashboard/tsconfig.json && node scripts/copy-dashboard-data.mjs",
-    "dashboard:dev": "npm run dashboard:build && node scripts/serve-dashboard.mjs",
-    "dashboard:deploy": "npm run dashboard:build && vercel deploy --prod --yes",
+    "dashboard:build": "node scripts/build-dashboard.mjs",
+    "dashboard:dev": "node scripts/build-dashboard.mjs && node scripts/serve-dashboard.mjs",
+    "dashboard:deploy": "vercel deploy --prod --yes",
     "db:local": "docker compose up -d",
     "db:migrate": "node scripts/apply-migrations.mjs"
   },

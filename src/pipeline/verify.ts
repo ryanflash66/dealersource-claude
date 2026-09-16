@@ -137,8 +137,15 @@ async function closeCasesForExcludedSites(ctx: RunContext, c: StageCounter): Pro
 
 // ------------------------------------------------------------- sending
 async function checkPause(ctx: RunContext, c: StageCounter): Promise<void> {
+  if (ctx.config.business.mail.paused) {
+    ctx.run.sending_paused = true;
+    ctx.run.pause_reason = "manual pause (business.yaml mail.paused or DEALERSOURCE_PAUSE_SENDING=1)";
+    c.inc("sending_paused");
+    return;
+  }
   const since = addDays(ctx.clock.iso(), -1);
-  const recent = (await ctx.store.list("messages")).filter((m) => m.direction === "outbound" && m.sent_at >= since && m.status !== "refused");
+  const sinceMs = new Date(since).getTime();
+  const recent = (await ctx.store.list("messages")).filter((m) => m.direction === "outbound" && new Date(m.sent_at).getTime() >= sinceMs && m.status !== "refused");
   const bounced = recent.filter((m) => m.status === "bounced").length;
   const pct = recent.length ? (100 * bounced) / recent.length : 0;
   if (recent.length >= 5 && pct > ctx.config.business.mail.bounce_pause_pct) {
@@ -177,7 +184,7 @@ async function sendOutbound(ctx: RunContext, c: StageCounter): Promise<void> {
       c.inc("groups_skipped_contact_blocked");
       continue;
     }
-    const lastContact = g.cases.map((k) => k.last_contacted_at).filter((x): x is string => !!x).sort().at(-1) ?? null;
+    const lastContact = g.cases.map((k) => k.last_contacted_at).filter((x): x is string => !!x).sort((a, b) => new Date(a).getTime() - new Date(b).getTime()).at(-1) ?? null;
     if (lastContact && daysBetween(lastContact, now) < b.mail.followup_days) {
       c.inc("groups_within_followup_window");
       continue;

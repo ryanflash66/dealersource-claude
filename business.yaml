@@ -66,6 +66,7 @@ evidence:
     competitor_count: 180
 
 mail:
+  paused: false                  # manual kill switch: true stops ALL outbound mail (also DEALERSOURCE_PAUSE_SENDING=1)
   sender: owner                  # owner | operator (which mailbox the OAuth token belongs to)
   sender_name: "Dealer Principal"  # slot in the approved templates; set the real name at deploy
   sender_org: "Licensed NC used motor vehicle dealer"

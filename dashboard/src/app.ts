@@ -661,17 +661,22 @@ async function mountMap(container: HTMLElement, note: HTMLElement, sites: Site[]
     return;
   }
 
-  note.textContent = "Loading basemap…";
+  // Show the dependency-free plot straight away; upgrade to MapLibre only if the
+  // CDN scripts actually arrive. A hanging or blocked CDN never leaves an empty box.
+  renderSvgMap(container, located);
+  note.textContent = "Loading basemap… (schematic plot shown meanwhile)";
   try {
     loadStylesheet(MAPLIBRE_CSS);
     if (!window.maplibregl) await withTimeout(loadScript(MAPLIBRE_JS), 10000, "MapLibre");
     if (!window.pmtiles) await withTimeout(loadScript(PMTILES_JS), 10000, "pmtiles");
     if (!window.maplibregl || !window.pmtiles) throw new Error("map libraries did not initialise");
-    renderMapLibre(container, located, pmtilesUrl);
+    if (!container.isConnected) return; // user navigated away while loading
+    renderMapLibre(container, located, pmtilesUrl, note);
     note.textContent = `Basemap: self-hosted PMTiles (${safeHost(pmtilesUrl)}).`;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    renderSvgMap(container, located);
+    if (!container.isConnected) return;
+    if (!container.querySelector("svg")) renderSvgMap(container, located);
     note.textContent = `Basemap unavailable (${msg}); showing schematic plot. Set PMTILES_URL for a basemap.`;
   }
 }
@@ -684,7 +689,7 @@ function safeHost(url: string): string {
   }
 }
 
-function renderMapLibre(container: HTMLElement, sites: Site[], pmtilesUrl: string): void {
+function renderMapLibre(container: HTMLElement, sites: Site[], pmtilesUrl: string, note: HTMLElement): void {
   const maplibregl = window.maplibregl;
   const pmtiles = window.pmtiles;
   container.replaceChildren();
@@ -726,6 +731,16 @@ function renderMapLibre(container: HTMLElement, sites: Site[], pmtilesUrl: strin
     attributionControl: { compact: true },
   });
   map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+
+  // Tile/archive failures (bad PMTILES_URL, offline) are reported once in the note;
+  // the site markers stay usable on the blank canvas either way.
+  let reported = false;
+  map.on("error", (ev: { error?: { message?: string } }) => {
+    if (reported) return;
+    reported = true;
+    const why = ev?.error?.message ? ` (${ev.error.message})` : "";
+    note.textContent = `Basemap tiles failed to load from ${safeHost(pmtilesUrl)}${why}. Check PMTILES_URL; site markers are still shown.`;
+  });
 
   if (sites.length) {
     const bounds = new maplibregl.LngLatBounds();

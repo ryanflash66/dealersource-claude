@@ -1,0 +1,40 @@
+# Scheduled-agent definition for the Claude Code routine (task spec section 7).
+# Setup steps are in docs/scheduling.md. Secrets are routine secrets, never repo files.
+name: dealersource-daily
+description: Daily discovery, verification outreach, scoring and shortlist report for dealership site sourcing.
+repository: ryanflash66/dealersource-claude
+branch: main
+schedule:
+  cron: "30 5 * * *"        # keep in sync with business.yaml schedule.cron
+  timezone: America/New_York
+runtime:
+  node: "24"
+  install: npm ci
+environment_variables:      # names only; values are set in the routine's secret store
+  required:
+    - DEALERSOURCE_HOME_BASE
+    - SUPABASE_URL
+    - SUPABASE_SERVICE_ROLE_KEY
+    - GMAIL_CLIENT_ID
+    - GMAIL_CLIENT_SECRET
+    - GMAIL_REFRESH_TOKEN
+    - GMAIL_SENDER_ADDRESS
+  optional:
+    - ORS_API_KEY
+    - MAPILLARY_ACCESS_TOKEN
+    - ANYCRAWL_URL
+    - REDDIT_CLIENT_ID
+    - REDDIT_CLIENT_SECRET
+    - REDDIT_USER_AGENT
+    - DEALERSOURCE_PAUSE_SENDING
+prompt_file: agent/routine.md
+commands:
+  - npm ci
+  - npm run pipeline -- --out out/$RUN_DATE --run-date $RUN_DATE
+notifications:
+  on_failure: true          # CLI exits non-zero when run.json.errors is non-empty
+  artifacts:
+    - out/$RUN_DATE/report.json
+    - out/$RUN_DATE/messages.json
+    - out/$RUN_DATE/run.json
+    - out/$RUN_DATE/digest.md

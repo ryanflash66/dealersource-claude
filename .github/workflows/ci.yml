@@ -1,0 +1,22 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: offline golden run (section 14.2 contract)
+        run: |
+          npm run pipeline -- --offline --fixtures fixtures/golden-v1 --out out/golden --run-date 2026-09-16
+          npm run pipeline -- --offline --fixtures fixtures/golden-v1 --out out/golden --run-date 2026-09-16
+          test "$(node -e 'console.log(require("./out/golden/messages.json").length)')" = "0"
+      - run: npm run dashboard:build

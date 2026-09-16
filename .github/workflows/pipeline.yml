@@ -1,0 +1,52 @@
+# Alternative scheduler (task spec section 7): GitHub Actions instead of the Claude Code
+# routine. Manual trigger only by default; uncomment `schedule` to run daily.
+# Model steps (llm: claude_agent) are not available here; keep llm: rules.
+name: pipeline
+on:
+  workflow_dispatch:
+    inputs:
+      run_date:
+        description: "Logical run date YYYY-MM-DD (blank = today, America/New_York)"
+        required: false
+        default: ""
+  # schedule:
+  #   - cron: "30 9 * * *"   # 05:30 America/New_York during DST
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: run pipeline
+        env:
+          DEALERSOURCE_HOME_BASE: ${{ secrets.DEALERSOURCE_HOME_BASE }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
+          GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_CLIENT_SECRET }}
+          GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN }}
+          GMAIL_SENDER_ADDRESS: ${{ secrets.GMAIL_SENDER_ADDRESS }}
+          ORS_API_KEY: ${{ secrets.ORS_API_KEY }}
+          MAPILLARY_ACCESS_TOKEN: ${{ secrets.MAPILLARY_ACCESS_TOKEN }}
+          ANYCRAWL_URL: ${{ secrets.ANYCRAWL_URL }}
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          REDDIT_USER_AGENT: ${{ secrets.REDDIT_USER_AGENT }}
+          DEALERSOURCE_PAUSE_SENDING: ${{ vars.DEALERSOURCE_PAUSE_SENDING }}
+        run: |
+          RUN_DATE="${{ inputs.run_date }}"
+          if [ -z "$RUN_DATE" ]; then RUN_DATE=$(TZ=America/New_York date +%F); fi
+          npm run pipeline -- --out "out/$RUN_DATE" --run-date "$RUN_DATE"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dealersource-run
+          path: |
+            out/**/report.json
+            out/**/messages.json
+            out/**/run.json
+            out/**/digest.md

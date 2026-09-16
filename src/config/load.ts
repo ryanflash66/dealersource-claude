@@ -72,6 +72,10 @@ export function loadConfig(opts: LoadOptions = {}): AppConfig {
   if (env.DEALERSOURCE_HOME_BASE?.trim()) {
     businessRaw.search = { ...businessRaw.search, home_base: env.DEALERSOURCE_HOME_BASE.trim() };
   }
+  // Operator kill switch for outreach without a config commit.
+  if (env.DEALERSOURCE_PAUSE_SENDING === "1") {
+    businessRaw.mail = { ...businessRaw.mail, paused: true };
+  }
 
   const business = businessSchema.parse(businessRaw);
   const providers = providersSchema.parse(o.providers ?? readYaml(providersPath));

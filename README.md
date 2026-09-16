@@ -1,30 +1,188 @@
-# dealersource-claude
+# dealersource (Claude Code solution)
 
-Independent implementation of the **dealersource** task, produced by **Claude Code (Anthropic)**.
+A scheduled system that **finds, verifies and ranks leaseable sites for a licensed
+used-car dealership in Eastern North Carolina** and reports a verified shortlist
+to a dashboard. Discovery, verification outreach (email) and reporting run with
+no human in the loop; humans act only on the shortlist.
 
-| | |
+This repository is one of several independent implementations of the same task.
+The task spec and shared system prompt live in the parent repo:
+
+- System prompt: https://github.com/ryanflash66/dealersource/blob/main/prompts/system-prompt.md
+- Task spec (sections 13/14 are the acceptance contract): https://github.com/ryanflash66/dealersource/blob/main/prompts/task-spec.md
+- Output JSON Schemas: https://github.com/ryanflash66/dealersource/tree/main/evals/contract
+
+Built with Node.js 20+ and TypeScript. **npm** is the package manager (pnpm is
+not assumed to be installed). Everything below runs offline with no `.env`.
+
+---
+
+## 1. Offline first run (under five minutes)
+
+```bash
+git clone https://github.com/ryanflash66/dealersource-claude.git
+cd dealersource-claude
+npm install                # the only step that touches the network
+npm test                   # 80+ tests under a global "no network" guard
+
+# Full pipeline on the bundled golden fixture set (section 14.2 CLI):
+npm run pipeline -- --offline --fixtures fixtures/golden-v1 --out out/golden --run-date 2026-09-16
+#   -> out/golden/report.json, messages.json (3 emails queued), run.json, digest.md
+#      state persisted under out/golden/state/
+
+# Run it again: same day, nothing is sent twice
+npm run pipeline -- --offline --fixtures fixtures/golden-v1 --out out/golden --run-date 2026-09-16
+#   -> messages.json == []
+
+npm run dashboard:dev      # builds from fixture data, serves http://localhost:4173
+```
+
+`npm run pipeline:golden` is a shortcut for the first pipeline command.
+The CLI prints one JSON line (`sites`, `viable`, `messages_sent`, `errors`) and
+exits non-zero on any stage error; an attempted network call in `--offline`
+mode is a hard error (exit code 3).
+
+What the golden run shows (matches `fixtures/golden-v1/expected.json`):
+
+| Parcel | Outcome |
 |---|---|
-| Agent | Claude Code (Anthropic) |
-| Owner | @ryanflash66 |
-| Parent (orchestration) repo | https://github.com/ryanflash66/dealersource |
-| Mounted in parent at | `agents/claude-solution` |
+| PITT-0001 | three listings from three sources merged into one site; all gates pass from the listing + official use table; **rank 1** |
+| PITT-0002 | rent and zoning unknown -> two inquiries sent -> same-day replies verify both; **rank 2** |
+| PITT-0006 | viable but a shared lot -> **rank 3**, always after standalone sites |
+| PITT-0003 / BEAU-0004 / PITT-0005 | rent 1400 / zoning prohibited / FEMA zone AE -> gate fails, no outreach |
+| WAYN-0007 | 78-minute drive -> outside the search area, not scored |
+| PITT-0008 | zoning unknown, no reply -> inquiry sent, gate `pending`, not viable |
 
-## Purpose
+## 2. How it works
 
-This repo holds one agent's complete, standalone solution. It is one of several
-sibling repos that receive the same task spec from the parent repo so their
-results can be compared side by side.
+```
+sources.yaml ──discover──> raw_documents + listings
+                              │ resolve (geocode -> parcel; same parcel_id = one site)
+                              ▼
+                         sites + parcels ──enrich──> evidence (zoning, flood, traffic, drive, POI, imagery, listing facts)
+                              │ verify: open cases -> send approved emails -> ingest replies -> evidence
+                              ▼
+                         score: gates -> viable -> weighted rank (shared lots last)
+                              │ report: report.json / messages.json / run.json / digest.md / reports table
+```
 
-## Rules
+- **Gates** (all three must `pass` on verified, unexpired, cited evidence):
+  zoning permitted (official layer + use table with section, or written planning reply),
+  written base rent within `rent.min_monthly..max_monthly`, parcel outside high-risk FEMA zones.
+  Missing or expired evidence is `pending`, never `pass`. No response is not approval.
+- **Ranking** weights (traffic, visibility, distance, rent, competitors) live in `business.yaml`.
+- **Outreach** uses only the approved text in `config/mail-templates.yaml`; the model fills
+  slots. Never the same address about the same site twice within `mail.followup_days`;
+  at most `mail.max_followups`, then the case is escalated to the dashboard. Bounce-rate
+  or quota problems pause sending automatically and surface on the dashboard.
+- **Idempotency**: every row id is derived from its inputs, so re-running a day is a no-op.
+- **Evidence** rows carry `source_url`, `fetched_at`, `expires_at` and `method`; TTLs per fact
+  are in `business.yaml`.
 
-- This repo is fully independent: it has its own history, tooling, tests, and CI.
-- Do **not** reference sibling agent repos. Only the parent repo knows about siblings.
-- The task spec and prompts live in the parent repo under `prompts/`.
-  Read them from there; do not copy them into this repo.
-- Evaluation results are recorded in the parent repo under `results/`,
-  not here.
+### Repository layout
 
-## Layout
+| Path | What |
+|---|---|
+| `providers.yaml` | provider per layer + the `paid_enabled` spend switch (section 14.1) |
+| `business.yaml` | every business parameter (section 2) + `score.weights` |
+| `config/sources.yaml` | the source allowlist with researched `terms_status` / `robots_txt` |
+| `config/use-tables.yaml` | zoning use tables with the cited ordinance section per district |
+| `config/mail-templates.yaml` | approved outreach text |
+| `src/providers/` | one interface per data layer, free + paid adapters, fixture-backed fakes |
+| `src/pipeline/` | the six idempotent stages, gates, scoring, templates |
+| `src/store/` | JSON-file store (offline default) and Supabase/PostgREST store |
+| `fixtures/golden-v1/` | the sample fixture set (copied from the parent repo) |
+| `fixtures/http/` | recorded API responses used by the adapter unit tests |
+| `supabase/migrations/` | Postgres + PostGIS schema and RLS policies |
+| `docker-compose.yml` | local PostGIS + PostgREST stack |
+| `dashboard/` | static dashboard (TypeScript, no framework), deployable to Vercel |
+| `agent/` | scheduled Claude Code routine definition and prompt |
+| `docs/` | decisions, deploy, scheduling, costs |
 
-Application code goes here, structured however the agent prefers.
-Keep a `README.md` (this file) explaining how to run and test the solution.
+## 3. Commands
+
+| Command | Purpose |
+|---|---|
+| `npm test` | full offline test suite |
+| `npm run typecheck` | `tsc` for pipeline and dashboard |
+| `npm run pipeline -- [flags]` | the CLI (`--offline --fixtures <dir> --out <dir> --run-date YYYY-MM-DD [--config providers.yaml] [--stage <name>]`) |
+| `npm run sources:check` | print the allowlist decision for every source |
+| `npm run sources:discover -- --out out` | online: find broker/property-manager POIs near home base -> `sources.candidates.yaml` |
+| `npm run dashboard:build` | build the dashboard from fixture data (exit 0 offline) |
+| `npm run dashboard:dev` | build + serve on http://localhost:4173 |
+| `npm run dashboard:deploy` | `vercel deploy --prod` (after `npm run dashboard:build`) |
+| `npm run db:local` | `docker compose up -d` (PostGIS + PostgREST) |
+| `npm run db:migrate` | apply `supabase/migrations/*.sql` with `psql` to `DATABASE_URL` |
+
+## 4. Deploy
+
+Nothing in this repo needs credentials to build or test. Real values are supplied
+once, at deploy time, through environment variables. `.env.example` lists every
+variable with its purpose; any variable left unset makes that adapter fall back
+to its fixture-backed fake and the run records it under `fixture_layers`.
+
+### 4.1 Variables to set
+
+| Purpose | Variables |
+|---|---|
+| Real dealership address (never committed) | `DEALERSOURCE_HOME_BASE="<street address>, <city>, NC <zip>"` |
+| Storage (Supabase) | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (pipeline), `SUPABASE_ANON_KEY` (dashboard) |
+| Email (Gmail API, OAuth) | `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_SENDER_ADDRESS`; pick the mailbox with `business.yaml mail.sender: owner|operator` |
+| Reddit official API | `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_USER_AGENT` |
+| Free providers needing a key/URL | `ORS_API_KEY`, `MAPILLARY_ACCESS_TOKEN`, `ANYCRAWL_URL`, `NOMINATIM_URL`, `VALHALLA_URL`, `OVERPASS_URL`, `PMTILES_URL` |
+| Paid providers (off by default) | `GOOGLE_MAPS_API_KEY`, `REGRID_API_KEY`, `ANTHROPIC_API_KEY`, `ANYCRAWL_API_KEY`, `MAPBOX_TOKEN` |
+
+Steps:
+
+1. **Database**: create a Supabase project and apply `supabase/migrations/*.sql`
+   (`supabase db push`, the SQL editor, or `DATABASE_URL=... npm run db:migrate`).
+   For a local stack instead: `npm run db:local` and point `SUPABASE_URL=http://localhost:3000`
+   (see the header of `docker-compose.yml` for the service-role JWT). Details: `supabase/README.md`.
+2. **Mail**: create a Gmail API OAuth client, authorise the owner's (or operator's) mailbox once,
+   store the refresh token. Then set `verified: true` on each `business.yaml` jurisdiction after
+   re-checking its `source_url`: the Gmail adapter refuses planning addresses that are not verified.
+3. **Pipeline**: `npm run pipeline -- --out out/$(date +%F)` (online; `--fixtures` may still be
+   passed as a fallback for layers whose variables are unset). Schedule it as a Claude Code routine
+   using `agent/routine.md` (setup in `docs/scheduling.md`; GitHub Actions and pg_cron alternatives
+   are documented there).
+4. **Dashboard**: `SUPABASE_URL=... SUPABASE_ANON_KEY=... PMTILES_URL=... npm run dashboard:build`
+   then `npm run dashboard:deploy` (Vercel; `vercel.json` is included). With no Supabase variables
+   the build embeds the latest fixture run instead. Set the same three variables in the Vercel
+   project so its build reads Supabase directly.
+
+### 4.2 Flip a provider
+
+Edit one line in `providers.yaml`, e.g. `geocoder: nominatim` (and set `NOMINATIM_URL` to your
+self-hosted instance; the public Nominatim server is refused). No code changes. `report.json.providers`
+reflects the selection even offline. Paid adapters (`google`, `regrid`, `streetview`, `places`,
+`anycrawl_cloud`, `claude_api`, `mapbox`) additionally require `paid_enabled: true` and the matching
+key; otherwise startup fails with `PaidProviderDisabledError` and no call can happen.
+See `docs/costs.md` for exactly what starts costing money.
+
+### 4.3 Enable a grey source
+
+Sources with `terms_status: unclear` are never fetched. After reading the site's terms and
+`robots.txt`, change the row in `config/sources.yaml` to `terms_status: allowed`,
+`robots_txt: allowed`, `enabled: true`, and record what you checked in `notes`.
+`npm run sources:check` prints the resulting decision per source. Sources marked
+`prohibited` or `disallowed` are refused regardless of `enabled` (LoopNet, Crexi, Craigslist and
+Facebook Marketplace are recorded that way, with the reason).
+
+### 4.4 Pause outreach
+
+- Manual kill switch: `business.yaml` -> `mail.paused: true`, or set `DEALERSOURCE_PAUSE_SENDING=1`
+  on the scheduled job. Cases keep being tracked; nothing is sent; the dashboard shows the pause.
+- Automatic: sending pauses when the 24-hour bounce rate exceeds `mail.bounce_pause_pct` or the
+  mail provider returns a quota error. A reply that asks to stop marks that contact do-not-contact.
+
+## 5. Tests
+
+`npm test` runs unit tests (adapters against recorded fixtures in `fixtures/http`, gates,
+scoring, dedupe, stores, allowlist, outreach policy) and integration tests (the golden fixture
+run validated against the contract schemas, the replay test proving a repeated run sends nothing,
+the census -> nominatim switch, and the no-paid-call check). `tests/setup.ts` replaces global
+`fetch` with one that throws, so no test can reach the network.
+
+## 6. Decisions
+
+Choices made where the spec was silent are recorded in `docs/decisions.md`.

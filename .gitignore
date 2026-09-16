@@ -13,3 +13,4 @@ dashboard/public/app.js
 dashboard/public/app.js.map
 .vercel/
 coverage/
+dashboard/public/config.js

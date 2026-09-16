@@ -54,6 +54,7 @@ export const businessSchema = z.object({
   competitors: z.object({ radius_m: z.number().positive() }).default({ radius_m: 3000 }),
   evidence: z.object({ ttl_days: z.record(z.string(), z.number().int().positive()) }),
   mail: z.object({
+    paused: z.boolean().default(false),
     sender: z.enum(["owner", "operator"]),
     sender_name: z.string().default("Dealer Principal"),
     sender_org: z.string().default("Licensed NC used motor vehicle dealer"),

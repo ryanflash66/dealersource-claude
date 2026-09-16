@@ -44,7 +44,7 @@ export class SupabaseStore implements Store {
     }
     const res = await this.fetchImpl(`${this.rest}/${table}?${params.toString()}`, { headers: this.headers() });
     if (!res.ok) throw new Error(`Supabase list ${table} failed: ${res.status} ${await res.text()}`);
-    return (await res.json()) as TableRowMap[T][];
+    return normalizeTimestamps(await res.json()) as TableRowMap[T][];
   }
 
   async upsert<T extends Table>(table: T, rows: TableRowMap[T][]): Promise<void> {
@@ -71,6 +71,10 @@ export class SupabaseStore implements Store {
   }
 
   private headers(): Record<string, string> {
+    return this.buildHeaders();
+  }
+
+  private buildHeaders(): Record<string, string> {
     const h: Record<string, string> = { Accept: "application/json", "Accept-Profile": this.schema, "Content-Profile": this.schema };
     if (this.serviceKey) {
       h.apikey = this.serviceKey;
@@ -78,4 +82,24 @@ export class SupabaseStore implements Store {
     }
     return h;
   }
+}
+
+const TIMESTAMPTZ = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?([+-]\d{2}:\d{2}|Z)$/;
+
+/**
+ * Postgres returns timestamptz as `2026-09-16T12:00:00+00:00`; the pipeline
+ * writes `2026-09-16T12:00:00.000Z`. Normalise top-level string columns so
+ * ordering and equality behave the same on both stores.
+ */
+export function normalizeTimestamps<T>(rows: T): T {
+  if (!Array.isArray(rows)) return rows;
+  for (const row of rows as Array<Record<string, unknown>>) {
+    for (const [k, v] of Object.entries(row)) {
+      if (typeof v === "string" && TIMESTAMPTZ.test(v) && !v.endsWith("Z")) {
+        const d = new Date(v);
+        if (!Number.isNaN(d.getTime())) row[k] = d.toISOString();
+      }
+    }
+  }
+  return rows;
 }
