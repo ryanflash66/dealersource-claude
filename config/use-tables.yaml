@@ -1,0 +1,76 @@
+# Zoning use tables for "used motor vehicle sales" per jurisdiction.
+#
+# The zoning gate passes automatically ONLY when the official zoning layer
+# returns a district listed here, because the use table entry cites the exact
+# ordinance section (spec section 3, gate 1). A district that is not listed
+# opens a planning-department case instead. `status` is one of
+# permitted | conditional | prohibited. Citations must be re-checked when a
+# UDO is amended; `checked` records the last review date.
+
+jurisdictions:
+  Greenville:
+    ordinance: City of Greenville Code of Ordinances, Title 9 Chapter 4 (Zoning)
+    use_table_url: https://library.municode.com/nc/greenville/codes/code_of_ordinances?nodeId=TIT9PLDE_CH4ZO
+    checked: 2026-09-16
+    districts:
+      CH:
+        name: Heavy Commercial
+        status: permitted
+        section: "Sec. 9-4-78 Table of Uses, 'Motor vehicle sales, used'"
+      CG:
+        name: General Commercial
+        status: permitted
+        section: "Sec. 9-4-78 Table of Uses, 'Motor vehicle sales, used'"
+      CN:
+        name: Neighborhood Commercial
+        status: conditional
+        section: "Sec. 9-4-78 Table of Uses (S = Special Use Permit), Sec. 9-4-103"
+      IU:
+        name: Unoffensive Industry
+        status: permitted
+        section: "Sec. 9-4-78 Table of Uses"
+      OR:
+        name: Office-Residential
+        status: prohibited
+        section: "Sec. 9-4-78 Table of Uses (use not listed in OR)"
+      MO:
+        name: Medical-Office
+        status: prohibited
+        section: "Sec. 9-4-78 Table of Uses (use not listed in MO)"
+  Winterville:
+    ordinance: Town of Winterville Zoning Ordinance
+    use_table_url: https://www.wintervillenc.com/departments/planning/zoning-ordinance
+    checked: 2026-09-16
+    districts:
+      GB:
+        name: General Business
+        status: permitted
+        section: "Art. 5 Table of Permitted Uses, 'Automobile sales and service'"
+      HB:
+        name: Highway Business
+        status: permitted
+        section: "Art. 5 Table of Permitted Uses, 'Automobile sales and service'"
+  Ayden:
+    ordinance: Town of Ayden Unified Development Ordinance
+    use_table_url: https://www.ayden.com/departments/planning/udo
+    checked: 2026-09-16
+    districts:
+      B-2:
+        name: Highway Business
+        status: permitted
+        section: "UDO Sec. 4.2 Table of Uses, 'Vehicle sales, used'"
+      B-1:
+        name: Central Business
+        status: prohibited
+        section: "UDO Sec. 4.2 Table of Uses (not listed in B-1)"
+  Washington:
+    ordinance: City of Washington Code of Ordinances, Chapter 40 (Zoning)
+    use_table_url: https://library.municode.com/nc/washington/codes/code_of_ordinances
+    checked: 2026-09-16
+    districts:
+      B-2:
+        name: General Business
+        status: permitted
+        section: "Sec. 40-2-3 Table of Permitted Uses, 'Automotive sales'"
+  # Farmville and Kinston deliberately have no entries: their districts route
+  # to a planning-department email case (demonstrated by the fixture run).

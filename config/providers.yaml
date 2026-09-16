@@ -1,0 +1,113 @@
+# Provider selection per data layer (task-spec section 4).
+# Switching a provider is a one-line change here; adapters share one interface
+# per layer (src/providers/types.ts). Default = free everywhere.
+
+# Master switch for PAID adapters. While false, selecting a paid adapter below
+# is a startup error and no paid endpoint can be reached. Every paid call is
+# logged with its cost class in the `runs` row. THIS is the spend switch.
+paid_enabled: false
+
+layers:
+  geocoding: census              # census | nominatim | google (paid)
+  parcels: nc-onemap             # nc-onemap | county-gis | regrid (paid)
+  zoning: arcgis-zoning          # arcgis-zoning (always official-source)
+  drivetime: openrouteservice    # openrouteservice | valhalla | google-distance-matrix (paid)
+  traffic: ncdot-aadt            # ncdot-aadt
+  flood: fema-nfhl               # fema-nfhl
+  imagery: mapillary             # mapillary | nc-onemap-ortho | google-streetview (paid)
+  competitors: overpass          # overpass | google-places (paid)
+  crawl: direct                  # direct | anycrawl | anycrawl-cloud (paid)
+  social: reddit                 # reddit
+  mail: gmail                    # gmail (falls back to the fixture mailbox when GMAIL_* are unset)
+  llm: rules                     # rules | claude-agent | claude-api (paid)
+  tiles: protomaps               # protomaps | mapbox (paid) - dashboard basemap only
+
+# Per-adapter options. Secrets are NEVER here; they come from the environment
+# (see .env.example). URLs for self-hosted services default to localhost.
+options:
+  census:
+    base_url: https://geocoding.geo.census.gov/geocoder
+    benchmark: Public_AR_Current
+  nominatim:
+    base_url_env: NOMINATIM_URL          # self-hosted only; public Nominatim is never used
+    default_base_url: http://localhost:8080
+  nc-onemap:
+    parcels_url: https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/FeatureServer/0
+  county-gis:
+    layers:
+      Pitt: https://gis.pittcountync.gov/arcgis/rest/services/Parcels/FeatureServer/0
+  arcgis-zoning:
+    # One official zoning layer per jurisdiction; district_field is the
+    # attribute holding the district code. Missing jurisdiction => zoning is
+    # unknown and a planning case is opened.
+    layers:
+      Greenville:
+        url: https://gis.greenvillenc.gov/arcgis/rest/services/Planning/Zoning/FeatureServer/0
+        district_field: ZONING
+      Winterville:
+        url: https://gis.pittcountync.gov/arcgis/rest/services/Winterville_Zoning/FeatureServer/0
+        district_field: ZONE
+      Ayden:
+        url: https://gis.pittcountync.gov/arcgis/rest/services/Ayden_Zoning/FeatureServer/0
+        district_field: ZONE
+      Farmville:
+        url: https://gis.pittcountync.gov/arcgis/rest/services/Farmville_Zoning/FeatureServer/0
+        district_field: ZONE
+      Kinston:
+        url: https://gis.ci.kinston.nc.us/arcgis/rest/services/Zoning/FeatureServer/0
+        district_field: ZONING
+      Washington:
+        url: https://gis.washingtonnc.gov/arcgis/rest/services/Zoning/FeatureServer/0
+        district_field: ZONING
+  openrouteservice:
+    base_url: https://api.openrouteservice.org
+    profile: driving-car
+  valhalla:
+    base_url_env: VALHALLA_URL
+    default_base_url: http://localhost:8002
+  ncdot-aadt:
+    url: https://gis11.services.ncdot.gov/arcgis/rest/services/NCDOT_AADT_Stations/FeatureServer/0
+    search_radius_m: 400
+  fema-nfhl:
+    url: https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28
+    sample_grid: 7                       # NxN sample points for majority-of-parcel-area
+  mapillary:
+    base_url: https://graph.mapillary.com
+    bbox_m: 60
+  nc-onemap-ortho:
+    url: https://services.nconemap.gov/secure/rest/services/Imagery/Orthoimagery_Latest/ImageServer
+  overpass:
+    base_url_env: OVERPASS_URL
+    default_base_url: https://overpass-api.de/api/interpreter   # polite: 1 req / 2s
+    min_interval_ms: 2000
+  direct:
+    user_agent: "dealersource/0.1 (+https://github.com/ryanflash66/dealersource-claude)"
+    min_interval_ms: 1500
+  anycrawl:
+    base_url_env: ANYCRAWL_URL
+    default_base_url: http://localhost:8080
+  anycrawl-cloud:
+    base_url: https://api.anycrawl.dev
+  reddit:
+    base_url: https://oauth.reddit.com
+    token_url: https://www.reddit.com/api/v1/access_token
+    subreddits: [greenvillenc, ECU, NorthCarolina, Kinston, NewBern, Wilson, RockyMountNC, CommercialRealEstate, realestateinvesting]
+    queries: ["for lease", "space for lease", "lot for lease", "closing", "going out of business", "vacant lot", "commercial space"]
+    limit_per_query: 25
+  gmail:
+    base_url: https://gmail.googleapis.com/gmail/v1
+    token_url: https://oauth2.googleapis.com/token
+  rules: {}
+  claude-agent:
+    review_queue: out/review-queue.json  # low-confidence items the scheduled agent reviews
+  claude-api:
+    model: claude-sonnet-4-5
+    base_url: https://api.anthropic.com
+  google:
+    base_url: https://maps.googleapis.com/maps/api
+  regrid:
+    base_url: https://app.regrid.com/api/v2
+  protomaps:
+    pmtiles_url_env: PMTILES_URL
+  mapbox:
+    style: mapbox://styles/mapbox/light-v11

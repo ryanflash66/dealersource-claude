@@ -1,0 +1,62 @@
+# Approved outreach text (task-spec section 6). The model never composes new
+# asks; it only fills the {{slots}} below. One email is sent per contact per
+# site per cycle, containing a section for every open case that contact owns.
+# The subject carries the case-group token so replies can be matched.
+
+sender_signature: |
+  Thank you,
+  {{sender_name}}
+  {{sender_org}}
+  {{sender_email}}
+
+leasing:
+  subject: "Inquiry about {{address}} [DS-{{token}}]"
+  intro: |
+    Hello {{contact_name}},
+
+    I am a licensed used-car dealer in North Carolina looking for a small lot with an
+    enclosed office in the {{area}} area. I saw your listing for {{address}}
+    ({{listing_url}}) and have a few quick questions:
+  followup_intro: |
+    Hello {{contact_name}},
+
+    Following up on my note from {{previous_date}} about {{address}}. If the space is
+    still available, I would appreciate answers to the questions below:
+  sections:
+    rent_quote: |
+      - Base rent: could you confirm the monthly base rent in writing, and whether
+        any NNN/CAM charges apply on top of it?
+    office: |
+      - Office: is there an enclosed, lockable office space on the premises with
+        power and restroom access?
+    vehicle_display: |
+      - Display area: roughly how many vehicles could be displayed/parked on the
+        paved or graveled area?
+    sublease_consent: |
+      - Since this space is shared with another business, does the owner consent
+        in writing to a sublease/shared use for vehicle sales?
+  outro: |
+    I am not asking for any hold on the space; a written reply is all I need for now.
+    Reply "stop" if you would prefer not to hear from me again.
+
+planning:
+  subject: "Permitted use inquiry - {{address}} (parcel {{parcel_id}}) [DS-{{token}}]"
+  intro: |
+    Hello,
+
+    I hold a North Carolina used motor vehicle dealer license and am evaluating the
+    parcel at {{address}} (parcel {{parcel_id}}), which your zoning layer shows as
+    district {{district}}. Before I go further with the property owner:
+  followup_intro: |
+    Hello,
+
+    Following up on my inquiry from {{previous_date}} about {{address}} (parcel
+    {{parcel_id}}, district {{district}}):
+  sections:
+    zoning_permitted: |
+      - Is "used motor vehicle sales" a permitted use by right on this parcel, or
+        does it require a special/conditional use permit? If you could cite the
+        ordinance section, that would be very helpful.
+  outro: |
+    A short written reply is sufficient. Thank you for your time.
+    Reply "stop" if you would prefer not to receive follow-ups.

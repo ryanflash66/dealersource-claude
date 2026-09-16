@@ -1,0 +1,164 @@
+# Source allowlist (task-spec section 5).
+#
+# The crawler REFUSES any source whose terms_status is `prohibited` or whose
+# robots_txt is `disallowed`, regardless of `enabled`. Sources with
+# terms_status `unclear` are also not fetched until the PM flips them to
+# `allowed` explicitly (see README "Enable a grey source").
+#
+# robots_txt values were checked on 2026-09-16 with a plain HTTP fetch of
+# /robots.txt from a non-browser user agent; notes record what was seen.
+# `.example` domains are IANA-reserved and exist only so the offline fixture
+# run has broker-class sources; replace them with brokers discovered by
+# `npm run sources:discover` (POI query for estate agents in the search area).
+
+sources:
+  # --- Municipal / county economic development "available properties" ------
+  - id: greenville-nc-available-properties
+    kind: crawl
+    url: https://www.greenvillenc.gov/business/economic-development/available-properties
+    robots_txt: allowed
+    terms_status: allowed
+    enabled: true
+    cadence: daily
+    notes: >-
+      City of Greenville government site. robots.txt (checked 2026-09-16) only
+      disallows admin/search paths for User-agent *. Public-records content.
+
+  - id: pitt-county-available-sites
+    kind: crawl
+    url: https://www.pittcountync.gov/business/available-sites-buildings
+    robots_txt: allowed
+    terms_status: allowed
+    enabled: true
+    cadence: daily
+    notes: >-
+      Pitt County government site. Same CMS and robots.txt pattern as
+      greenvillenc.gov (checked 2026-09-16).
+
+  - id: kinston-lenoir-econ-dev-properties
+    kind: crawl
+    url: https://www.kinstonlenoiredc.com/available-properties
+    robots_txt: unknown
+    terms_status: unclear
+    enabled: false
+    cadence: weekly
+    notes: Kinston-Lenoir County EDC. Not yet checked; PM to research and flip.
+
+  # --- Chambers of commerce -----------------------------------------------
+  - id: greenville-pitt-chamber-listings
+    kind: crawl
+    url: https://www.greenvillenc.org/member-listings/commercial-real-estate
+    robots_txt: unknown
+    terms_status: unclear
+    enabled: false
+    cadence: weekly
+    notes: >-
+      Greenville-Pitt County Chamber. /robots.txt returned a 404 page on
+      2026-09-16 (treated as unknown, not allowed). Member directory terms not
+      reviewed.
+
+  # --- Local brokers / property managers (broker class) --------------------
+  - id: tarheel-commercial-listings
+    kind: crawl
+    url: https://tarheel-commercial.example/listings
+    robots_txt: allowed
+    terms_status: allowed
+    enabled: true
+    cadence: daily
+    fixture_only: true
+    notes: >-
+      DEMO broker source on a reserved .example domain so the offline run has
+      broker-class listings. Never fetched online (fixture_only). Replace with
+      brokers from sources.candidates.yaml after research.
+
+  - id: coastal-plain-properties-listings
+    kind: crawl
+    url: https://coastal-plain-properties.example/available
+    robots_txt: allowed
+    terms_status: allowed
+    enabled: true
+    cadence: daily
+    fixture_only: true
+    notes: DEMO property-management source (reserved .example domain), see above.
+
+  # --- Reddit (official Data API only; web crawling is disallowed) ----------
+  - id: reddit-eastern-nc
+    kind: reddit
+    url: https://oauth.reddit.com
+    robots_txt: allowed
+    terms_status: allowed
+    enabled: true
+    cadence: daily
+    notes: >-
+      reddit.com/robots.txt disallows ALL crawling (checked 2026-09-16), so
+      only the official OAuth Data API is used, under the Developer Terms and
+      Public Content Policy (free tier, 100 QPM). Subreddit list lives in
+      providers.yaml options.reddit.subreddits.
+
+  # --- Free public RSS / listing feeds -------------------------------------
+  - id: nc-commerce-buildings-sites-rss
+    kind: rss
+    url: https://edpnc.com/feed/
+    robots_txt: unknown
+    terms_status: unclear
+    enabled: false
+    cadence: weekly
+    notes: EDPNC news feed; rarely lists sub-$1k space. PM to review terms.
+
+  # --- Manual leads entered by the owner/PM --------------------------------
+  - id: manual-leads
+    kind: manual
+    url: file://config/manual-leads.yaml
+    robots_txt: allowed
+    terms_status: allowed
+    enabled: true
+    cadence: daily
+    notes: Hand-entered leads (drive-bys, word of mouth). Local file, no fetch.
+
+  # --- Recorded as EXCLUDED so the PM can see what is left out and why -----
+  - id: loopnet
+    kind: crawl
+    url: https://www.loopnet.com/search/commercial-real-estate/greenville-nc/for-lease/
+    robots_txt: disallowed
+    terms_status: prohibited
+    enabled: false
+    cadence: daily
+    notes: >-
+      LoopNet Terms of Use prohibit automated access, scraping and data
+      extraction; /robots.txt itself returns 403 Access Denied to non-browser
+      agents (checked 2026-09-16). Excluded.
+
+  - id: crexi
+    kind: crawl
+    url: https://www.crexi.com/lease/properties/north-carolina/greenville
+    robots_txt: disallowed
+    terms_status: prohibited
+    enabled: false
+    cadence: daily
+    notes: >-
+      Crexi Terms of Service prohibit scraping/automated collection; site is
+      behind a bot challenge (checked 2026-09-16). Excluded.
+
+  - id: craigslist-eastern-nc
+    kind: crawl
+    url: https://eastnc.craigslist.org/search/off
+    robots_txt: disallowed
+    terms_status: prohibited
+    enabled: false
+    cadence: daily
+    notes: >-
+      Craigslist Terms of Use prohibit robots, spiders and scrapers without
+      written permission; robots.txt disallows multiple paths (checked
+      2026-09-16). Excluded.
+
+  - id: facebook-marketplace
+    kind: crawl
+    url: https://www.facebook.com/marketplace/greenville/propertyrentals
+    robots_txt: disallowed
+    terms_status: prohibited
+    enabled: false
+    cadence: daily
+    notes: >-
+      facebook.com/robots.txt states collection of data through automated
+      means is prohibited without express written permission; Marketplace
+      also requires login (checked 2026-09-16). Excluded.

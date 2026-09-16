@@ -1,0 +1,11 @@
+# Hand-entered leads (source id: manual-leads). Each entry becomes a listing
+# with method "manual"; gating facts still need verification like any other.
+leads:
+  - url: manual://2026-09-10/drive-by-hwy-11
+    title: Former produce stand lot, Hwy 11 south of Bethel
+    address_text: "Hwy 11 lot near Bethel, NC"
+    rent_monthly_advertised: null
+    has_office: false
+    shared_lot: false
+    contact_email: null
+    notes: Sign on fence with phone number only. Geocode expected to fail (no street number).
