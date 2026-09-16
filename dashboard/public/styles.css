@@ -22,3 +22,10 @@
 
 /* Data-source note in the footer. */
 .footer .source-note { color: var(--fg-faint); }
+
+/* Template rule 7: 16px side gutter on phones. tokens.css sets --gutter-desktop
+   on .ds-root as well as :root, and dashboard.css only re-declares it on :root
+   below 720px, so the .ds-root value (24px) would win for descendants. */
+@media (max-width: 720px) {
+  .ds-root { --gutter-desktop: var(--gutter); }
+}
