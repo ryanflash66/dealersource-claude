@@ -23,6 +23,7 @@ export const businessSchema = z.object({
   }),
   flood: z.object({
     high_risk_zones: z.array(z.string()).nonempty(),
+    majority_fail_pct: z.number().min(0).max(100).default(50),
     warn_subtypes: z.array(z.string()).default([]),
   }),
   dealer: z.object({
@@ -33,7 +34,7 @@ export const businessSchema = z.object({
       sign_required: z.boolean(),
     }),
   }),
-  ranking: z.object({
+  score: z.object({
     weights: z.object({
       traffic: z.number().nonnegative(),
       visibility: z.number().nonnegative(),
@@ -41,42 +42,46 @@ export const businessSchema = z.object({
       rent: z.number().nonnegative(),
       competitors: z.number().nonnegative(),
     }),
-    bounds: z.object({
-      traffic_aadt_max: z.number().positive(),
-      frontage_ft_max: z.number().positive(),
-      competitors_max: z.number().positive(),
-    }),
+    bounds: z
+      .object({
+        traffic_aadt_max: z.number().positive().default(30000),
+        frontage_ft_max: z.number().positive().default(300),
+        corner_lot_bonus: z.number().min(0).max(1).default(0.3),
+        competitors_max: z.number().positive().default(10),
+      })
+      .default({}),
   }),
-  competitors: z.object({ radius_m: z.number().positive() }),
+  competitors: z.object({ radius_m: z.number().positive() }).default({ radius_m: 3000 }),
   evidence: z.object({ ttl_days: z.record(z.string(), z.number().int().positive()) }),
   mail: z.object({
     sender: z.enum(["owner", "operator"]),
+    sender_name: z.string().default("Dealer Principal"),
+    sender_org: z.string().default("Licensed NC used motor vehicle dealer"),
     followup_days: z.number().int().positive(),
     max_followups: z.number().int().nonnegative(),
     bounce_pause_pct: z.number().nonnegative(),
     inbound_lookback_days: z.number().int().positive(),
   }),
-  jurisdictions: z.record(z.string(), jurisdictionSchema),
+  jurisdictions: z.record(z.string(), jurisdictionSchema).default({}),
   schedule: z.object({
     scheduler: z.enum(["claude-routine", "github-actions", "pg_cron"]),
     cron: z.string(),
     timezone: z.string(),
   }),
-  report: z.object({ out_dir: z.string(), dashboard_data_dir: z.string() }),
 });
 export type BusinessConfig = z.infer<typeof businessSchema>;
 
 // --------------------------------------------------------------- providers
 export const LAYERS = [
-  "geocoding",
+  "geocoder",
   "parcels",
   "zoning",
   "drivetime",
   "traffic",
   "flood",
   "imagery",
-  "competitors",
-  "crawl",
+  "poi",
+  "crawler",
   "social",
   "mail",
   "llm",
@@ -84,12 +89,45 @@ export const LAYERS = [
 ] as const;
 export type Layer = (typeof LAYERS)[number];
 
+/** Section 14.1: required keys with their allowed values. Extra layers have defaults. */
 export const providersSchema = z.object({
   paid_enabled: z.boolean().default(false),
-  layers: z.object(Object.fromEntries(LAYERS.map((l) => [l, z.string()])) as Record<Layer, z.ZodString>),
+  geocoder: z.enum(["census", "nominatim", "google"]),
+  parcels: z.enum(["nc_onemap", "county", "regrid"]),
+  drivetime: z.enum(["ors", "valhalla", "google"]),
+  imagery: z.enum(["mapillary", "streetview"]),
+  poi: z.enum(["overpass", "places"]),
+  crawler: z.enum(["anycrawl", "anycrawl_cloud"]),
+  tiles: z.enum(["protomaps", "mapbox"]),
+  zoning: z.enum(["arcgis"]).default("arcgis"),
+  traffic: z.enum(["ncdot"]).default("ncdot"),
+  flood: z.enum(["fema"]).default("fema"),
+  social: z.enum(["reddit"]).default("reddit"),
+  mail: z.enum(["gmail"]).default("gmail"),
+  llm: z.enum(["rules", "claude_agent", "claude_api"]).default("rules"),
   options: z.record(z.string(), z.record(z.string(), z.unknown())).default({}),
 });
 export type ProvidersConfig = z.infer<typeof providersSchema>;
+
+/** The eight keys section 14.4 requires in report.json.providers. */
+export function contractProviders(p: ProvidersConfig) {
+  return {
+    paid_enabled: p.paid_enabled,
+    geocoder: p.geocoder,
+    parcels: p.parcels,
+    drivetime: p.drivetime,
+    imagery: p.imagery,
+    poi: p.poi,
+    crawler: p.crawler,
+    tiles: p.tiles,
+    zoning: p.zoning,
+    traffic: p.traffic,
+    flood: p.flood,
+    social: p.social,
+    mail: p.mail,
+    llm: p.llm,
+  };
+}
 
 // ----------------------------------------------------------------- sources
 export const sourceSchema = z.object({
@@ -113,7 +151,9 @@ export const useTablesSchema = z.object({
     z.object({
       ordinance: z.string(),
       use_table_url: z.string().url(),
-      checked: z.union([z.string(), z.date()]).transform((v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v)),
+      checked: z
+        .union([z.string(), z.date()])
+        .transform((v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v)),
       districts: z.record(
         z.string(),
         z.object({
@@ -161,3 +201,30 @@ export const manualLeadsSchema = z.object({
     .default([]),
 });
 export type ManualLeads = z.infer<typeof manualLeadsSchema>;
+
+// ------------------------------------------------------- fixture inputs 14.3
+export const fixtureListingSchema = z.object({
+  listing_id: z.string().min(1),
+  source_id: z.string().min(1),
+  url: z.string().min(1),
+  fetched_at: z.string(),
+  title: z.string().nullable().default(null),
+  address: z.string(),
+  rent_monthly: z.number().nullable().default(null),
+  description: z.string().nullable().default(null),
+  contact_email: z.string().nullable().default(null),
+  shared_lot: z.boolean().nullable().default(null),
+  has_office: z.boolean().nullable().default(null),
+  vehicle_capacity: z.number().int().nullable().default(null),
+});
+export type FixtureListing = z.infer<typeof fixtureListingSchema>;
+
+export const fixtureReplySchema = z.object({
+  listing_id: z.string(),
+  case_type: z.enum(["rent", "zoning", "space"]),
+  from: z.string(),
+  received_at: z.string(),
+  subject: z.string(),
+  body: z.string(),
+});
+export type FixtureReply = z.infer<typeof fixtureReplySchema>;

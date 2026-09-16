@@ -1,0 +1,10 @@
+{
+  "PITT-0001": { "zone": "X", "pct_area_high_risk": 0, "source_url": "https://nfhl.fema.test/parcel/PITT-0001" },
+  "PITT-0002": { "zone": "X", "pct_area_high_risk": 0, "source_url": "https://nfhl.fema.test/parcel/PITT-0002" },
+  "PITT-0003": { "zone": "X", "pct_area_high_risk": 0, "source_url": "https://nfhl.fema.test/parcel/PITT-0003" },
+  "BEAU-0004": { "zone": "X", "pct_area_high_risk": 0, "source_url": "https://nfhl.fema.test/parcel/BEAU-0004" },
+  "PITT-0005": { "zone": "AE", "pct_area_high_risk": 85, "source_url": "https://nfhl.fema.test/parcel/PITT-0005" },
+  "PITT-0006": { "zone": "X", "pct_area_high_risk": 0, "source_url": "https://nfhl.fema.test/parcel/PITT-0006" },
+  "WAYN-0007": { "zone": "X", "pct_area_high_risk": 0, "source_url": "https://nfhl.fema.test/parcel/WAYN-0007" },
+  "PITT-0008": { "zone": "X", "pct_area_high_risk": 0, "source_url": "https://nfhl.fema.test/parcel/PITT-0008" }
+}

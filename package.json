@@ -25,11 +25,14 @@
   "license": "UNLICENSED",
   "devDependencies": {
     "@types/node": "^24.13.5",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "tsx": "^4.23.13",
     "typescript": "^5.9.3",
     "vitest": "^3.2.7"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.126.0",
     "yaml": "^2.9.1",
     "zod": "^3.25.76"
   }

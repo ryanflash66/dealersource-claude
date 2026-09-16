@@ -1,11 +1,11 @@
-# Business parameters (task-spec section 2). Every key is read at startup and
-# validated by src/config/schema.ts. Change values here, never in code.
+# Business parameters (task-spec sections 2 and 14.1). Every key is read at
+# startup and validated by src/config/schema.ts. Change values here, not in code.
 
 search:
   # Dev placeholder. The real dealership address is supplied at deploy time via
   # DEALERSOURCE_HOME_BASE and is never committed.
   home_base: "Greenville, NC 27858"
-  max_drive_minutes: 60          # isochrone from home base, not a radius
+  max_drive_minutes: 60          # isochrone / drive time from home base, not a radius
 
 rent:
   min_monthly: 600               # USD base rent, hard gate
@@ -13,24 +13,25 @@ rent:
 
 site:
   min_vehicle_display: 2         # cars displayable on the lot
-  office_required: true          # enclosed office matters more than yard size
+  office_required: true          # an enclosed office matters more than yard size
   shared_lot: last_resort        # exclude | last_resort | allowed
 
 flood:
   high_risk_zones: [A, AE, AH, AO, AR, A99, V, VE]   # FEMA NFHL zones that fail the gate
+  majority_fail_pct: 50          # also fail when more than this % of parcel area is high-risk
   warn_subtypes: ["0.2 PCT ANNUAL CHANCE FLOOD HAZARD"]  # shaded X: warn only
 
 dealer:
   license_status: held           # owner already holds an NC dealer license
   # NC DMV established-place-of-business requirements encoded as checks on the
-  # site record (not a licensing workflow). See src/pipeline/requirements.ts.
+  # site record, not as a licensing workflow (src/pipeline/requirements.ts).
   place_of_business_checks:
     enclosed_office: true        # permanent enclosed building/office
     display_area_min_vehicles: 2 # space to display vehicles
     sign_required: true          # permanent sign visible from the street
 
-ranking:
-  # Weights are relative; they are normalised at runtime. Order = spec priority.
+score:
+  # Weights are relative and normalised at runtime. Order = spec priority.
   weights:
     traffic: 0.35
     visibility: 0.25
@@ -40,11 +41,12 @@ ranking:
   # Reference bounds used to normalise raw values to 0..1.
   bounds:
     traffic_aadt_max: 30000      # AADT at or above this scores 1.0
-    frontage_ft_max: 300         # road frontage at or above this scores 1.0 (visibility)
+    frontage_ft_max: 300         # frontage at or above this scores 1.0 (visibility)
+    corner_lot_bonus: 0.3        # share of the visibility score granted to a corner lot
     competitors_max: 10          # this many dealers within radius scores 0.0
 
 competitors:
-  radius_m: 3000                 # other vehicle dealers within this radius
+  radius_m: 3000                 # other vehicle dealers within this radius (online enrichment)
 
 evidence:
   # Days before a stored fact must be re-verified. Expired evidence never
@@ -57,7 +59,6 @@ evidence:
     rent_monthly: 45
     office: 90
     vehicle_display: 90
-    sublease_consent: 90
     flood_zone: 365
     traffic_aadt: 365
     drive_minutes: 365
@@ -66,16 +67,17 @@ evidence:
 
 mail:
   sender: owner                  # owner | operator (which mailbox the OAuth token belongs to)
+  sender_name: "Dealer Principal"  # slot in the approved templates; set the real name at deploy
+  sender_org: "Licensed NC used motor vehicle dealer"
   followup_days: 5               # never contact the same address about the same site twice within this window
   max_followups: 2               # after this many follow-ups, escalate to the dashboard
   bounce_pause_pct: 5            # auto-pause sending if 24h bounce rate exceeds this
   inbound_lookback_days: 30      # how far back to poll the mailbox for replies
 
-# Planning / zoning departments. Only addresses derived from an official
-# government page may be contacted (spec section 6). `source_url` records
-# where the address was published; the deployer re-checks it before the first
-# online run and sets `verified: true`. Unverified entries are still used in
-# offline/fixture mode (fake mailbox) but are refused by the real Gmail adapter.
+# Planning / zoning departments used ONLINE when the zoning layer does not
+# supply a contact. Only addresses derived from an official government page
+# may be contacted (spec section 6); `source_url` records where the address was
+# published and the deployer sets `verified: true` after re-checking it.
 jurisdictions:
   Greenville:
     county: Pitt
@@ -89,18 +91,8 @@ jurisdictions:
     verified: false
   Ayden:
     county: Pitt
-    planning_email: planning@ayden.com
-    source_url: https://www.ayden.com/departments/planning
-    verified: false
-  Farmville:
-    county: Pitt
-    planning_email: planning@farmvillenc.gov
-    source_url: https://www.farmvillenc.gov/departments/planning
-    verified: false
-  Kinston:
-    county: Lenoir
-    planning_email: planning@ci.kinston.nc.us
-    source_url: https://www.ci.kinston.nc.us/planning
+    planning_email: planning@aydennc.gov
+    source_url: https://www.aydennc.gov/departments/planning
     verified: false
   Washington:
     county: Beaufort
@@ -114,10 +106,6 @@ jurisdictions:
     verified: false
 
 schedule:
-  scheduler: claude-routine      # claude-routine | github-actions | pg_cron (see docs/scheduling.md)
+  scheduler: claude-routine      # claude-routine | github-actions | pg_cron (docs/scheduling.md)
   cron: "30 5 * * *"             # daily, 05:30 America/New_York
   timezone: America/New_York
-
-report:
-  out_dir: out                   # digest.md and run JSON
-  dashboard_data_dir: dashboard/public/data

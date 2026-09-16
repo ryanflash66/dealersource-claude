@@ -1,0 +1,12 @@
+{
+  "2400 S Memorial Dr, Greenville, NC 27834": { "lat": 35.5770, "lon": -77.4000, "formatted_address": "2400 S Memorial Dr, Greenville, NC 27834", "parcel_id": "PITT-0001" },
+  "2400 South Memorial Drive, Greenville NC 27834": { "lat": 35.5770, "lon": -77.4000, "formatted_address": "2400 S Memorial Dr, Greenville, NC 27834", "parcel_id": "PITT-0001" },
+  "2400 S. Memorial Dr Greenville, NC 27834": { "lat": 35.5770, "lon": -77.4000, "formatted_address": "2400 S Memorial Dr, Greenville, NC 27834", "parcel_id": "PITT-0001" },
+  "3100 E 10th St, Greenville, NC 27858": { "lat": 35.6108, "lon": -77.3369, "formatted_address": "3100 E 10th St, Greenville, NC 27858", "parcel_id": "PITT-0002" },
+  "1500 N Greene St, Greenville, NC 27834": { "lat": 35.6285, "lon": -77.3785, "formatted_address": "1500 N Greene St, Greenville, NC 27834", "parcel_id": "PITT-0003" },
+  "210 W Main St, Washington, NC 27889": { "lat": 35.5446, "lon": -77.0553, "formatted_address": "210 W Main St, Washington, NC 27889", "parcel_id": "BEAU-0004" },
+  "4020 NC Highway 33 E, Grimesland, NC 27837": { "lat": 35.5626, "lon": -77.1916, "formatted_address": "4020 NC-33 E, Grimesland, NC 27837", "parcel_id": "PITT-0005" },
+  "1800 Dickinson Ave, Greenville, NC 27834": { "lat": 35.6009, "lon": -77.3822, "formatted_address": "1800 Dickinson Ave, Greenville, NC 27834", "parcel_id": "PITT-0006" },
+  "900 Wayne Memorial Dr, Goldsboro, NC 27534": { "lat": 35.3980, "lon": -77.9900, "formatted_address": "900 Wayne Memorial Dr, Goldsboro, NC 27534", "parcel_id": "WAYN-0007" },
+  "700 W 5th St, Ayden, NC 28513": { "lat": 35.4720, "lon": -77.4270, "formatted_address": "700 W 5th St, Ayden, NC 28513", "parcel_id": "PITT-0008" }
+}

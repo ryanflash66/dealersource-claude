@@ -1,0 +1,10 @@
+{
+  "PITT-0001": { "district": "CG", "jurisdiction": "City of Greenville", "planning_email": "planning@greenvillenc.gov", "use_table_url": "https://udo.greenvillenc.test/use-table", "dealer_use": "permitted", "citation": "Greenville Code sec. 9-4-78 Table 1, Motor vehicle sales, CG: P" },
+  "PITT-0002": { "district": "CH", "jurisdiction": "City of Greenville", "planning_email": "planning@greenvillenc.gov", "use_table_url": "https://udo.greenvillenc.test/use-table", "dealer_use": "unknown", "citation": null },
+  "PITT-0003": { "district": "CG", "jurisdiction": "City of Greenville", "planning_email": "planning@greenvillenc.gov", "use_table_url": "https://udo.greenvillenc.test/use-table", "dealer_use": "permitted", "citation": "Greenville Code sec. 9-4-78 Table 1, Motor vehicle sales, CG: P" },
+  "BEAU-0004": { "district": "B1", "jurisdiction": "City of Washington", "planning_email": "planning@washingtonnc.gov", "use_table_url": "https://code.washingtonnc.test/ch40", "dealer_use": "prohibited", "citation": "Washington Code Ch. 40 Table 40-3, Vehicle sales, B1: not permitted" },
+  "PITT-0005": { "district": "GC", "jurisdiction": "Pitt County", "planning_email": "planning@pittcountync.gov", "use_table_url": "https://zoning.pittcountync.test/table-of-uses", "dealer_use": "permitted", "citation": "Pitt County Zoning Ord. sec. 8.3 Table of Uses, Automobile sales, GC: P" },
+  "PITT-0006": { "district": "CG", "jurisdiction": "City of Greenville", "planning_email": "planning@greenvillenc.gov", "use_table_url": "https://udo.greenvillenc.test/use-table", "dealer_use": "permitted", "citation": "Greenville Code sec. 9-4-78 Table 1, Motor vehicle sales, CG: P" },
+  "WAYN-0007": { "district": "GB", "jurisdiction": "City of Goldsboro", "planning_email": "planning@goldsboronc.gov", "use_table_url": "https://udo.goldsboronc.test/use-table", "dealer_use": "permitted", "citation": "Goldsboro UDO Table 4.1, Vehicle sales, GB: P" },
+  "PITT-0008": { "district": "HC", "jurisdiction": "Town of Ayden", "planning_email": "planning@aydennc.gov", "use_table_url": "https://zoning.aydennc.test/use-table", "dealer_use": "unknown", "citation": null }
+}

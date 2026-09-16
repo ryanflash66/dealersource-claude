@@ -50,20 +50,17 @@ export interface RawDocumentRow {
 export interface ListingExtraction {
   title: string | null;
   address_text: string | null;
-  rent_monthly_advertised: number | null;
+  rent_monthly: number | null; // advertised base rent
   sqft: number | null;
-  lot_sqft: number | null;
   has_office: boolean | null;
-  vehicle_display_est: number | null;
-  shared_lot: boolean;
+  vehicle_capacity: number | null;
+  shared_lot: boolean | null;
   contact_email: string | null;
   contact_name: string | null;
   contact_phone: string | null;
-  frontage_ft: number | null;
-  corner_lot: boolean | null;
   description: string | null;
   confidence: number; // 0..1
-  method: "rules" | "claude-agent" | "claude-api" | "manual" | "reddit";
+  method: "rules" | "claude_agent" | "claude_api" | "manual" | "fixture";
 }
 
 export interface ListingRow {
@@ -74,35 +71,35 @@ export interface ListingRow {
   title: string | null;
   address_text: string | null;
   address_key: string | null;
+  fetched_at: ISODate;
   extraction: ListingExtraction;
   site_id: string | null;
+  status: "new" | "resolved" | "refused" | "unresolved";
+  status_detail: string | null;
   first_seen_at: ISODate;
   last_seen_at: ISODate;
   run_id: string;
 }
 
-export type SiteStage =
-  | "discovered"
-  | "resolved"
-  | "enriched"
-  | "verifying"
-  | "scored"
-  | "excluded";
+export type SiteStage = "resolved" | "enriched" | "verifying" | "scored" | "out_of_area";
 
 export interface SiteRow {
-  id: string;
+  id: string; // site_<parcel_id>
+  parcel_id: string;
   canonical_address: string;
-  address_key: string;
-  lat: number | null;
-  lon: number | null;
-  parcel_id: string | null;
+  lat: number;
+  lon: number;
   jurisdiction: string | null;
   county: string | null;
+  planning_email: string | null;
   stage: SiteStage;
   shared_lot: boolean;
+  has_office: boolean | null;
+  vehicle_capacity: number | null;
+  contact_email: string | null; // published leasing contact (from a listing)
   listing_ids: string[];
   drive_minutes: number | null;
-  excluded_reason: string | null;
+  in_search_area: boolean | null;
   created_at: ISODate;
   updated_at: ISODate;
 }
@@ -113,6 +110,9 @@ export interface ParcelRow {
   owner: string | null;
   acreage: number | null;
   geometry: Polygon | null;
+  frontage_ft: number | null;
+  corner_lot: boolean | null;
+  fronting_road: string | null;
   jurisdiction: string | null;
   county: string | null;
   source_url: string;
@@ -127,7 +127,6 @@ export type Fact =
   | "rent_monthly"
   | "office"
   | "vehicle_display"
-  | "sublease_consent"
   | "flood_zone"
   | "traffic_aadt"
   | "drive_minutes"
@@ -139,7 +138,7 @@ export type EvidenceMethod =
   | "layer+use_table" // zoning layer + cited use table
   | "email" // written reply parsed into the case
   | "form" // official inquiry form response
-  | "crawl" // extracted from a listing page (advertised, not verified)
+  | "listing" // stated on the listing page (written, source = listing URL)
   | "api"
   | "manual";
 
@@ -160,12 +159,8 @@ export interface EvidenceRow {
   run_id: string;
 }
 
-export type CaseType =
-  | "zoning_permitted"
-  | "rent_quote"
-  | "office"
-  | "vehicle_display"
-  | "sublease_consent";
+/** Section 14.3 case types. `space` covers office / display capacity questions. */
+export type CaseType = "rent" | "zoning" | "space";
 
 export type CaseStatus =
   | "open" // needs first contact
@@ -179,6 +174,7 @@ export type ContactRole = "leasing" | "planning";
 export interface CaseRow {
   id: string; // `${site_id}:${type}`
   site_id: string;
+  listing_id: string; // primary listing the case was opened from
   type: CaseType;
   status: CaseStatus;
   owner: "system" | "human";
@@ -187,6 +183,7 @@ export interface CaseRow {
   next_action: string;
   next_action_at: ISODate | null;
   followups_sent: number;
+  last_contacted_at: ISODate | null;
   opened_at: ISODate;
   updated_at: ISODate;
   resolved_at: ISODate | null;
@@ -200,7 +197,7 @@ export interface ContactRow {
   name: string | null;
   org: string | null;
   role: ContactRole;
-  derived_from_url: string; // listing URL or official government page
+  derived_from_url: string; // listing URL or official government page / layer
   do_not_contact: boolean;
   bounced: boolean;
   created_at: ISODate;
@@ -212,13 +209,16 @@ export type MessageStatus = "sent" | "bounced" | "received" | "paused" | "refuse
 export interface MessageRow {
   id: string;
   case_ids: string[];
+  case_type: CaseType; // primary case type (messages.json carries one)
   site_id: string;
+  listing_id: string;
   contact_id: string;
+  to: string;
   direction: MessageDirection;
   subject: string;
   body: string;
   sent_at: ISODate;
-  thread_id: string; // DS token shared by outbound + replies
+  thread_token: string; // DS token shared by outbound + replies
   provider_message_id: string | null;
   template_id: string | null;
   attempt: number; // 0 = first contact, 1.. = follow-ups
@@ -232,8 +232,7 @@ export interface ReplyClassification {
   rent_monthly: number | null;
   rent_includes_nnn: boolean | null;
   has_office: boolean | null;
-  vehicle_display: number | null;
-  sublease_consent: boolean | null;
+  vehicle_capacity: number | null;
   zoning_status: "permitted" | "conditional" | "prohibited" | null;
   zoning_citation: string | null;
   summary: string;
@@ -241,21 +240,19 @@ export interface ReplyClassification {
 }
 
 export type GateName = "zoning" | "rent" | "flood";
-export type GateOutcome = "pass" | "fail" | "unverified" | "expired";
+/** Section 14.4 statuses. Expired or missing evidence is `pending`. */
+export type GateOutcome = "pass" | "fail" | "pending";
 
 export interface GateResult {
   gate: GateName;
-  outcome: GateOutcome;
-  evidence_id: string | null;
-  source_url: string | null;
-  fetched_at: ISODate | null;
-  expires_at: ISODate | null;
+  status: GateOutcome;
+  evidence_ids: string[];
   detail: string;
   warning: string | null;
 }
 
 export interface RequirementResult {
-  name: "enclosed_office" | "vehicle_display" | "drive_time" | "shared_lot_policy";
+  name: "enclosed_office" | "vehicle_display" | "shared_lot_policy";
   outcome: "met" | "not_met" | "unknown";
   detail: string;
 }
@@ -269,17 +266,27 @@ export interface FactorScore {
   detail: string;
 }
 
+export interface SiteMetrics {
+  aadt: number | null;
+  visibility: number | null;
+  drive_minutes: number | null;
+  rent_monthly: number | null;
+  competitors: number | null;
+}
+
 export interface ScoreRow {
-  id: string; // `${site_id}:${run_id}` not needed; we keep one row per site
+  id: string; // = site_id (one current score per site)
   site_id: string;
   run_id: string;
+  in_search_area: boolean;
   viable: boolean;
   shortlisted: boolean;
   shared_lot: boolean;
-  gates: GateResult[];
+  gates: Record<GateName, GateResult>;
   requirements: RequirementResult[];
   factors: FactorScore[];
-  total: number;
+  metrics: SiteMetrics;
+  total: number | null;
   rank: number | null;
   flags: string[];
   computed_at: ISODate;
@@ -303,6 +310,7 @@ export interface PaidCall {
 
 export interface RunRow {
   id: string;
+  run_date: string; // YYYY-MM-DD logical today
   started_at: ISODate;
   finished_at: ISODate | null;
   mode: "offline" | "online";
@@ -311,14 +319,25 @@ export interface RunRow {
   errors: string[];
   warnings: string[];
   paid_calls: PaidCall[];
-  fixture_adapters: string[]; // adapters that ran on fixtures because their env was unset
+  external_calls: string[]; // hosts contacted; must be [] offline
+  fixture_layers: string[]; // layers served from fixtures because env was unset
   sending_paused: boolean;
   pause_reason: string | null;
-  providers: Record<string, string>;
+  providers: Record<string, string | boolean>;
   status: "running" | "ok" | "error";
 }
 
+/** Latest contract report per run, so the dashboard can read Supabase directly. */
+export interface ReportRow {
+  id: string; // run id
+  run_date: string;
+  created_at: ISODate;
+  payload: unknown; // ContractReport (section 14.4)
+  messages: unknown[]; // ContractMessage[] sent in that run
+}
+
 export const TABLES = [
+  "reports",
   "sources",
   "raw_documents",
   "listings",
@@ -334,6 +353,7 @@ export const TABLES = [
 export type Table = (typeof TABLES)[number];
 
 export interface TableRowMap {
+  reports: ReportRow;
   sources: SourceRow;
   raw_documents: RawDocumentRow;
   listings: ListingRow;

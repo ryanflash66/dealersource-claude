@@ -1,0 +1,50 @@
+{
+  "PITT-0001": {
+    "parcel_id": "PITT-0001", "owner": "Memorial Drive Holdings LLC", "acres": 0.62,
+    "centroid": { "lat": 35.5770, "lon": -77.4000 },
+    "geometry": { "type": "Polygon", "coordinates": [[[-77.4006, 35.5766], [-77.3994, 35.5766], [-77.3994, 35.5774], [-77.4006, 35.5774], [-77.4006, 35.5766]]] },
+    "frontage_ft": 220, "corner_lot": true, "fronting_road": "S Memorial Dr"
+  },
+  "PITT-0002": {
+    "parcel_id": "PITT-0002", "owner": "Tenth Street Properties LLC", "acres": 0.45,
+    "centroid": { "lat": 35.6108, "lon": -77.3369 },
+    "geometry": { "type": "Polygon", "coordinates": [[[-77.3374, 35.6105], [-77.3364, 35.6105], [-77.3364, 35.6111], [-77.3374, 35.6111], [-77.3374, 35.6105]]] },
+    "frontage_ft": 150, "corner_lot": false, "fronting_road": "E 10th St"
+  },
+  "PITT-0003": {
+    "parcel_id": "PITT-0003", "owner": "Greene Street Retail LP", "acres": 0.50,
+    "centroid": { "lat": 35.6285, "lon": -77.3785 },
+    "geometry": { "type": "Polygon", "coordinates": [[[-77.3790, 35.6282], [-77.3780, 35.6282], [-77.3780, 35.6288], [-77.3790, 35.6288], [-77.3790, 35.6282]]] },
+    "frontage_ft": 140, "corner_lot": false, "fronting_road": "N Greene St"
+  },
+  "BEAU-0004": {
+    "parcel_id": "BEAU-0004", "owner": "Main Street Washington Inc", "acres": 0.20,
+    "centroid": { "lat": 35.5446, "lon": -77.0553 },
+    "geometry": { "type": "Polygon", "coordinates": [[[-77.0556, 35.5444], [-77.0550, 35.5444], [-77.0550, 35.5448], [-77.0556, 35.5448], [-77.0556, 35.5444]]] },
+    "frontage_ft": 60, "corner_lot": false, "fronting_road": "W Main St"
+  },
+  "PITT-0005": {
+    "parcel_id": "PITT-0005", "owner": "Grimesland Land Co", "acres": 1.10,
+    "centroid": { "lat": 35.5626, "lon": -77.1916 },
+    "geometry": { "type": "Polygon", "coordinates": [[[-77.1926, 35.5620], [-77.1906, 35.5620], [-77.1906, 35.5632], [-77.1926, 35.5632], [-77.1926, 35.5620]]] },
+    "frontage_ft": 300, "corner_lot": false, "fronting_road": "NC-33 E"
+  },
+  "PITT-0006": {
+    "parcel_id": "PITT-0006", "owner": "Dickinson Detail LLC", "acres": 0.35,
+    "centroid": { "lat": 35.6009, "lon": -77.3822 },
+    "geometry": { "type": "Polygon", "coordinates": [[[-77.3826, 35.6006], [-77.3818, 35.6006], [-77.3818, 35.6012], [-77.3826, 35.6012], [-77.3826, 35.6006]]] },
+    "frontage_ft": 120, "corner_lot": false, "fronting_road": "Dickinson Ave"
+  },
+  "WAYN-0007": {
+    "parcel_id": "WAYN-0007", "owner": "Wayne Memorial Ventures", "acres": 0.80,
+    "centroid": { "lat": 35.3980, "lon": -77.9900 },
+    "geometry": { "type": "Polygon", "coordinates": [[[-77.9908, 35.3975], [-77.9892, 35.3975], [-77.9892, 35.3985], [-77.9908, 35.3985], [-77.9908, 35.3975]]] },
+    "frontage_ft": 260, "corner_lot": true, "fronting_road": "Wayne Memorial Dr"
+  },
+  "PITT-0008": {
+    "parcel_id": "PITT-0008", "owner": "Ayden Commercial Partners", "acres": 0.30,
+    "centroid": { "lat": 35.4720, "lon": -77.4270 },
+    "geometry": { "type": "Polygon", "coordinates": [[[-77.4274, 35.4717], [-77.4266, 35.4717], [-77.4266, 35.4723], [-77.4274, 35.4723], [-77.4274, 35.4717]]] },
+    "frontage_ft": 100, "corner_lot": false, "fronting_road": "W 5th St"
+  }
+}

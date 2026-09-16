@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ryanflash66/dealersource/evals/contract/messages.schema.json",
+  "title": "dealersource messages sent in one run",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["message_id", "site_id", "listing_id", "case_type", "to", "subject", "body", "sent_at", "template_id"],
+    "properties": {
+      "message_id": { "type": "string", "minLength": 1 },
+      "site_id": { "type": "string" },
+      "listing_id": { "type": "string" },
+      "case_type": { "enum": ["rent", "zoning", "space"] },
+      "to": { "type": "string", "format": "email" },
+      "subject": { "type": "string", "minLength": 1 },
+      "body": { "type": "string", "minLength": 1 },
+      "sent_at": { "type": "string" },
+      "template_id": { "type": "string", "minLength": 1 }
+    }
+  }
+}

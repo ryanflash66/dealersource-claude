@@ -1,0 +1,18 @@
+[
+  {
+    "listing_id": "L04",
+    "case_type": "rent",
+    "from": "owner@tenth-street-props.test",
+    "received_at": "2026-09-16T14:02:00Z",
+    "subject": "Re: Lease inquiry - 3100 E 10th St",
+    "body": "Thanks for reaching out. Base rent is $850 per month, tenant pays utilities. The office and fenced lot are included. Available now."
+  },
+  {
+    "listing_id": "L04",
+    "case_type": "zoning",
+    "from": "planning@greenvillenc.gov",
+    "received_at": "2026-09-16T15:30:00Z",
+    "subject": "Re: Permitted use inquiry - 3100 E 10th St (CH)",
+    "body": "The parcel at 3100 E 10th St is zoned CH (Heavy Commercial). Used motor vehicle sales is a permitted use in CH per Greenville Code sec. 9-4-78 Table 1. A zoning compliance letter can be issued on request."
+  }
+]

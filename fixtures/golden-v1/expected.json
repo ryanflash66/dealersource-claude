@@ -1,0 +1,24 @@
+{
+  "fixture": "golden-v1",
+  "run_date": "2026-09-16",
+  "business": { "home_base": "Greenville, NC 27858", "max_drive_minutes": 60, "rent_min": 600, "rent_max": 1000 },
+  "sites": {
+    "PITT-0001": { "listing_ids": ["L01", "L02", "L03"], "in_search_area": true, "shared_lot": false, "gates": { "zoning": "pass", "rent": "pass", "flood": "pass" }, "viable": true },
+    "PITT-0002": { "listing_ids": ["L04"], "in_search_area": true, "shared_lot": false, "gates": { "zoning": "pass", "rent": "pass", "flood": "pass" }, "viable": true },
+    "PITT-0003": { "listing_ids": ["L05"], "in_search_area": true, "shared_lot": false, "gates": { "zoning": "pass", "rent": "fail", "flood": "pass" }, "viable": false },
+    "BEAU-0004": { "listing_ids": ["L06"], "in_search_area": true, "shared_lot": false, "gates": { "zoning": "fail", "rent": "pass", "flood": "pass" }, "viable": false },
+    "PITT-0005": { "listing_ids": ["L07"], "in_search_area": true, "shared_lot": false, "gates": { "zoning": "pass", "rent": "pass", "flood": "fail" }, "viable": false },
+    "PITT-0006": { "listing_ids": ["L08"], "in_search_area": true, "shared_lot": true, "gates": { "zoning": "pass", "rent": "pass", "flood": "pass" }, "viable": true },
+    "WAYN-0007": { "listing_ids": ["L09"], "in_search_area": false, "shared_lot": false, "gates": null, "viable": false },
+    "PITT-0008": { "listing_ids": ["L10"], "in_search_area": true, "shared_lot": false, "gates": { "zoning": "pending", "rent": "pass", "flood": "pass" }, "viable": false }
+  },
+  "viable_rank_order": ["PITT-0001", "PITT-0002", "PITT-0006"],
+  "outreach_run1": [
+    { "parcel_id": "PITT-0002", "case_type": "rent", "to": "owner@tenth-street-props.test" },
+    { "parcel_id": "PITT-0002", "case_type": "zoning", "to": "planning@greenvillenc.gov" },
+    { "parcel_id": "PITT-0008", "case_type": "zoning", "to": "planning@aydennc.gov" }
+  ],
+  "no_outreach_parcels": ["PITT-0003", "BEAU-0004", "PITT-0005", "WAYN-0007"],
+  "outreach_run2_count": 0,
+  "provider_switch": { "key": "geocoder", "from": "census", "to": "nominatim" }
+}

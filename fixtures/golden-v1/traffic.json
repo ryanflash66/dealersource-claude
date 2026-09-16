@@ -1,0 +1,10 @@
+{
+  "PITT-0001": { "aadt": 32000, "road": "S Memorial Dr", "year": 2024, "source_url": "https://aadt.ncdot.test/station/1001" },
+  "PITT-0002": { "aadt": 21000, "road": "E 10th St", "year": 2024, "source_url": "https://aadt.ncdot.test/station/1002" },
+  "PITT-0003": { "aadt": 18000, "road": "N Greene St", "year": 2024, "source_url": "https://aadt.ncdot.test/station/1003" },
+  "BEAU-0004": { "aadt": 9000, "road": "W Main St", "year": 2023, "source_url": "https://aadt.ncdot.test/station/1004" },
+  "PITT-0005": { "aadt": 12000, "road": "NC-33 E", "year": 2024, "source_url": "https://aadt.ncdot.test/station/1005" },
+  "PITT-0006": { "aadt": 15000, "road": "Dickinson Ave", "year": 2024, "source_url": "https://aadt.ncdot.test/station/1006" },
+  "WAYN-0007": { "aadt": 28000, "road": "Wayne Memorial Dr", "year": 2024, "source_url": "https://aadt.ncdot.test/station/1007" },
+  "PITT-0008": { "aadt": 11000, "road": "W 5th St", "year": 2023, "source_url": "https://aadt.ncdot.test/station/1008" }
+}

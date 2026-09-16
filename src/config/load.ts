@@ -1,5 +1,5 @@
 import { readFileSync, existsSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { resolve, dirname, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import {
@@ -20,6 +20,7 @@ import {
 export interface AppConfig {
   rootDir: string;
   configDir: string;
+  providersPath: string;
   business: BusinessConfig;
   providers: ProvidersConfig;
   sources: SourceConfig[];
@@ -39,9 +40,14 @@ function readYaml(path: string): unknown {
 }
 
 export interface LoadOptions {
+  /** Path to providers.yaml (CLI --config). Default: <root>/providers.yaml. */
+  providersPath?: string;
+  /** Path to business.yaml. Default: <root>/business.yaml. */
+  businessPath?: string;
+  /** Directory holding sources.yaml, use-tables.yaml, mail-templates.yaml. */
   configDir?: string;
   env?: NodeJS.ProcessEnv;
-  /** Override individual files (used by tests to switch providers without touching disk). */
+  /** Override individual files (tests switch providers without touching disk). */
   overrides?: Partial<{
     business: unknown;
     providers: unknown;
@@ -54,18 +60,21 @@ export interface LoadOptions {
 
 export function loadConfig(opts: LoadOptions = {}): AppConfig {
   const rootDir = repoRoot();
-  const configDir = opts.configDir ?? resolve(rootDir, "config");
+  const abs = (p: string) => (isAbsolute(p) ? p : resolve(process.cwd(), p));
+  const configDir = opts.configDir ? abs(opts.configDir) : resolve(rootDir, "config");
+  const providersPath = opts.providersPath ? abs(opts.providersPath) : resolve(rootDir, "providers.yaml");
+  const businessPath = opts.businessPath ? abs(opts.businessPath) : resolve(rootDir, "business.yaml");
   const env = opts.env ?? process.env;
   const o = opts.overrides ?? {};
 
-  const businessRaw = (o.business ?? readYaml(resolve(configDir, "business.yaml"))) as Record<string, any>;
+  const businessRaw = (o.business ?? readYaml(businessPath)) as Record<string, any>;
   // Deploy-time override for the real dealership address; never committed.
   if (env.DEALERSOURCE_HOME_BASE?.trim()) {
     businessRaw.search = { ...businessRaw.search, home_base: env.DEALERSOURCE_HOME_BASE.trim() };
   }
 
   const business = businessSchema.parse(businessRaw);
-  const providers = providersSchema.parse(o.providers ?? readYaml(resolve(configDir, "providers.yaml")));
+  const providers = providersSchema.parse(o.providers ?? readYaml(providersPath));
   const sources = sourcesSchema.parse(o.sources ?? readYaml(resolve(configDir, "sources.yaml"))).sources;
   const useTables = useTablesSchema.parse(o.useTables ?? readYaml(resolve(configDir, "use-tables.yaml")));
   const mailTemplates = mailTemplatesSchema.parse(
@@ -82,7 +91,7 @@ export function loadConfig(opts: LoadOptions = {}): AppConfig {
     ids.add(s.id);
   }
 
-  return { rootDir, configDir, business, providers, sources, useTables, mailTemplates, manualLeads };
+  return { rootDir, configDir, providersPath, business, providers, sources, useTables, mailTemplates, manualLeads };
 }
 
 /** Deep-clone helper so tests can mutate a copy of the loaded config. */
