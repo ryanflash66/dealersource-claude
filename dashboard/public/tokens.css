@@ -1,52 +1,164 @@
-/* tokens.css — generated from the Claude Design canvas "dealersource dashboard" (version 1789594870-84ef).
-   Implementers change exactly one line: --accent. See README.md. */
+/* tokens.css — generated from the Claude Design export "Dealersource Operations Dashboard" (2026-09-16).
+   Lumigrid "Calm Confidence" design system plus the dealersource status tokens. Light on :root, dark under .dark. */
 
-/* dealersource dashboard tokens
-   ---------------------------------------------------------------
-   Every CSS custom property the dashboard uses lives here.
-   Implementers change ONE token: --accent (see README.md).
-   Everything else, including all semantic status colours, is fixed.
-   Neutral ramp and type come from the Lumigrid "Calm Confidence"
-   design system (Hanken Grotesk / IBM Plex Mono, cool ink-on-ice
-   neutrals, hairline borders, 0.625rem base radius).
-   --------------------------------------------------------------- */
+/* ---- fonts.css ---- */
+/* Lumigrid Calm Confidence — webfonts.
+   Hanken Grotesk (sans) + IBM Plex Mono (mono), loaded from Google Fonts.
+   NOTE: font binaries are not vendored in this system; if self-hosted
+   woff2 files become available, add @font-face rules here instead. */
+@import url("fonts.css");
 
-:root, .ds-root {
-  color-scheme: light dark;
-
-  /* ---- The one implementer token ------------------------------ */
-  --accent: #D97757;                 /* claude-solution accent (terracotta), the only line changed. */
-
-  /* ---- Derived from --accent (do not set by hand) -------------- */
-  /* accent-fg: the accent as TEXT and icon colour. Mixed toward the
-     page foreground so it clears 4.5:1 on --surface for any hue with
-     L between ~35% and ~80%. Use it for links, rank numbers, "view
-     evidence", active nav labels. Never put text on a raw --accent fill. */
-  --accent-fg: color-mix(in oklab, var(--accent) 60%, var(--fg));
-  /* accent-soft: wash for selected rows, selected marker, popup header. */
-  --accent-soft: color-mix(in oklab, var(--accent) 12%, var(--surface));
-  /* accent as a 2px ring/rail (focus, selected card, rank marker).
-     Graphical UI element: needs 3:1 against --surface, which any hue
-     with L below ~75% gives in light theme. */
-  --accent-ring: var(--accent);
-
-  /* ---- Type ---------------------------------------------------- */
+:root {
   --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  --text-xs: 0.75rem;     /* 12px  captions, table meta */
-  --text-sm: 0.8125rem;   /* 13px  table body, chips, evidence rows */
-  --text-md: 0.9375rem;   /* 15px  body, card body */
-  --text-lg: 1.125rem;    /* 18px  card titles, section titles */
-  --text-xl: 1.375rem;    /* 22px  page title */
-  --text-num: 1.625rem;   /* 26px  stage counts, big numbers (mono) */
-  --leading-tight: 1.2;
-  --leading-body: 1.5;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+
+/* ---- colors.css ---- */
+/* Lumigrid Calm Confidence — color tokens.
+   Light theme is the default. Dark is a secondary theme scoped to `.dark`.
+   Primary blue is the codebase's original electric blue oklch(0.55 0.25 250),
+   used flat (no glows, no gradients). Teal accent is for links and small highlights
+   ONLY — never large surfaces. Background washes never exceed 8% opacity.
+   All text pairings meet WCAG AA. */
+
+:root {
+  /* ---- Base palette ---- */
+  --blue-700: oklch(0.47 0.24 250);
+  --blue-600: oklch(0.55 0.25 250);  /* primary — original codebase blue */
+  --blue-500: oklch(0.62 0.22 250);
+  --blue-400: oklch(0.70 0.17 250);
+  --blue-100: oklch(0.93 0.05 250);
+  --teal-600: oklch(0.50 0.11 215);  /* accent / links (AA on light bg) */
+  --teal-400: oklch(0.72 0.10 210);  /* accent on dark bg */
+  --ink-900: oklch(0.22 0.03 255);
+  --ink-600: oklch(0.45 0.02 255);
+  --ink-300: oklch(0.80 0.01 252);
+  --ice-50: oklch(0.99 0.002 250);
+  --ice-100: oklch(0.965 0.005 250);
+  --ice-200: oklch(0.94 0.008 250);
+
+  /* ---- Semantic: surfaces & text ---- */
+  --background: var(--ice-50);
+  --foreground: var(--ink-900);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--ink-900);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--ink-900);
+  --muted: var(--ice-100);
+  --muted-foreground: var(--ink-600);
+
+  /* ---- Semantic: brand ---- */
+  --primary: oklch(0.672 0.131 38.8);              /* claude-solution: #D97757 terracotta */
+  --primary-hover: oklch(0.592 0.131 38.8);        /* darker step of the same hue */
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.955 0.01 250);
+  --secondary-foreground: oklch(0.27 0.03 255);
+  --accent: var(--teal-600);
+  --accent-foreground: oklch(0.99 0 0);
+  --link: var(--teal-600);
+
+  /* ---- Semantic: feedback ---- */
+  --destructive: oklch(0.50 0.16 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --success: oklch(0.50 0.12 155);
+
+  /* ---- Lines & focus ---- */
+  --border: oklch(0.91 0.01 250);
+  --input: oklch(0.88 0.012 250);
+  --ring: var(--blue-600);
+
+  /* ---- Washes (background tints, hard cap 8% opacity) ---- */
+  --wash-primary: oklch(0.672 0.131 38.8 / 0.06);   /* primary at 6% */
+  --wash-accent: oklch(0.55 0.11 215 / 0.05);
+  --wash-muted: oklch(0.45 0.02 255 / 0.04);
+
+  /* ---- Brand dot grid (low-contrast layer, never competes with copy) ---- */
+  --dot-grid-color: oklch(0.55 0.20 250 / 0.14);
+  --dot-grid-size: 24px;
+}
+
+.dark {
+  --background: oklch(0.16 0.02 255);
+  --foreground: oklch(0.95 0.005 250);
+  --card: oklch(0.20 0.02 255);
+  --card-foreground: oklch(0.95 0.005 250);
+  --popover: oklch(0.20 0.02 255);
+  --popover-foreground: oklch(0.95 0.005 250);
+  --muted: oklch(0.23 0.02 255);
+  --muted-foreground: oklch(0.74 0.012 252);
+
+  --primary: oklch(0.732 0.124 38.8);       /* claude-solution: lighter step for dark */
+  --primary-hover: oklch(0.782 0.118 38.8);
+  --primary-foreground: oklch(0.14 0.02 255);
+  --secondary: oklch(0.24 0.02 255);
+  --secondary-foreground: oklch(0.92 0.008 250);
+  --accent: var(--teal-400);
+  --accent-foreground: oklch(0.13 0.02 255);
+  --link: var(--teal-400);
+
+  --destructive: oklch(0.64 0.15 25);
+  --destructive-foreground: oklch(0.13 0.02 255);
+  --success: oklch(0.68 0.11 155);
+
+  --border: oklch(0.29 0.02 255);
+  --input: oklch(0.32 0.02 255);
+  --ring: oklch(0.68 0.22 250);
+
+  --wash-primary: oklch(0.732 0.124 38.8 / 0.07);
+  --wash-accent: oklch(0.72 0.10 210 / 0.05);
+  --wash-muted: oklch(0.90 0.01 250 / 0.04);
+
+  --dot-grid-color: oklch(0.70 0.18 250 / 0.12);
+}
+
+
+/* ---- typography.css ---- */
+/* Lumigrid Calm Confidence — type tokens.
+   Hanken Grotesk everywhere; IBM Plex Mono for small technical labels only.
+   Responsive clamp() scale carried over from the codebase.
+   Body copy is always set at a 65–75ch measure. */
+
+:root {
+  /* Scale */
+  --text-display: clamp(3rem, 6vw, 4.75rem); /* tighter ceiling: the hero line lands harder */
+  --text-heading: clamp(1.875rem, 4.5vw, 3rem);
+  --text-subheading: clamp(1.25rem, 3vw, 1.75rem);
+  --text-body: clamp(1rem, 1.5vw, 1.125rem);
+  --text-small: clamp(0.8125rem, 1vw, 0.875rem);
+  --text-eyebrow: 0.75rem;
+  --text-stat: clamp(2.5rem, 5vw, 4rem); /* Stat component numbers */
+
+  /* Weights — display headings use 700 (Hanken Grotesk reads lighter than the
+     previous face); everything else tops out at semibold */
   --weight-regular: 400;
   --weight-medium: 500;
   --weight-semibold: 600;
-  --tracking-caps: 0.08em;
+  --weight-display: 700;
 
-  /* ---- Spacing (4px base) -------------------------------------- */
+  /* Leading */
+  --leading-display: 1.05;
+  --leading-heading: 1.15;
+  --leading-body: 1.65;
+
+  /* Tracking */
+  --tracking-tight: -0.02em;
+  --tracking-eyebrow: 0.18em;
+  --tracking-wordmark: 0.2em;
+
+  /* Measure */
+  --measure-body: 70ch;   /* keep between 65ch and 75ch */
+  --measure-lede: 56ch;
+}
+
+
+/* ---- spacing.css ---- */
+/* Lumigrid Calm Confidence — spacing, radius, borders, shadows.
+   Sections are separated by space, not dividers. Shadows are quiet
+   neutral ambient shadows — never colored, never glowing. */
+
+:root {
+  /* Spacing scale (4px base) */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -54,141 +166,137 @@
   --space-5: 1.5rem;
   --space-6: 2rem;
   --space-7: 3rem;
-  --gutter: 16px;              /* phone side gutter, fixed */
-  --gutter-desktop: 24px;
-  --container-max: 1440px;
-  --sidebar-map-w: 400px;      /* shortlist map column on desktop */
-  --topbar-h: 52px;
+  --space-8: 4rem;
+  --space-9: 6rem;
 
-  /* ---- Radius / border / shadow -------------------------------- */
-  --radius-sm: 4px;
-  --radius: 0.625rem;          /* 10px base, from the design system */
-  --radius-pill: 9999px;
+  /* Layout rhythm */
+  --section-y: clamp(5rem, 10vw, 8rem); /* @kind spacing */ /* vertical gap between sections */
+  --container-max: 72rem;                  /* 1152px */
+  --container-pad: 1.5rem;
+  --grid-gap: 1.5rem;
+
+  /* Radius (0.625rem base from the codebase) */
+  --radius: 0.625rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: 1.25rem;
+  --radius-full: 9999px;
+
+  /* Borders */
   --border-w: 1px;
-  --shadow-sm: 0 1px 2px rgba(17, 27, 40, 0.05);
-  --shadow-md: 0 2px 8px rgba(17, 27, 40, 0.06), 0 1px 2px rgba(17, 27, 40, 0.04);
-  --shadow-popup: 0 12px 32px rgba(17, 27, 40, 0.14), 0 2px 6px rgba(17, 27, 40, 0.08);
 
-  /* ---- Motion -------------------------------------------------- */
-  --duration-fast: 150ms;
-  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-
-  /* ---- Neutral surfaces, light --------------------------------- */
-  --bg: #F6F8FA;               /* page background (body has this explicitly) */
-  --surface: #FFFFFF;          /* cards, tables, popups */
-  --surface-2: #F1F4F7;        /* table header, quiet sections, thumbnails */
-  --surface-3: #E7ECF0;        /* hover rows, stage strip */
-  --border: #DCE2E8;
-  --border-strong: #C4CCD5;
-  --fg: #111B28;               /* primary text  16.3:1 on --bg */
-  --fg-muted: #4E5661;         /* secondary text  7.0:1 */
-  --fg-faint: #6B7480;         /* captions, timestamps  4.7:1 on --surface */
-  --map-bg: #E9EDF1;           /* map container before tiles load */
-
-  /* ---- Semantic status (FIXED, never change) ------------------- */
-  /* Each status has: -fg (text/icon), -bg (chip fill), -line (border/marker). */
-  --pass-fg: #146C3A;   --pass-bg: #DDF3E4;   --pass-line: #2E9C5B;
-  --fail-fg: #A32222;   --fail-bg: #FBE3E3;   --fail-line: #D63B3B;
-  --pending-fg: #7A4A00; --pending-bg: #FCEBC5; --pending-line: #C27F05;
-  --stale-fg: #5B6470;  --stale-bg: #EBEEF2;  --stale-line: #9AA3AE;
-  /* stale hatch: 45deg lines drawn over stale chips and evidence rows */
-  --stale-hatch: repeating-linear-gradient(135deg, transparent 0 4px, rgba(91, 100, 112, 0.18) 4px 5px);
-  --paused-bg: #B42323;  --paused-fg: #FFFFFF;   /* full-width banner, both themes */
-  --failed-bg: #B42323;  --failed-fg: #FFFFFF;   /* "last run failed" banner shares the red */
-  --warn-bg: #FCEBC5;    --warn-fg: #7A4A00;  --warn-line: #C27F05;  /* provider errors, expiring soon */
-  --info-bg: #E8EEF6;    --info-fg: #2B3A4E;  --info-line: #9AA9BC;  /* neutral notice */
-
-  /* ---- Score bar factor shades (accent at five opacities) ------ */
-  --factor-1: color-mix(in oklab, var(--accent) 100%, transparent);
-  --factor-2: color-mix(in oklab, var(--accent) 78%, var(--surface));
-  --factor-3: color-mix(in oklab, var(--accent) 58%, var(--surface));
-  --factor-4: color-mix(in oklab, var(--accent) 40%, var(--surface));
-  --factor-5: color-mix(in oklab, var(--accent) 24%, var(--surface));
-  --score-track: var(--surface-3);
-
-  /* ---- Focus ---------------------------------------------------- */
-  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent-ring);
-
-  /* ---- Z-index ---------------------------------------------------- */
-  --z-topbar: 20;
-  --z-popup: 30;
+  /* Shadows — neutral, low-spread, no color */
+  --shadow-sm: 0 1px 2px oklch(0.22 0.02 255 / 0.05);
+  --shadow-md: 0 2px 8px oklch(0.22 0.02 255 / 0.06), 0 1px 2px oklch(0.22 0.02 255 / 0.04);
+  --shadow-lg: 0 12px 32px oklch(0.22 0.02 255 / 0.08), 0 2px 6px oklch(0.22 0.02 255 / 0.05);
 }
 
-/* ---- Dark theme: follows the OS unless data-theme="light" ------ */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]), .ds-root:not([data-theme="light"]) {
-    --accent-fg: color-mix(in oklab, var(--accent) 70%, var(--fg));
-    --accent-soft: color-mix(in oklab, var(--accent) 18%, var(--surface));
 
-    --bg: #0C121A;
-    --surface: #131A23;
-    --surface-2: #1A212B;
-    --surface-3: #222A34;
-    --border: #28303A;
-    --border-strong: #3A434E;
-    --fg: #ECEFF2;
-    --fg-muted: #A5ABB2;
-    --fg-faint: #8A929C;
-    --map-bg: #161D26;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-popup: 0 12px 32px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+/* ---- motion.css ---- */
+/* Lumigrid Calm Confidence — motion.
+   Subtle fade/slide reveals only: max 12px travel, max 450ms, once per
+   element. No parallax. Nothing follows the pointer. No infinite loops
+   on content (the brand dot grid may drift very slowly as a background
+   layer only). */
 
-    --pass-fg: #7FDBA3;   --pass-bg: #0F2E1D;   --pass-line: #3FA86A;
-    --fail-fg: #F49A9A;   --fail-bg: #3C1515;   --fail-line: #D85151;
-    --pending-fg: #F2C266; --pending-bg: #382A0A; --pending-line: #D5A02C;
-    --stale-fg: #A2A9B3;  --stale-bg: #222932;  --stale-line: #5A6470;
-    --stale-hatch: repeating-linear-gradient(135deg, transparent 0 4px, rgba(162, 169, 179, 0.22) 4px 5px);
-    --warn-bg: #382A0A;   --warn-fg: #F2C266;  --warn-line: #D5A02C;
-    --info-bg: #1B2430;   --info-fg: #C9D3E0;  --info-line: #3E4C5C;
+:root {
+  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* @kind other */
+  --duration-fast: 150ms; /* @kind other */    /* hovers, presses */
+  --duration-base: 250ms; /* @kind other */    /* accordions, toggles */
+  --duration-reveal: 450ms; /* @kind other */  /* entrance reveals — never exceed 500ms */
+  --reveal-distance: 12px;    /* never exceed 16px */
+}
 
-    --factor-2: color-mix(in oklab, var(--accent) 72%, var(--surface));
-    --factor-3: color-mix(in oklab, var(--accent) 52%, var(--surface));
-    --factor-4: color-mix(in oklab, var(--accent) 36%, var(--surface));
-    --factor-5: color-mix(in oklab, var(--accent) 22%, var(--surface));
+/* Entrance reveal utility. The visible state must be the BASE state:
+   either apply .lg-reveal via JS once the element is on screen (preferred;
+   see HomeScreen), or accept that hidden/static contexts freeze the
+   animation at frame 0. Never bake .lg-reveal into static markup. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes lg-reveal {
+    from { opacity: 0; transform: translateY(var(--reveal-distance)); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .lg-reveal {
+    animation: lg-reveal var(--duration-reveal) var(--ease-out) both;
+  }
+  .lg-reveal-delay-1 { animation-delay: 80ms; }
+  .lg-reveal-delay-2 { animation-delay: 160ms; }
+  .lg-reveal-delay-3 { animation-delay: 240ms; }
+
+  /* Brand dot-grid drift — background layer only */
+  @keyframes lg-dot-drift {
+    from { background-position: 0 0; }
+    to   { background-position: var(--dot-grid-size) var(--dot-grid-size); }
   }
 }
 
-/* ---- Dark theme: explicit toggle ------------------------------- */
-:root[data-theme="dark"], .ds-root[data-theme="dark"] {
-  --accent-fg: color-mix(in oklab, var(--accent) 70%, var(--fg));
-  --accent-soft: color-mix(in oklab, var(--accent) 18%, var(--surface));
 
-  --bg: #0C121A;
-  --surface: #131A23;
-  --surface-2: #1A212B;
-  --surface-3: #222A34;
-  --border: #28303A;
-  --border-strong: #3A434E;
-  --fg: #ECEFF2;
-  --fg-muted: #A5ABB2;
-  --fg-faint: #8A929C;
-  --map-bg: #161D26;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-popup: 0 12px 32px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.4);
+/* ---- base.css ---- */
+/* Lumigrid Calm Confidence — base element styles. */
 
-  --pass-fg: #7FDBA3;   --pass-bg: #0F2E1D;   --pass-line: #3FA86A;
-  --fail-fg: #F49A9A;   --fail-bg: #3C1515;   --fail-line: #D85151;
-  --pending-fg: #F2C266; --pending-bg: #382A0A; --pending-line: #D5A02C;
-  --stale-fg: #A2A9B3;  --stale-bg: #222932;  --stale-line: #5A6470;
-  --stale-hatch: repeating-linear-gradient(135deg, transparent 0 4px, rgba(162, 169, 179, 0.22) 4px 5px);
-  --warn-bg: #382A0A;   --warn-fg: #F2C266;  --warn-line: #D5A02C;
-  --info-bg: #1B2430;   --info-fg: #C9D3E0;  --info-line: #3E4C5C;
-
-  --factor-2: color-mix(in oklab, var(--accent) 72%, var(--surface));
-  --factor-3: color-mix(in oklab, var(--accent) 52%, var(--surface));
-  --factor-4: color-mix(in oklab, var(--accent) 36%, var(--surface));
-  --factor-5: color-mix(in oklab, var(--accent) 22%, var(--surface));
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* dealersource dashboard: reference component stylesheet
-   ---------------------------------------------------------------
-   Consumes tokens.css. Nothing in here hard-codes a colour; every
-   colour is a var(). Teams may port these rules into their own
-   stack, but class names and states are the contract components.html
-   documents. Layout breakpoints: 720px (phone/tablet), 1080px (desktop). */
+a {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklch, var(--link) 35%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color var(--duration-fast) var(--ease-out);
+}
+a:hover { text-decoration-color: var(--link); }
 
-/* ---- Base ------------------------------------------------------- */
-*, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+::selection { background: var(--blue-100); }
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+
+/* ---- dealersource status tokens (added to the Lumigrid set) ----
+   Status is never color alone: pair with the glyph (check, x, clock, alert) and the word. */
+:root {
+  --nav-active: var(--primary-hover);
+  --ok: oklch(0.42 0.12 155);            /* gate pass, running, answered, free */
+  --ok-bg: oklch(0.50 0.12 155 / 0.08);
+  --ok-border: oklch(0.50 0.12 155 / 0.35);
+  --wait: oklch(0.50 0.13 70);           /* pending, awaiting reply, expiring, fell back */
+  --wait-bg: oklch(0.60 0.13 75 / 0.10);
+  --wait-border: oklch(0.55 0.13 70 / 0.5);
+  --stale-hatch: repeating-linear-gradient(135deg, transparent 0 6px, oklch(0.45 0.02 255 / 0.06) 6px 8px);
+  /* fail, paused, failed run, held: use --destructive / --destructive-foreground */
+  /* score factor shades, importance order: traffic, visibility, drive, rent, competitors */
+  --factor-1: oklch(0.582 0.131 38.8);
+  --factor-2: oklch(0.672 0.131 38.8);
+  --factor-3: oklch(0.742 0.118 38.8);
+  --factor-4: oklch(0.822 0.092 38.8);
+  --factor-5: oklch(0.912 0.059 38.8);
+  /* pipeline stages: discovered, resolved, enriched, verifying, scored, excluded */
+  --stage-1: oklch(0.80 0.01 252);
+  --stage-2: oklch(0.70 0.17 250);
+  --stage-3: oklch(0.62 0.22 250);
+  --stage-4: oklch(0.60 0.13 75);
+  --stage-5: oklch(0.50 0.12 155);
+  --stage-6: oklch(0.50 0.16 25);
+}
+.dark {
+  --nav-active: var(--primary);
+  --ok: oklch(0.74 0.12 155);
+  --ok-bg: oklch(0.68 0.12 155 / 0.14);
+  --ok-border: oklch(0.68 0.12 155 / 0.45);
+  --wait: oklch(0.80 0.13 80);
+  --wait-bg: oklch(0.75 0.13 80 / 0.14);
+  --wait-border: oklch(0.75 0.13 80 / 0.5);
+}
+/* Dashboard density: the marketing clamp() body scale is too large for a tool. */
+.app { font-size: 14px; line-height: 1.45; }
