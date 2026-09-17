@@ -96,24 +96,42 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
     report payload and `sites` include leasing/planning emails so the owner can act; protect
     the Vercel deployment (password or Supabase auth) if that matters.
 
-20. **Dashboard template.** The shared design template (`prompts/dashboard-design`, published
-    2026-09-16) is implemented: `dashboard/public/tokens.css` is the template file with only
-    `--accent: #D97757` changed (verified by `diff`), `dashboard.css` is byte-identical, and
-    the shell plus the four views reproduce `components.html` and `pages/*.html` markup and
-    class names, driven by `report.json` / `messages.json` / `run.json`. Small additions live
-    in `dashboard/public/styles.css` (footer clearance, marker button reset, plain-text source
-    cell). Deviations, all because the report holds a single run:
-    - Exceptions "Sites dropped since last run" renders the empty state: there is no previous
-      report to diff against. Two extra sections ("Cases needing a human", "Other run notes")
-      surface escalated cases and run errors/warnings that section 9 requires on this view.
-    - Config "Search area" is expressed as drive-time from home base (no county list exists).
-    - The map has no home-base marker offline: the report carries the address only; MapLibre +
-      PMTiles mounts when `PMTILES_URL` is set, otherwise the static preview stays.
-    - `report.json` gained extra keys the template needs (`open_cases[].opened_at`,
-      `followups_sent`, `next_action`; `business.flood_high_risk_zones`, etc.); the contract
-      schema allows additional properties and the golden test still validates.
-    - Non-http evidence sources (stored email replies, fixture files) render as plain mono text
-      instead of an external link, since there is nothing to open.
+20. **Dashboard template v2** (`prompts/dashboard-design`, published 2026-09-16, replaces v1
+    entirely; everything built on v1 was discarded). `dashboard/public/tokens.css` is the
+    template file with only the brand lines changed: `--primary: oklch(0.672 0.131 38.8)`
+    (= `#D97757`), `--primary-hover: oklch(0.592 0.131 38.8)` (= `#BE5E3F`, a darker step of
+    the same hue), the `.dark` primary/hover as lighter steps of the hue, `--wash-primary` as
+    the primary at 6%/7% (the template defines it as exactly that of the blue), and the five
+    `--factor-*` shades as the hue at five lightness steps (`0.582`, `0.672`, `0.742`, `0.822`,
+    `0.912`, chroma tapering toward the light end as in the original). `fonts.css`, `fonts/`
+    and `dashboard.css` are byte-identical copies; fonts are vendored, so no network is needed.
+    The design is inline-styled; its styles were moved into classes in
+    `dashboard/public/styles.css` and the four views plus the shell are rendered from
+    `report.json` / `messages.json` / `run.json` (`dashboard/src/app.ts`). Deviations:
+    - **Map basemap.** The sample pages load Esri raster tiles; the spec forbids public tile
+      servers for scheduled use, so offline the map pane is the template's muted canvas with
+      the rank/pending/excluded markers placed by relative projection and the legend, and
+      MapLibre GL with a self-hosted Protomaps archive mounts when `PMTILES_URL` is set
+      (globe projection past zoom 4). No home-base marker: the report carries the address only.
+    - **Drawer on phone.** The 375px page has no drawer, so it is hidden below 720px; the cards
+      carry the same gate, score and case facts.
+    - **Exceptions "Failed runs, last 7 days"** shows only the current run: the report holds one
+      run. "Provider errors" lists run warnings and the fixture-served layers.
+    - **Sources card** lists excluded and failed sources first, then healthy ones with an OK
+      pill, as in the sample. Evidence list shows expired and expiring facts first, padded with
+      the soonest-expiring fresh facts so the card is never empty.
+    - **Run-health banner** turns red when sending is paused or the run reported errors and
+      amber when the report is older than 26 hours (measured against the viewer's clock, as in
+      the components sheet); the phone strip shows the compact "Report DATE · N emails sent"
+      line from the phone page.
+    - `report.json` carries extra keys the views need (`open_cases[].opened_at`,
+      `followups_sent`, `next_action`, `sites[].listings`, `business.flood_high_risk_zones`,
+      `followup_days`, `max_followups`); the contract schema permits additional properties and
+      the golden schema test still passes.
+    - Non-http evidence sources (stored email replies, fixture files) show "Stored" instead of
+      an Open link, since there is nothing to open.
+    - Dark theme follows `prefers-color-scheme` (or `?theme=dark|light`); the template has no
+      toggle control and none was added.
 
 21. **Manual pause switch.** Section 6 defines automatic pauses only; `mail.paused` /
     `DEALERSOURCE_PAUSE_SENDING=1` adds the operator kill switch the README's
