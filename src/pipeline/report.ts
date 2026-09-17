@@ -67,6 +67,7 @@ export interface ContractSite {
   lat: number;
   lon: number;
   images: Array<{ url: string; kind: string }>;
+  listings: Array<{ listing_id: string; source_id: string; url: string; rent_monthly: number | null; fetched_at: string }>;
 }
 
 export interface ContractEvidence {
@@ -168,6 +169,10 @@ export async function report(ctx: RunContext): Promise<{ counter: StageCounter; 
       lat: site.lat,
       lon: site.lon,
       images,
+      listings: site.listing_ids
+        .map((id) => listings.find((l) => l.id === id))
+        .filter((l): l is NonNullable<typeof l> => !!l)
+        .map((l) => ({ listing_id: l.id, source_id: l.source_id, url: l.url, rent_monthly: l.extraction.rent_monthly, fetched_at: l.fetched_at })),
     });
   }
   contractSites.sort((a, b) => (a.rank ?? 1e9) - (b.rank ?? 1e9) || (b.score ?? -1) - (a.score ?? -1) || a.site_id.localeCompare(b.site_id));
