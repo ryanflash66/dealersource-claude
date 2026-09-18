@@ -1,0 +1,1244 @@
+{
+  "_note": "Recorded 2026-09-18 from Pitt County's PittOpenData/CadastralPitt MapServer layer 0 (Pitt Parcels, polygon). Point query at the parcel centroid of 2100 Dickinson Ave with outSR=4326 returns the parcel; NCPIN equals NC OneMap's parno.",
+  "fixtures": [
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "gis\\.pittcountync\\.gov/gis/rest/services/PittOpenData/CadastralPitt/MapServer/0\\?f=json$"
+      },
+      "response": {
+        "json": {
+          "currentVersion": 10.91,
+          "id": 0,
+          "name": "Pitt Parcels",
+          "type": "Feature Layer",
+          "geometryType": "esriGeometryPolygon",
+          "description": "",
+          "extent": {
+            "xmin": 2387688.833632469,
+            "ymin": 577178.208368972,
+            "xmax": 2568921.1250385493,
+            "ymax": 762009.5414614826,
+            "spatialReference": {
+              "wkid": 102719,
+              "latestWkid": 2264,
+              "xyTolerance": 0.003280833333333333,
+              "zTolerance": 0.001,
+              "mTolerance": 0.001,
+              "falseX": -121841900,
+              "falseY": -93659000,
+              "xyUnits": 3048.0060960121928,
+              "falseZ": -100000,
+              "zUnits": 10000,
+              "falseM": -100000,
+              "mUnits": 10000
+            }
+          },
+          "fields": [
+            {
+              "name": "OBJECTID",
+              "type": "esriFieldTypeOID",
+              "alias": "OBJECTID"
+            },
+            {
+              "name": "PARCELNUMBER",
+              "type": "esriFieldTypeString",
+              "alias": "PARCELNUMBER"
+            },
+            {
+              "name": "NCPIN",
+              "type": "esriFieldTypeString",
+              "alias": "NCPIN"
+            },
+            {
+              "name": "REID",
+              "type": "esriFieldTypeString",
+              "alias": "REID"
+            },
+            {
+              "name": "LocationNumber",
+              "type": "esriFieldTypeDouble",
+              "alias": "LocationNumber"
+            },
+            {
+              "name": "LocationDirection",
+              "type": "esriFieldTypeString",
+              "alias": "LocationDirection"
+            },
+            {
+              "name": "LocationStreet",
+              "type": "esriFieldTypeString",
+              "alias": "LocationStreet"
+            },
+            {
+              "name": "LocationType",
+              "type": "esriFieldTypeString",
+              "alias": "LocationType"
+            },
+            {
+              "name": "Municipality",
+              "type": "esriFieldTypeString",
+              "alias": "Municipality"
+            },
+            {
+              "name": "OwnerName",
+              "type": "esriFieldTypeString",
+              "alias": "OwnerName"
+            },
+            {
+              "name": "Zoning",
+              "type": "esriFieldTypeString",
+              "alias": "Zoning"
+            },
+            {
+              "name": "Acres",
+              "type": "esriFieldTypeDouble",
+              "alias": "Acres"
+            },
+            {
+              "name": "PhysicalAddress",
+              "type": "esriFieldTypeString",
+              "alias": "PhysicalAddress"
+            },
+            {
+              "name": "CalculatedAcres",
+              "type": "esriFieldTypeDouble",
+              "alias": "CalculatedAcres"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "gis\\.pittcountync\\.gov/gis/rest/services/PittOpenData/CadastralPitt/MapServer/0/query\\?.*geometry=-77\\.39281(0)?(%2C|,)35\\.600786"
+      },
+      "response": {
+        "json": {
+          "displayFieldName": "PARCELNUMBER",
+          "fieldAliases": {
+            "OBJECTID": "OBJECTID",
+            "PARCELNUMBER": "PARCELNUMBER",
+            "NCPIN": "NCPIN",
+            "REID": "REID",
+            "LocationNumber": "LocationNumber",
+            "LocationDirection": "LocationDirection",
+            "LocationStreet": "LocationStreet",
+            "LocationType": "LocationType",
+            "Municipality": "Municipality",
+            "OwnerName": "OwnerName",
+            "OwnerAddress1": "OwnerAddress1",
+            "OwnerAddress2": "OwnerAddress2",
+            "OwnerAddress3": "OwnerAddress3",
+            "CityStateZip": "CityStateZip",
+            "LegalDescription": "LegalDescription",
+            "DeedBook": "DeedBook",
+            "DeedPage": "DeedPage",
+            "MapBlockLot": "MapBlockLot",
+            "Township": "Township",
+            "CensusTract": "CensusTract",
+            "FireTaxDistrict": "FireTaxDistrict",
+            "RescueTaxDistrict": "RescueTaxDistrict",
+            "Zoning": "Zoning",
+            "UseCode": "UseCode",
+            "YearBuilt": "YearBuilt",
+            "HeatedSqFt": "HeatedSqFt",
+            "TotalSqFt": "TotalSqFt",
+            "SalesMonthYear": "SalesMonthYear",
+            "SalesPrice": "SalesPrice",
+            "Acres": "Acres",
+            "CurTaxValue": "CurTaxValue",
+            "CurBuildValue": "CurBuildValue",
+            "CurLandValue": "CurLandValue",
+            "CurXFeatValue": "CurXFeatValue",
+            "PriorTaxValue": "PriorTaxValue",
+            "PriorBuildValue": "PriorBuildValue",
+            "PriorLandValue": "PriorLandValue",
+            "PriorXFeatValue": "PriorXFeatValue",
+            "ElementarySchool": "ElementarySchool",
+            "MiddleSchool": "MiddleSchool",
+            "HighSchool": "HighSchool",
+            "DefFlag": "DefFlag",
+            "VacOrImp": "VacOrImp",
+            "NumBldgs": "NumBldgs",
+            "MapBook": "MapBook",
+            "Neighborhood": "Neighborhood",
+            "PinNum": "PinNum",
+            "LotNum": "LotNum",
+            "BlockNum": "BlockNum",
+            "BldgNum": "BldgNum",
+            "UnitNum": "UnitNum",
+            "SectNum": "SectNum",
+            "TractNum": "TractNum",
+            "PhaseNum": "PhaseNum",
+            "SubdLookup": "SubdLookup",
+            "LandlineCount": "LandlineCount",
+            "EffYR": "EffYR",
+            "PhysicalAddress": "PhysicalAddress",
+            "SubSecPhase": "SubSecPhase",
+            "BlockLot": "BlockLot",
+            "BldgUnit": "BldgUnit",
+            "DeedBkPg": "DeedBkPg",
+            "TypeUse": "TypeUse",
+            "LocationMisc": "LocationMisc",
+            "OwnerDocument": "OwnerDocument",
+            "DocumentDate": "DocumentDate",
+            "StampSalePrice": "StampSalePrice",
+            "LocationSuffix": "LocationSuffix",
+            "DeededAcres": "DeededAcres",
+            "CalculatedAcres": "CalculatedAcres",
+            "Shape.STArea()": "Shape.STArea()",
+            "Shape.STLength()": "Shape.STLength()"
+          },
+          "geometryType": "esriGeometryPolygon",
+          "spatialReference": {
+            "wkid": 4326,
+            "latestWkid": 4326
+          },
+          "fields": [
+            {
+              "name": "OBJECTID",
+              "type": "esriFieldTypeOID",
+              "alias": "OBJECTID"
+            },
+            {
+              "name": "PARCELNUMBER",
+              "type": "esriFieldTypeString",
+              "alias": "PARCELNUMBER",
+              "length": 16
+            },
+            {
+              "name": "NCPIN",
+              "type": "esriFieldTypeString",
+              "alias": "NCPIN",
+              "length": 16
+            },
+            {
+              "name": "REID",
+              "type": "esriFieldTypeString",
+              "alias": "REID",
+              "length": 6
+            },
+            {
+              "name": "LocationNumber",
+              "type": "esriFieldTypeDouble",
+              "alias": "LocationNumber"
+            },
+            {
+              "name": "LocationDirection",
+              "type": "esriFieldTypeString",
+              "alias": "LocationDirection",
+              "length": 2
+            },
+            {
+              "name": "LocationStreet",
+              "type": "esriFieldTypeString",
+              "alias": "LocationStreet",
+              "length": 50
+            },
+            {
+              "name": "LocationType",
+              "type": "esriFieldTypeString",
+              "alias": "LocationType",
+              "length": 2
+            },
+            {
+              "name": "Municipality",
+              "type": "esriFieldTypeString",
+              "alias": "Municipality",
+              "length": 13
+            },
+            {
+              "name": "OwnerName",
+              "type": "esriFieldTypeString",
+              "alias": "OwnerName",
+              "length": 65
+            },
+            {
+              "name": "OwnerAddress1",
+              "type": "esriFieldTypeString",
+              "alias": "OwnerAddress1",
+              "length": 65
+            },
+            {
+              "name": "OwnerAddress2",
+              "type": "esriFieldTypeString",
+              "alias": "OwnerAddress2",
+              "length": 65
+            },
+            {
+              "name": "OwnerAddress3",
+              "type": "esriFieldTypeString",
+              "alias": "OwnerAddress3",
+              "length": 65
+            },
+            {
+              "name": "CityStateZip",
+              "type": "esriFieldTypeString",
+              "alias": "CityStateZip",
+              "length": 30
+            },
+            {
+              "name": "LegalDescription",
+              "type": "esriFieldTypeString",
+              "alias": "LegalDescription",
+              "length": 25
+            },
+            {
+              "name": "DeedBook",
+              "type": "esriFieldTypeString",
+              "alias": "DeedBook",
+              "length": 6
+            },
+            {
+              "name": "DeedPage",
+              "type": "esriFieldTypeString",
+              "alias": "DeedPage",
+              "length": 5
+            },
+            {
+              "name": "MapBlockLot",
+              "type": "esriFieldTypeString",
+              "alias": "MapBlockLot",
+              "length": 19
+            },
+            {
+              "name": "Township",
+              "type": "esriFieldTypeString",
+              "alias": "Township",
+              "length": 13
+            },
+            {
+              "name": "CensusTract",
+              "type": "esriFieldTypeString",
+              "alias": "CensusTract",
+              "length": 30
+            },
+            {
+              "name": "FireTaxDistrict",
+              "type": "esriFieldTypeString",
+              "alias": "FireTaxDistrict",
+              "length": 50
+            },
+            {
+              "name": "RescueTaxDistrict",
+              "type": "esriFieldTypeString",
+              "alias": "RescueTaxDistrict",
+              "length": 13
+            },
+            {
+              "name": "Zoning",
+              "type": "esriFieldTypeString",
+              "alias": "Zoning",
+              "length": 10
+            },
+            {
+              "name": "UseCode",
+              "type": "esriFieldTypeString",
+              "alias": "UseCode",
+              "length": 55
+            },
+            {
+              "name": "YearBuilt",
+              "type": "esriFieldTypeDouble",
+              "alias": "YearBuilt"
+            },
+            {
+              "name": "HeatedSqFt",
+              "type": "esriFieldTypeDouble",
+              "alias": "HeatedSqFt"
+            },
+            {
+              "name": "TotalSqFt",
+              "type": "esriFieldTypeDouble",
+              "alias": "TotalSqFt"
+            },
+            {
+              "name": "SalesMonthYear",
+              "type": "esriFieldTypeString",
+              "alias": "SalesMonthYear",
+              "length": 7
+            },
+            {
+              "name": "SalesPrice",
+              "type": "esriFieldTypeDouble",
+              "alias": "SalesPrice"
+            },
+            {
+              "name": "Acres",
+              "type": "esriFieldTypeDouble",
+              "alias": "Acres"
+            },
+            {
+              "name": "CurTaxValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "CurTaxValue"
+            },
+            {
+              "name": "CurBuildValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "CurBuildValue"
+            },
+            {
+              "name": "CurLandValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "CurLandValue"
+            },
+            {
+              "name": "CurXFeatValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "CurXFeatValue"
+            },
+            {
+              "name": "PriorTaxValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "PriorTaxValue"
+            },
+            {
+              "name": "PriorBuildValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "PriorBuildValue"
+            },
+            {
+              "name": "PriorLandValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "PriorLandValue"
+            },
+            {
+              "name": "PriorXFeatValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "PriorXFeatValue"
+            },
+            {
+              "name": "ElementarySchool",
+              "type": "esriFieldTypeString",
+              "alias": "ElementarySchool",
+              "length": 50
+            },
+            {
+              "name": "MiddleSchool",
+              "type": "esriFieldTypeString",
+              "alias": "MiddleSchool",
+              "length": 50
+            },
+            {
+              "name": "HighSchool",
+              "type": "esriFieldTypeString",
+              "alias": "HighSchool",
+              "length": 50
+            },
+            {
+              "name": "DefFlag",
+              "type": "esriFieldTypeString",
+              "alias": "DefFlag",
+              "length": 1
+            },
+            {
+              "name": "VacOrImp",
+              "type": "esriFieldTypeString",
+              "alias": "VacOrImp",
+              "length": 1
+            },
+            {
+              "name": "NumBldgs",
+              "type": "esriFieldTypeDouble",
+              "alias": "NumBldgs"
+            },
+            {
+              "name": "MapBook",
+              "type": "esriFieldTypeString",
+              "alias": "MapBook",
+              "length": 12
+            },
+            {
+              "name": "Neighborhood",
+              "type": "esriFieldTypeString",
+              "alias": "Neighborhood",
+              "length": 6
+            },
+            {
+              "name": "PinNum",
+              "type": "esriFieldTypeString",
+              "alias": "PinNum",
+              "length": 14
+            },
+            {
+              "name": "LotNum",
+              "type": "esriFieldTypeString",
+              "alias": "LotNum",
+              "length": 10
+            },
+            {
+              "name": "BlockNum",
+              "type": "esriFieldTypeString",
+              "alias": "BlockNum",
+              "length": 5
+            },
+            {
+              "name": "BldgNum",
+              "type": "esriFieldTypeString",
+              "alias": "BldgNum",
+              "length": 10
+            },
+            {
+              "name": "UnitNum",
+              "type": "esriFieldTypeString",
+              "alias": "UnitNum",
+              "length": 10
+            },
+            {
+              "name": "SectNum",
+              "type": "esriFieldTypeString",
+              "alias": "SectNum",
+              "length": 5
+            },
+            {
+              "name": "TractNum",
+              "type": "esriFieldTypeString",
+              "alias": "TractNum",
+              "length": 5
+            },
+            {
+              "name": "PhaseNum",
+              "type": "esriFieldTypeString",
+              "alias": "PhaseNum",
+              "length": 5
+            },
+            {
+              "name": "SubdLookup",
+              "type": "esriFieldTypeString",
+              "alias": "SubdLookup",
+              "length": 30
+            },
+            {
+              "name": "LandlineCount",
+              "type": "esriFieldTypeInteger",
+              "alias": "LandlineCount"
+            },
+            {
+              "name": "EffYR",
+              "type": "esriFieldTypeInteger",
+              "alias": "EffYR"
+            },
+            {
+              "name": "PhysicalAddress",
+              "type": "esriFieldTypeString",
+              "alias": "PhysicalAddress",
+              "length": 75
+            },
+            {
+              "name": "SubSecPhase",
+              "type": "esriFieldTypeString",
+              "alias": "SubSecPhase",
+              "length": 45
+            },
+            {
+              "name": "BlockLot",
+              "type": "esriFieldTypeString",
+              "alias": "BlockLot",
+              "length": 20
+            },
+            {
+              "name": "BldgUnit",
+              "type": "esriFieldTypeString",
+              "alias": "BldgUnit",
+              "length": 25
+            },
+            {
+              "name": "DeedBkPg",
+              "type": "esriFieldTypeString",
+              "alias": "DeedBkPg",
+              "length": 15
+            },
+            {
+              "name": "TypeUse",
+              "type": "esriFieldTypeString",
+              "alias": "TypeUse",
+              "length": 70
+            },
+            {
+              "name": "LocationMisc",
+              "type": "esriFieldTypeString",
+              "alias": "LocationMisc",
+              "length": 6
+            },
+            {
+              "name": "OwnerDocument",
+              "type": "esriFieldTypeString",
+              "alias": "OwnerDocument",
+              "length": 25
+            },
+            {
+              "name": "DocumentDate",
+              "type": "esriFieldTypeDate",
+              "alias": "DocumentDate",
+              "length": 8
+            },
+            {
+              "name": "StampSalePrice",
+              "type": "esriFieldTypeDouble",
+              "alias": "StampSalePrice"
+            },
+            {
+              "name": "LocationSuffix",
+              "type": "esriFieldTypeString",
+              "alias": "LocationSuffix",
+              "length": 2
+            },
+            {
+              "name": "DeededAcres",
+              "type": "esriFieldTypeDouble",
+              "alias": "DeededAcres"
+            },
+            {
+              "name": "CalculatedAcres",
+              "type": "esriFieldTypeDouble",
+              "alias": "CalculatedAcres"
+            },
+            {
+              "name": "Shape.STArea()",
+              "type": "esriFieldTypeDouble",
+              "alias": "Shape.STArea()"
+            },
+            {
+              "name": "Shape.STLength()",
+              "type": "esriFieldTypeDouble",
+              "alias": "Shape.STLength()"
+            }
+          ],
+          "features": [
+            {
+              "attributes": {
+                "OBJECTID": 54240924,
+                "PARCELNUMBER": "07369",
+                "NCPIN": "4677776335",
+                "REID": "007369",
+                "LocationNumber": 2100,
+                "LocationDirection": null,
+                "LocationStreet": "DICKINSON",
+                "LocationType": "AV",
+                "Municipality": "GREENVILLE",
+                "OwnerName": "WARD HOLDINGS LLC",
+                "OwnerAddress1": "503 CHESAPEAKE PL",
+                "OwnerAddress2": null,
+                "OwnerAddress3": null,
+                "CityStateZip": "GREENVILLE  NC 27858",
+                "LegalDescription": "2100 DICKERSON AVE",
+                "DeedBook": "004345",
+                "DeedPage": "00061",
+                "MapBlockLot": "4677.12-77-6335.000",
+                "Township": "GREENVILLE",
+                "CensusTract": "701",
+                "FireTaxDistrict": "INSIDE MUNICIPALITY",
+                "RescueTaxDistrict": null,
+                "Zoning": "CH",
+                "UseCode": "",
+                "YearBuilt": null,
+                "HeatedSqFt": 0,
+                "TotalSqFt": null,
+                "SalesMonthYear": "07/2022",
+                "SalesPrice": 350000,
+                "Acres": 0.65,
+                "CurTaxValue": 113256,
+                "CurBuildValue": 0,
+                "CurLandValue": 113256,
+                "CurXFeatValue": 0,
+                "PriorTaxValue": 113256,
+                "PriorBuildValue": 0,
+                "PriorLandValue": 113256,
+                "PriorXFeatValue": 0,
+                "ElementarySchool": "South Greenville ES",
+                "MiddleSchool": "E B Aycock MS",
+                "HighSchool": "J H Rose HS",
+                "DefFlag": "N",
+                "VacOrImp": "V",
+                "NumBldgs": 0,
+                "MapBook": null,
+                "Neighborhood": "004047",
+                "PinNum": "4677776335    ",
+                "LotNum": null,
+                "BlockNum": null,
+                "BldgNum": null,
+                "UnitNum": null,
+                "SectNum": null,
+                "TractNum": null,
+                "PhaseNum": null,
+                "SubdLookup": null,
+                "LandlineCount": 1,
+                "EffYR": null,
+                "PhysicalAddress": "2100 DICKINSON AV",
+                "SubSecPhase": "",
+                "BlockLot": "",
+                "BldgUnit": "",
+                "DeedBkPg": "004345 00061",
+                "TypeUse": "CH",
+                "LocationMisc": null,
+                "OwnerDocument": "004345 00061",
+                "DocumentDate": 1666069200000,
+                "StampSalePrice": 0,
+                "LocationSuffix": null,
+                "DeededAcres": 0,
+                "CalculatedAcres": 0.65,
+                "Shape.STArea()": 32165.215539167675,
+                "Shape.STLength()": 741.7466696548512
+              },
+              "geometry": {
+                "rings": [
+                  [
+                    [
+                      -77.3932997438656,
+                      35.60092468050493
+                    ],
+                    [
+                      -77.39308500827036,
+                      35.60093729795369
+                    ],
+                    [
+                      -77.39278762770074,
+                      35.60096084469757
+                    ],
+                    [
+                      -77.39270210773624,
+                      35.60096830063894
+                    ],
+                    [
+                      -77.39269758138079,
+                      35.60095820156117
+                    ],
+                    [
+                      -77.39263023360058,
+                      35.60083784004179
+                    ],
+                    [
+                      -77.39250861344975,
+                      35.60065901712718
+                    ],
+                    [
+                      -77.39245765442473,
+                      35.600591937862816
+                    ],
+                    [
+                      -77.39252822009307,
+                      35.600553943077635
+                    ],
+                    [
+                      -77.39291191041865,
+                      35.600334613272935
+                    ],
+                    [
+                      -77.3932997438656,
+                      35.60092468050493
+                    ]
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "gis\\.pittcountync\\.gov/gis/rest/services/PittOpenData/CadastralPitt/MapServer/0/query"
+      },
+      "response": {
+        "json": {
+          "displayFieldName": "PARCELNUMBER",
+          "fieldAliases": {
+            "OBJECTID": "OBJECTID",
+            "PARCELNUMBER": "PARCELNUMBER",
+            "NCPIN": "NCPIN",
+            "REID": "REID",
+            "LocationNumber": "LocationNumber",
+            "LocationDirection": "LocationDirection",
+            "LocationStreet": "LocationStreet",
+            "LocationType": "LocationType",
+            "Municipality": "Municipality",
+            "OwnerName": "OwnerName",
+            "OwnerAddress1": "OwnerAddress1",
+            "OwnerAddress2": "OwnerAddress2",
+            "OwnerAddress3": "OwnerAddress3",
+            "CityStateZip": "CityStateZip",
+            "LegalDescription": "LegalDescription",
+            "DeedBook": "DeedBook",
+            "DeedPage": "DeedPage",
+            "MapBlockLot": "MapBlockLot",
+            "Township": "Township",
+            "CensusTract": "CensusTract",
+            "FireTaxDistrict": "FireTaxDistrict",
+            "RescueTaxDistrict": "RescueTaxDistrict",
+            "Zoning": "Zoning",
+            "UseCode": "UseCode",
+            "YearBuilt": "YearBuilt",
+            "HeatedSqFt": "HeatedSqFt",
+            "TotalSqFt": "TotalSqFt",
+            "SalesMonthYear": "SalesMonthYear",
+            "SalesPrice": "SalesPrice",
+            "Acres": "Acres",
+            "CurTaxValue": "CurTaxValue",
+            "CurBuildValue": "CurBuildValue",
+            "CurLandValue": "CurLandValue",
+            "CurXFeatValue": "CurXFeatValue",
+            "PriorTaxValue": "PriorTaxValue",
+            "PriorBuildValue": "PriorBuildValue",
+            "PriorLandValue": "PriorLandValue",
+            "PriorXFeatValue": "PriorXFeatValue",
+            "ElementarySchool": "ElementarySchool",
+            "MiddleSchool": "MiddleSchool",
+            "HighSchool": "HighSchool",
+            "DefFlag": "DefFlag",
+            "VacOrImp": "VacOrImp",
+            "NumBldgs": "NumBldgs",
+            "MapBook": "MapBook",
+            "Neighborhood": "Neighborhood",
+            "PinNum": "PinNum",
+            "LotNum": "LotNum",
+            "BlockNum": "BlockNum",
+            "BldgNum": "BldgNum",
+            "UnitNum": "UnitNum",
+            "SectNum": "SectNum",
+            "TractNum": "TractNum",
+            "PhaseNum": "PhaseNum",
+            "SubdLookup": "SubdLookup",
+            "LandlineCount": "LandlineCount",
+            "EffYR": "EffYR",
+            "PhysicalAddress": "PhysicalAddress",
+            "SubSecPhase": "SubSecPhase",
+            "BlockLot": "BlockLot",
+            "BldgUnit": "BldgUnit",
+            "DeedBkPg": "DeedBkPg",
+            "TypeUse": "TypeUse",
+            "LocationMisc": "LocationMisc",
+            "OwnerDocument": "OwnerDocument",
+            "DocumentDate": "DocumentDate",
+            "StampSalePrice": "StampSalePrice",
+            "LocationSuffix": "LocationSuffix",
+            "DeededAcres": "DeededAcres",
+            "CalculatedAcres": "CalculatedAcres",
+            "Shape.STArea()": "Shape.STArea()",
+            "Shape.STLength()": "Shape.STLength()"
+          },
+          "geometryType": "esriGeometryPolygon",
+          "spatialReference": {
+            "wkid": 4326,
+            "latestWkid": 4326
+          },
+          "fields": [
+            {
+              "name": "OBJECTID",
+              "type": "esriFieldTypeOID",
+              "alias": "OBJECTID"
+            },
+            {
+              "name": "PARCELNUMBER",
+              "type": "esriFieldTypeString",
+              "alias": "PARCELNUMBER",
+              "length": 16
+            },
+            {
+              "name": "NCPIN",
+              "type": "esriFieldTypeString",
+              "alias": "NCPIN",
+              "length": 16
+            },
+            {
+              "name": "REID",
+              "type": "esriFieldTypeString",
+              "alias": "REID",
+              "length": 6
+            },
+            {
+              "name": "LocationNumber",
+              "type": "esriFieldTypeDouble",
+              "alias": "LocationNumber"
+            },
+            {
+              "name": "LocationDirection",
+              "type": "esriFieldTypeString",
+              "alias": "LocationDirection",
+              "length": 2
+            },
+            {
+              "name": "LocationStreet",
+              "type": "esriFieldTypeString",
+              "alias": "LocationStreet",
+              "length": 50
+            },
+            {
+              "name": "LocationType",
+              "type": "esriFieldTypeString",
+              "alias": "LocationType",
+              "length": 2
+            },
+            {
+              "name": "Municipality",
+              "type": "esriFieldTypeString",
+              "alias": "Municipality",
+              "length": 13
+            },
+            {
+              "name": "OwnerName",
+              "type": "esriFieldTypeString",
+              "alias": "OwnerName",
+              "length": 65
+            },
+            {
+              "name": "OwnerAddress1",
+              "type": "esriFieldTypeString",
+              "alias": "OwnerAddress1",
+              "length": 65
+            },
+            {
+              "name": "OwnerAddress2",
+              "type": "esriFieldTypeString",
+              "alias": "OwnerAddress2",
+              "length": 65
+            },
+            {
+              "name": "OwnerAddress3",
+              "type": "esriFieldTypeString",
+              "alias": "OwnerAddress3",
+              "length": 65
+            },
+            {
+              "name": "CityStateZip",
+              "type": "esriFieldTypeString",
+              "alias": "CityStateZip",
+              "length": 30
+            },
+            {
+              "name": "LegalDescription",
+              "type": "esriFieldTypeString",
+              "alias": "LegalDescription",
+              "length": 25
+            },
+            {
+              "name": "DeedBook",
+              "type": "esriFieldTypeString",
+              "alias": "DeedBook",
+              "length": 6
+            },
+            {
+              "name": "DeedPage",
+              "type": "esriFieldTypeString",
+              "alias": "DeedPage",
+              "length": 5
+            },
+            {
+              "name": "MapBlockLot",
+              "type": "esriFieldTypeString",
+              "alias": "MapBlockLot",
+              "length": 19
+            },
+            {
+              "name": "Township",
+              "type": "esriFieldTypeString",
+              "alias": "Township",
+              "length": 13
+            },
+            {
+              "name": "CensusTract",
+              "type": "esriFieldTypeString",
+              "alias": "CensusTract",
+              "length": 30
+            },
+            {
+              "name": "FireTaxDistrict",
+              "type": "esriFieldTypeString",
+              "alias": "FireTaxDistrict",
+              "length": 50
+            },
+            {
+              "name": "RescueTaxDistrict",
+              "type": "esriFieldTypeString",
+              "alias": "RescueTaxDistrict",
+              "length": 13
+            },
+            {
+              "name": "Zoning",
+              "type": "esriFieldTypeString",
+              "alias": "Zoning",
+              "length": 10
+            },
+            {
+              "name": "UseCode",
+              "type": "esriFieldTypeString",
+              "alias": "UseCode",
+              "length": 55
+            },
+            {
+              "name": "YearBuilt",
+              "type": "esriFieldTypeDouble",
+              "alias": "YearBuilt"
+            },
+            {
+              "name": "HeatedSqFt",
+              "type": "esriFieldTypeDouble",
+              "alias": "HeatedSqFt"
+            },
+            {
+              "name": "TotalSqFt",
+              "type": "esriFieldTypeDouble",
+              "alias": "TotalSqFt"
+            },
+            {
+              "name": "SalesMonthYear",
+              "type": "esriFieldTypeString",
+              "alias": "SalesMonthYear",
+              "length": 7
+            },
+            {
+              "name": "SalesPrice",
+              "type": "esriFieldTypeDouble",
+              "alias": "SalesPrice"
+            },
+            {
+              "name": "Acres",
+              "type": "esriFieldTypeDouble",
+              "alias": "Acres"
+            },
+            {
+              "name": "CurTaxValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "CurTaxValue"
+            },
+            {
+              "name": "CurBuildValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "CurBuildValue"
+            },
+            {
+              "name": "CurLandValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "CurLandValue"
+            },
+            {
+              "name": "CurXFeatValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "CurXFeatValue"
+            },
+            {
+              "name": "PriorTaxValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "PriorTaxValue"
+            },
+            {
+              "name": "PriorBuildValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "PriorBuildValue"
+            },
+            {
+              "name": "PriorLandValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "PriorLandValue"
+            },
+            {
+              "name": "PriorXFeatValue",
+              "type": "esriFieldTypeDouble",
+              "alias": "PriorXFeatValue"
+            },
+            {
+              "name": "ElementarySchool",
+              "type": "esriFieldTypeString",
+              "alias": "ElementarySchool",
+              "length": 50
+            },
+            {
+              "name": "MiddleSchool",
+              "type": "esriFieldTypeString",
+              "alias": "MiddleSchool",
+              "length": 50
+            },
+            {
+              "name": "HighSchool",
+              "type": "esriFieldTypeString",
+              "alias": "HighSchool",
+              "length": 50
+            },
+            {
+              "name": "DefFlag",
+              "type": "esriFieldTypeString",
+              "alias": "DefFlag",
+              "length": 1
+            },
+            {
+              "name": "VacOrImp",
+              "type": "esriFieldTypeString",
+              "alias": "VacOrImp",
+              "length": 1
+            },
+            {
+              "name": "NumBldgs",
+              "type": "esriFieldTypeDouble",
+              "alias": "NumBldgs"
+            },
+            {
+              "name": "MapBook",
+              "type": "esriFieldTypeString",
+              "alias": "MapBook",
+              "length": 12
+            },
+            {
+              "name": "Neighborhood",
+              "type": "esriFieldTypeString",
+              "alias": "Neighborhood",
+              "length": 6
+            },
+            {
+              "name": "PinNum",
+              "type": "esriFieldTypeString",
+              "alias": "PinNum",
+              "length": 14
+            },
+            {
+              "name": "LotNum",
+              "type": "esriFieldTypeString",
+              "alias": "LotNum",
+              "length": 10
+            },
+            {
+              "name": "BlockNum",
+              "type": "esriFieldTypeString",
+              "alias": "BlockNum",
+              "length": 5
+            },
+            {
+              "name": "BldgNum",
+              "type": "esriFieldTypeString",
+              "alias": "BldgNum",
+              "length": 10
+            },
+            {
+              "name": "UnitNum",
+              "type": "esriFieldTypeString",
+              "alias": "UnitNum",
+              "length": 10
+            },
+            {
+              "name": "SectNum",
+              "type": "esriFieldTypeString",
+              "alias": "SectNum",
+              "length": 5
+            },
+            {
+              "name": "TractNum",
+              "type": "esriFieldTypeString",
+              "alias": "TractNum",
+              "length": 5
+            },
+            {
+              "name": "PhaseNum",
+              "type": "esriFieldTypeString",
+              "alias": "PhaseNum",
+              "length": 5
+            },
+            {
+              "name": "SubdLookup",
+              "type": "esriFieldTypeString",
+              "alias": "SubdLookup",
+              "length": 30
+            },
+            {
+              "name": "LandlineCount",
+              "type": "esriFieldTypeInteger",
+              "alias": "LandlineCount"
+            },
+            {
+              "name": "EffYR",
+              "type": "esriFieldTypeInteger",
+              "alias": "EffYR"
+            },
+            {
+              "name": "PhysicalAddress",
+              "type": "esriFieldTypeString",
+              "alias": "PhysicalAddress",
+              "length": 75
+            },
+            {
+              "name": "SubSecPhase",
+              "type": "esriFieldTypeString",
+              "alias": "SubSecPhase",
+              "length": 45
+            },
+            {
+              "name": "BlockLot",
+              "type": "esriFieldTypeString",
+              "alias": "BlockLot",
+              "length": 20
+            },
+            {
+              "name": "BldgUnit",
+              "type": "esriFieldTypeString",
+              "alias": "BldgUnit",
+              "length": 25
+            },
+            {
+              "name": "DeedBkPg",
+              "type": "esriFieldTypeString",
+              "alias": "DeedBkPg",
+              "length": 15
+            },
+            {
+              "name": "TypeUse",
+              "type": "esriFieldTypeString",
+              "alias": "TypeUse",
+              "length": 70
+            },
+            {
+              "name": "LocationMisc",
+              "type": "esriFieldTypeString",
+              "alias": "LocationMisc",
+              "length": 6
+            },
+            {
+              "name": "OwnerDocument",
+              "type": "esriFieldTypeString",
+              "alias": "OwnerDocument",
+              "length": 25
+            },
+            {
+              "name": "DocumentDate",
+              "type": "esriFieldTypeDate",
+              "alias": "DocumentDate",
+              "length": 8
+            },
+            {
+              "name": "StampSalePrice",
+              "type": "esriFieldTypeDouble",
+              "alias": "StampSalePrice"
+            },
+            {
+              "name": "LocationSuffix",
+              "type": "esriFieldTypeString",
+              "alias": "LocationSuffix",
+              "length": 2
+            },
+            {
+              "name": "DeededAcres",
+              "type": "esriFieldTypeDouble",
+              "alias": "DeededAcres"
+            },
+            {
+              "name": "CalculatedAcres",
+              "type": "esriFieldTypeDouble",
+              "alias": "CalculatedAcres"
+            },
+            {
+              "name": "Shape.STArea()",
+              "type": "esriFieldTypeDouble",
+              "alias": "Shape.STArea()"
+            },
+            {
+              "name": "Shape.STLength()",
+              "type": "esriFieldTypeDouble",
+              "alias": "Shape.STLength()"
+            }
+          ],
+          "features": []
+        }
+      }
+    }
+  ]
+}

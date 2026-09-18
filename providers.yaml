@@ -38,27 +38,25 @@ options:
   nc_onemap:
     parcels_url: https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/FeatureServer/1   # layer 1 = polygons; layer 0 is a point layer
   county:
+    # County cadastral layers (ArcGIS MapServer). Pitt verified 2026-09-18: PittOpenData/CadastralPitt layer 0
+    # "Pitt Parcels", fields NCPIN (= OneMap parno), OwnerName, Municipality, Acres, PhysicalAddress.
     layers:
-      Pitt: https://gis.pittcountync.gov/arcgis/rest/services/Parcels/FeatureServer/0
+      Pitt: https://gis.pittcountync.gov/gis/rest/services/PittOpenData/CadastralPitt/MapServer/0
   regrid:
     base_url: https://app.regrid.com/api/v2
   arcgis:
-    # One official zoning layer per jurisdiction; district_field holds the
-    # district code. Districts are resolved to a use status via
-    # config/use-tables.yaml. Missing jurisdiction => unknown => planning case.
+    # Official zoning layers, verified 2026-09-18. district_field holds the district code, resolved to a
+    # use status via config/use-tables.yaml. The parcel polygon (or its centroid) is what gets queried: Census
+    # geocodes sit in the street right-of-way, which zoning polygons exclude. A jurisdiction with no layer
+    # here (Winterville, Ayden, Washington, Farmville, Kinston: none published) gets a pending gate and a
+    # planning case, never a guessed URL. "Pitt County" is tried after the municipality for unincorporated land.
     layers:
       Greenville:
-        url: https://gis.greenvillenc.gov/arcgis/rest/services/Planning/Zoning/FeatureServer/0
-        district_field: ZONING
-      Winterville:
-        url: https://gis.pittcountync.gov/arcgis/rest/services/Winterville_Zoning/FeatureServer/0
-        district_field: ZONE
-      Ayden:
-        url: https://gis.pittcountync.gov/arcgis/rest/services/Ayden_Zoning/FeatureServer/0
-        district_field: ZONE
-      Washington:
-        url: https://gis.washingtonnc.gov/arcgis/rest/services/Zoning/FeatureServer/0
-        district_field: ZONING
+        url: https://gisonline.greenvillenc.gov/arcgis/rest/services/OpenData/MapServer/21   # Greenville_Zoning
+        district_field: ZONE                                                                 # CH, CG, IU, RA20, R9S...
+      Pitt County:
+        url: https://gis.pittcountync.gov/gis/rest/services/PittOpenData/ZoningPitt/MapServer/0   # County Zoning
+        district_field: ZONE                                                                     # empty inside town limits
   ors:
     base_url: https://api.openrouteservice.org
     profile: driving-car

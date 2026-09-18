@@ -65,15 +65,13 @@ describe("adapters against recorded HTTP fixtures", () => {
   });
 
   it("arcgis zoning resolves district -> use table status with the cited section", async () => {
+    // Recorded Greenville OpenData layer 21 answer at the 2100 Dickinson Ave parcel centroid (field ZONE).
     const z = new ArcgisZoning(adapterCtx("arcgis"));
-    const ch = await z.lookup(POINT, "City of Greenville");
+    const ch = await z.lookup({ lat: 35.600786, lon: -77.39281 }, "City of Greenville");
     expect(ch).toMatchObject({ district: "CH", jurisdiction: "Greenville", dealer_use: "permitted", planning_email: "planning@greenvillenc.gov" });
     expect(ch!.citation).toMatch(/9-4-78/);
-    const mo = await z.lookup({ lat: 35.61, lon: -77.38 }, "Greenville");
-    expect(mo!.dealer_use).toBe("prohibited");
-    const r6 = await z.lookup({ lat: 35.6, lon: -77.39 }, "Greenville");
-    expect(r6!.dealer_use).toBe("unknown"); // not in the use table -> planning case
-    expect(await z.lookup(POINT, "Bethel")).toBeNull(); // no layer configured
+    expect(ch!.source_url).toContain("OpenData/MapServer/21");
+    expect(await z.lookup({ lat: 35.600786, lon: -77.39281 }, "Bethel")).toBeNull(); // no layer configured: pending + planning case
   });
 
   it("ors drive time returns minutes and an isochrone polygon", async () => {

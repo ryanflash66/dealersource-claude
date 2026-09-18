@@ -20,11 +20,12 @@ export interface AdapterContext {
   outDir: string | null;
 }
 
-/** Optional hints that let fixture-backed adapters key by parcel id. */
+/** Optional hints: fixture adapters key by parcel id; polygon layers prefer the parcel geometry. */
 export interface LookupHints {
   parcel_id?: string | null;
   county?: string | null;
   address?: string | null;
+  geometry?: Polygon | null;
 }
 
 // ------------------------------------------------------------- geocoding

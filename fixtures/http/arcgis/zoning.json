@@ -1,20 +1,553 @@
 {
-  "_note": "Recorded shape of a municipal ArcGIS zoning FeatureServer point query (Greenville).",
+  "_note": "Recorded 2026-09-18 from the official layers. Greenville_Zoning (OpenData layer 21, field ZONE) returns [] at the Census geocode for 2100 Dickinson Ave (-77.392251,35.600682: street right-of-way) and CH at the parcel centroid (-77.392810,35.600786); the parcel-polygon query returns two CH pieces. Pitt County Zoning (ZoningPitt layer 0, fields ZONE, USE_) returns [] inside town limits.",
   "fixtures": [
     {
       "match": {
         "method": "GET",
-        "url_pattern": "gis\\.greenvillenc\\.gov/arcgis/rest/services/Planning/Zoning/FeatureServer/0/query\\?geometry=-77\\.4(?:,|%2C)35\\.577(?:&|$)"
+        "url_pattern": "gisonline\\.greenvillenc\\.gov/arcgis/rest/services/OpenData/MapServer/21\\?f=json$"
       },
       "response": {
         "json": {
+          "currentVersion": 11.5,
+          "id": 21,
+          "name": "Greenville_Zoning",
+          "type": "Feature Layer",
+          "geometryType": "esriGeometryPolygon",
+          "description": "",
+          "extent": {
+            "xmin": 2450970.9219631106,
+            "ymin": 644918.4167203456,
+            "xmax": 2511924.499858856,
+            "ymax": 707129.9583075196,
+            "spatialReference": {
+              "wkid": 102719,
+              "latestWkid": 2264,
+              "xyTolerance": 0.003280833333333333,
+              "zTolerance": 2,
+              "mTolerance": 0.001,
+              "falseX": -121841900,
+              "falseY": -93659000,
+              "xyUnits": 36365718.124241434,
+              "falseZ": 0,
+              "zUnits": 1,
+              "falseM": -100000,
+              "mUnits": 10000
+            }
+          },
+          "fields": [
+            {
+              "name": "OBJECTID_1",
+              "type": "esriFieldTypeOID",
+              "alias": "OBJECTID_1"
+            },
+            {
+              "name": "CASE_NO",
+              "type": "esriFieldTypeString",
+              "alias": "CASE_NO"
+            },
+            {
+              "name": "ORD_NO",
+              "type": "esriFieldTypeString",
+              "alias": "ORD_NO"
+            },
+            {
+              "name": "COMBINED_Z",
+              "type": "esriFieldTypeString",
+              "alias": "COMBINED_Z"
+            },
+            {
+              "name": "ZONE",
+              "type": "esriFieldTypeString",
+              "alias": "ZONE"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "gis\\.pittcountync\\.gov/gis/rest/services/PittOpenData/ZoningPitt/MapServer/0\\?f=json$"
+      },
+      "response": {
+        "json": {
+          "currentVersion": 10.91,
+          "id": 0,
+          "name": "County Zoning",
+          "type": "Feature Layer",
+          "geometryType": "esriGeometryPolygon",
+          "description": "",
+          "extent": {
+            "xmin": 2385849.041708499,
+            "ymin": 577829.7477483898,
+            "xmax": 2568921.1250386685,
+            "ymax": 760243.6667124778,
+            "spatialReference": {
+              "wkid": 102719,
+              "latestWkid": 2264,
+              "xyTolerance": 0.00328083333333333,
+              "zTolerance": 0.001,
+              "mTolerance": 0.001,
+              "falseX": -121841900,
+              "falseY": -93659000,
+              "xyUnits": 3048.00609601219,
+              "falseZ": -100000,
+              "zUnits": 10000,
+              "falseM": -100000,
+              "mUnits": 10000
+            }
+          },
+          "fields": [
+            {
+              "name": "OBJECTID",
+              "type": "esriFieldTypeOID",
+              "alias": "OBJECTID"
+            },
+            {
+              "name": "ZONE",
+              "type": "esriFieldTypeString",
+              "alias": "ZONE"
+            },
+            {
+              "name": "USE_",
+              "type": "esriFieldTypeString",
+              "alias": "USE_"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "gisonline\\.greenvillenc\\.gov/arcgis/rest/services/OpenData/MapServer/21/query\\?.*geometry=-77\\.392251(%2C|,)35\\.600682"
+      },
+      "response": {
+        "json": {
+          "displayFieldName": "CASE_NO",
+          "fieldAliases": {
+            "OBJECTID_1": "OBJECTID_1",
+            "CASE_NO": "CASE_NO",
+            "APPLICANT": "APPLICANT",
+            "PREV_ZONE": "PREV_ZONE",
+            "DATE_": "DATE_",
+            "ORD_NO": "ORD_NO",
+            "COMBINED_Z": "COMBINED_Z",
+            "MF": "MF",
+            "ZONE": "ZONE",
+            "created_us": "created_us",
+            "created_da": "created_da",
+            "last_edite": "last_edite",
+            "last_edi_1": "last_edi_1"
+          },
+          "fields": [
+            {
+              "name": "OBJECTID_1",
+              "type": "esriFieldTypeOID",
+              "alias": "OBJECTID_1"
+            },
+            {
+              "name": "CASE_NO",
+              "type": "esriFieldTypeString",
+              "alias": "CASE_NO",
+              "length": 7
+            },
+            {
+              "name": "APPLICANT",
+              "type": "esriFieldTypeString",
+              "alias": "APPLICANT",
+              "length": 25
+            },
+            {
+              "name": "PREV_ZONE",
+              "type": "esriFieldTypeString",
+              "alias": "PREV_ZONE",
+              "length": 6
+            },
+            {
+              "name": "DATE_",
+              "type": "esriFieldTypeString",
+              "alias": "DATE_",
+              "length": 10
+            },
+            {
+              "name": "ORD_NO",
+              "type": "esriFieldTypeString",
+              "alias": "ORD_NO",
+              "length": 6
+            },
+            {
+              "name": "COMBINED_Z",
+              "type": "esriFieldTypeString",
+              "alias": "COMBINED_Z",
+              "length": 5
+            },
+            {
+              "name": "MF",
+              "type": "esriFieldTypeInteger",
+              "alias": "MF"
+            },
+            {
+              "name": "ZONE",
+              "type": "esriFieldTypeString",
+              "alias": "ZONE",
+              "length": 12
+            },
+            {
+              "name": "created_us",
+              "type": "esriFieldTypeString",
+              "alias": "created_us",
+              "length": 254
+            },
+            {
+              "name": "created_da",
+              "type": "esriFieldTypeDate",
+              "alias": "created_da",
+              "length": 8
+            },
+            {
+              "name": "last_edite",
+              "type": "esriFieldTypeString",
+              "alias": "last_edite",
+              "length": 254
+            },
+            {
+              "name": "last_edi_1",
+              "type": "esriFieldTypeDate",
+              "alias": "last_edi_1",
+              "length": 8
+            }
+          ],
+          "features": []
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "gisonline\\.greenvillenc\\.gov/arcgis/rest/services/OpenData/MapServer/21/query\\?.*geometry=-77\\.39281(0)?(%2C|,)35\\.600786"
+      },
+      "response": {
+        "json": {
+          "displayFieldName": "CASE_NO",
+          "fieldAliases": {
+            "OBJECTID_1": "OBJECTID_1",
+            "CASE_NO": "CASE_NO",
+            "APPLICANT": "APPLICANT",
+            "PREV_ZONE": "PREV_ZONE",
+            "DATE_": "DATE_",
+            "ORD_NO": "ORD_NO",
+            "COMBINED_Z": "COMBINED_Z",
+            "MF": "MF",
+            "ZONE": "ZONE",
+            "created_us": "created_us",
+            "created_da": "created_da",
+            "last_edite": "last_edite",
+            "last_edi_1": "last_edi_1"
+          },
+          "fields": [
+            {
+              "name": "OBJECTID_1",
+              "type": "esriFieldTypeOID",
+              "alias": "OBJECTID_1"
+            },
+            {
+              "name": "CASE_NO",
+              "type": "esriFieldTypeString",
+              "alias": "CASE_NO",
+              "length": 7
+            },
+            {
+              "name": "APPLICANT",
+              "type": "esriFieldTypeString",
+              "alias": "APPLICANT",
+              "length": 25
+            },
+            {
+              "name": "PREV_ZONE",
+              "type": "esriFieldTypeString",
+              "alias": "PREV_ZONE",
+              "length": 6
+            },
+            {
+              "name": "DATE_",
+              "type": "esriFieldTypeString",
+              "alias": "DATE_",
+              "length": 10
+            },
+            {
+              "name": "ORD_NO",
+              "type": "esriFieldTypeString",
+              "alias": "ORD_NO",
+              "length": 6
+            },
+            {
+              "name": "COMBINED_Z",
+              "type": "esriFieldTypeString",
+              "alias": "COMBINED_Z",
+              "length": 5
+            },
+            {
+              "name": "MF",
+              "type": "esriFieldTypeInteger",
+              "alias": "MF"
+            },
+            {
+              "name": "ZONE",
+              "type": "esriFieldTypeString",
+              "alias": "ZONE",
+              "length": 12
+            },
+            {
+              "name": "created_us",
+              "type": "esriFieldTypeString",
+              "alias": "created_us",
+              "length": 254
+            },
+            {
+              "name": "created_da",
+              "type": "esriFieldTypeDate",
+              "alias": "created_da",
+              "length": 8
+            },
+            {
+              "name": "last_edite",
+              "type": "esriFieldTypeString",
+              "alias": "last_edite",
+              "length": 254
+            },
+            {
+              "name": "last_edi_1",
+              "type": "esriFieldTypeDate",
+              "alias": "last_edi_1",
+              "length": 8
+            }
+          ],
           "features": [
             {
               "attributes": {
-                "OBJECTID": 5521,
-                "ZONING": "CH",
-                "ZONE_DESC": "Heavy Commercial",
-                "ORD_NO": "20-011"
+                "OBJECTID_1": 879,
+                "CASE_NO": " ",
+                "APPLICANT": " ",
+                "PREV_ZONE": " ",
+                "DATE_": " ",
+                "ORD_NO": " ",
+                "COMBINED_Z": "C",
+                "MF": 0,
+                "ZONE": "CH",
+                "created_us": " ",
+                "created_da": null,
+                "last_edite": " ",
+                "last_edi_1": null
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "POST",
+        "url_pattern": "gisonline\\.greenvillenc\\.gov/arcgis/rest/services/OpenData/MapServer/21/query$",
+        "body_pattern": "geometry=.*-77[.]393.*geometryType=esriGeometryPolygon"
+      },
+      "response": {
+        "json": {
+          "displayFieldName": "CASE_NO",
+          "fieldAliases": {
+            "ZONE": "ZONE",
+            "COMBINED_Z": "COMBINED_Z"
+          },
+          "geometryType": "esriGeometryPolygon",
+          "spatialReference": {
+            "wkid": 4326,
+            "latestWkid": 4326
+          },
+          "fields": [
+            {
+              "name": "ZONE",
+              "type": "esriFieldTypeString",
+              "alias": "ZONE",
+              "length": 12
+            },
+            {
+              "name": "COMBINED_Z",
+              "type": "esriFieldTypeString",
+              "alias": "COMBINED_Z",
+              "length": 5
+            }
+          ],
+          "features": [
+            {
+              "attributes": {
+                "ZONE": "CH",
+                "COMBINED_Z": "C"
+              },
+              "geometry": {
+                "rings": [
+                  [
+                    [
+                      -77.39278761061573,
+                      35.60096081562343
+                    ],
+                    [
+                      -77.39270210883956,
+                      35.60096830065363
+                    ],
+                    [
+                      -77.39261334943805,
+                      35.600813013625476
+                    ],
+                    [
+                      -77.39249377786012,
+                      35.600639488918155
+                    ],
+                    [
+                      -77.39245765442452,
+                      35.60059193786295
+                    ],
+                    [
+                      -77.3929118936017,
+                      35.60033457067969
+                    ],
+                    [
+                      -77.39320436945944,
+                      35.60017648863038
+                    ],
+                    [
+                      -77.39335477511737,
+                      35.600099305460745
+                    ],
+                    [
+                      -77.39365652555601,
+                      35.59993911280103
+                    ],
+                    [
+                      -77.39393657056094,
+                      35.60028182406385
+                    ],
+                    [
+                      -77.39400308050853,
+                      35.600363591855064
+                    ],
+                    [
+                      -77.39441087612647,
+                      35.60083799674051
+                    ],
+                    [
+                      -77.39380927243036,
+                      35.60089084282174
+                    ],
+                    [
+                      -77.39333844876205,
+                      35.60092310336941
+                    ],
+                    [
+                      -77.39329972676254,
+                      35.600924652332125
+                    ],
+                    [
+                      -77.39278761061573,
+                      35.60096081562343
+                    ]
+                  ]
+                ]
+              }
+            },
+            {
+              "attributes": {
+                "ZONE": "CH",
+                "COMBINED_Z": "C"
+              },
+              "geometry": {
+                "rings": [
+                  [
+                    [
+                      -77.39236904989129,
+                      35.60063962503873
+                    ],
+                    [
+                      -77.39238707162328,
+                      35.600629902631226
+                    ],
+                    [
+                      -77.39245765442452,
+                      35.60059193786295
+                    ],
+                    [
+                      -77.39257395236373,
+                      35.60075508530093
+                    ],
+                    [
+                      -77.39264319581557,
+                      35.60086523077017
+                    ],
+                    [
+                      -77.39270210883956,
+                      35.60096830065363
+                    ],
+                    [
+                      -77.392616568464,
+                      35.60097572741678
+                    ],
+                    [
+                      -77.39253121454372,
+                      35.60098326927477
+                    ],
+                    [
+                      -77.39253121275215,
+                      35.60098319262266
+                    ],
+                    [
+                      -77.39250389620845,
+                      35.600952749734134
+                    ],
+                    [
+                      -77.39248485220128,
+                      35.60093152511555
+                    ],
+                    [
+                      -77.39246110387302,
+                      35.60090505909464
+                    ],
+                    [
+                      -77.39243705316504,
+                      35.60087825641191
+                    ],
+                    [
+                      -77.3924094364862,
+                      35.60084747777464
+                    ],
+                    [
+                      -77.392384320979,
+                      35.60081948813146
+                    ],
+                    [
+                      -77.39235503468277,
+                      35.600786851019684
+                    ],
+                    [
+                      -77.3923284808061,
+                      35.600746566471415
+                    ],
+                    [
+                      -77.39232667905581,
+                      35.60070850971927
+                    ],
+                    [
+                      -77.39234063013484,
+                      35.60067216956826
+                    ],
+                    [
+                      -77.39236871383243,
+                      35.600641765286696
+                    ],
+                    [
+                      -77.39236904989129,
+                      35.60063962503873
+                    ]
+                  ]
+                ]
               }
             }
           ]
@@ -24,48 +557,248 @@
     {
       "match": {
         "method": "GET",
-        "url_pattern": "gis\\.greenvillenc\\.gov/arcgis/rest/services/Planning/Zoning/FeatureServer/0/query\\?geometry=-77\\.38(?:,|%2C)35\\.61(?:&|$)"
+        "url_pattern": "gis\\.pittcountync\\.gov/gis/rest/services/PittOpenData/ZoningPitt/MapServer/0/query\\?.*geometry=-77\\.39281(0)?(%2C|,)35\\.600786"
       },
       "response": {
         "json": {
-          "features": [
+          "displayFieldName": "ZONE",
+          "fieldAliases": {
+            "OBJECTID": "OBJECTID",
+            "ZONE": "ZONE",
+            "USE_": "USE_",
+            "Shape.STArea()": "Shape.STArea()",
+            "Shape.STLength()": "Shape.STLength()"
+          },
+          "fields": [
             {
-              "attributes": {
-                "OBJECTID": 5522,
-                "ZONING": "MO",
-                "ZONE_DESC": "Medical-Office"
-              }
+              "name": "OBJECTID",
+              "type": "esriFieldTypeOID",
+              "alias": "OBJECTID"
+            },
+            {
+              "name": "ZONE",
+              "type": "esriFieldTypeString",
+              "alias": "ZONE",
+              "length": 30
+            },
+            {
+              "name": "USE_",
+              "type": "esriFieldTypeString",
+              "alias": "USE_",
+              "length": 30
+            },
+            {
+              "name": "Shape.STArea()",
+              "type": "esriFieldTypeDouble",
+              "alias": "Shape.STArea()"
+            },
+            {
+              "name": "Shape.STLength()",
+              "type": "esriFieldTypeDouble",
+              "alias": "Shape.STLength()"
             }
-          ]
+          ],
+          "features": []
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "POST",
+        "url_pattern": "gis\\.pittcountync\\.gov/gis/rest/services/PittOpenData/ZoningPitt/MapServer/0/query$"
+      },
+      "response": {
+        "json": {
+          "displayFieldName": "ZONE",
+          "fieldAliases": {
+            "OBJECTID": "OBJECTID",
+            "ZONE": "ZONE",
+            "USE_": "USE_",
+            "Shape.STArea()": "Shape.STArea()",
+            "Shape.STLength()": "Shape.STLength()"
+          },
+          "fields": [
+            {
+              "name": "OBJECTID",
+              "type": "esriFieldTypeOID",
+              "alias": "OBJECTID"
+            },
+            {
+              "name": "ZONE",
+              "type": "esriFieldTypeString",
+              "alias": "ZONE",
+              "length": 30
+            },
+            {
+              "name": "USE_",
+              "type": "esriFieldTypeString",
+              "alias": "USE_",
+              "length": 30
+            },
+            {
+              "name": "Shape.STArea()",
+              "type": "esriFieldTypeDouble",
+              "alias": "Shape.STArea()"
+            },
+            {
+              "name": "Shape.STLength()",
+              "type": "esriFieldTypeDouble",
+              "alias": "Shape.STLength()"
+            }
+          ],
+          "features": []
         }
       }
     },
     {
       "match": {
         "method": "GET",
-        "url_pattern": "gis\\.greenvillenc\\.gov/arcgis/rest/services/Planning/Zoning/FeatureServer/0/query\\?geometry=-77\\.39(?:,|%2C)35\\.6(?:&|$)"
+        "url_pattern": "gisonline\\.greenvillenc\\.gov/arcgis/rest/services/OpenData/MapServer/21/query"
       },
       "response": {
         "json": {
-          "features": [
+          "displayFieldName": "CASE_NO",
+          "fieldAliases": {
+            "OBJECTID_1": "OBJECTID_1",
+            "CASE_NO": "CASE_NO",
+            "APPLICANT": "APPLICANT",
+            "PREV_ZONE": "PREV_ZONE",
+            "DATE_": "DATE_",
+            "ORD_NO": "ORD_NO",
+            "COMBINED_Z": "COMBINED_Z",
+            "MF": "MF",
+            "ZONE": "ZONE",
+            "created_us": "created_us",
+            "created_da": "created_da",
+            "last_edite": "last_edite",
+            "last_edi_1": "last_edi_1"
+          },
+          "fields": [
             {
-              "attributes": {
-                "OBJECTID": 5523,
-                "ZONING": "R6",
-                "ZONE_DESC": "Residential"
-              }
+              "name": "OBJECTID_1",
+              "type": "esriFieldTypeOID",
+              "alias": "OBJECTID_1"
+            },
+            {
+              "name": "CASE_NO",
+              "type": "esriFieldTypeString",
+              "alias": "CASE_NO",
+              "length": 7
+            },
+            {
+              "name": "APPLICANT",
+              "type": "esriFieldTypeString",
+              "alias": "APPLICANT",
+              "length": 25
+            },
+            {
+              "name": "PREV_ZONE",
+              "type": "esriFieldTypeString",
+              "alias": "PREV_ZONE",
+              "length": 6
+            },
+            {
+              "name": "DATE_",
+              "type": "esriFieldTypeString",
+              "alias": "DATE_",
+              "length": 10
+            },
+            {
+              "name": "ORD_NO",
+              "type": "esriFieldTypeString",
+              "alias": "ORD_NO",
+              "length": 6
+            },
+            {
+              "name": "COMBINED_Z",
+              "type": "esriFieldTypeString",
+              "alias": "COMBINED_Z",
+              "length": 5
+            },
+            {
+              "name": "MF",
+              "type": "esriFieldTypeInteger",
+              "alias": "MF"
+            },
+            {
+              "name": "ZONE",
+              "type": "esriFieldTypeString",
+              "alias": "ZONE",
+              "length": 12
+            },
+            {
+              "name": "created_us",
+              "type": "esriFieldTypeString",
+              "alias": "created_us",
+              "length": 254
+            },
+            {
+              "name": "created_da",
+              "type": "esriFieldTypeDate",
+              "alias": "created_da",
+              "length": 8
+            },
+            {
+              "name": "last_edite",
+              "type": "esriFieldTypeString",
+              "alias": "last_edite",
+              "length": 254
+            },
+            {
+              "name": "last_edi_1",
+              "type": "esriFieldTypeDate",
+              "alias": "last_edi_1",
+              "length": 8
             }
-          ]
+          ],
+          "features": []
         }
       }
     },
     {
       "match": {
         "method": "GET",
-        "url_pattern": "/Zoning/FeatureServer/0/query"
+        "url_pattern": "gis\\.pittcountync\\.gov/gis/rest/services/PittOpenData/ZoningPitt/MapServer/0/query"
       },
       "response": {
         "json": {
+          "displayFieldName": "ZONE",
+          "fieldAliases": {
+            "OBJECTID": "OBJECTID",
+            "ZONE": "ZONE",
+            "USE_": "USE_",
+            "Shape.STArea()": "Shape.STArea()",
+            "Shape.STLength()": "Shape.STLength()"
+          },
+          "fields": [
+            {
+              "name": "OBJECTID",
+              "type": "esriFieldTypeOID",
+              "alias": "OBJECTID"
+            },
+            {
+              "name": "ZONE",
+              "type": "esriFieldTypeString",
+              "alias": "ZONE",
+              "length": 30
+            },
+            {
+              "name": "USE_",
+              "type": "esriFieldTypeString",
+              "alias": "USE_",
+              "length": 30
+            },
+            {
+              "name": "Shape.STArea()",
+              "type": "esriFieldTypeDouble",
+              "alias": "Shape.STArea()"
+            },
+            {
+              "name": "Shape.STLength()",
+              "type": "esriFieldTypeDouble",
+              "alias": "Shape.STLength()"
+            }
+          ],
           "features": []
         }
       }

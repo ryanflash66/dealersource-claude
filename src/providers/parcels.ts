@@ -175,12 +175,18 @@ function toResult(f: ArcgisFeature<Record<string, unknown>>, geometry: Polygon |
   };
 }
 
-/** County GIS fallback: same ArcGIS shape, different field names per county. */
+/**
+ * County GIS fallback. Verified 2026-09-18 for Pitt County:
+ * PittOpenData/CadastralPitt MapServer layer 0 "Pitt Parcels" (polygon),
+ * fields NCPIN (= NC OneMap parno), PARCELNUMBER, OwnerName, Municipality,
+ * Acres, LocationNumber/LocationStreet/LocationType, PhysicalAddress, Zoning.
+ * Other counties' layers are added to providers.yaml options.county.layers.
+ */
 export class CountyGisParcels implements ParcelProvider {
   readonly name = "county";
   constructor(private readonly ctx: AdapterContext) {}
 
-  async lookup(point: LatLon, hints: { county?: string | null } = {}): Promise<ParcelResult | null> {
+  async lookup(point: LatLon, hints: LookupHints = {}): Promise<ParcelResult | null> {
     const layers = optRecord(this.ctx.options, "layers");
     const candidates: Array<[string, unknown]> =
       hints.county && layers[hints.county] ? [[hints.county, layers[hints.county]]] : Object.entries(layers);
@@ -191,20 +197,23 @@ export class CountyGisParcels implements ParcelProvider {
       const f = json.features?.[0];
       if (!f) continue;
       const a = f.attributes;
-      const id = str(attr(a, "PIN", "PARCEL_ID", "PARNO"));
+      const id = str(attr(a, "NCPIN", "PIN", "PARCEL_ID", "PARNO", "PARCELNUMBER"));
       if (!id) continue;
+      const site =
+        str(attr(a, "PhysicalAddress", "SITE_ADDRESS", "SITEADD")) ??
+        ([attr(a, "LocationNumber"), attr(a, "LocationDirection"), attr(a, "LocationStreet"), attr(a, "LocationType")].filter((x) => x !== undefined && x !== null && x !== "").join(" ") || null);
       return {
         parcel_id: id,
-        owner: str(attr(a, "OWNER_NAME", "OWNNAME")),
-        acreage: num(attr(a, "ACRES", "GISACRES")),
+        owner: str(attr(a, "OwnerName", "OWNER_NAME", "OWNNAME")),
+        acreage: num(attr(a, "Acres", "CalculatedAcres", "ACRES", "GISACRES")),
         geometry: geometryOf(f, json.spatialReference),
         centroid: null,
         frontage_ft: null,
         corner_lot: null,
         fronting_road: null,
-        jurisdiction: str(attr(a, "MUNICIPALITY", "CITY")),
+        jurisdiction: str(attr(a, "Municipality", "MUNICIPALITY", "CITY")),
         county,
-        site_address: str(attr(a, "SITE_ADDRESS", "SITEADD")),
+        site_address: site,
         source_url: url,
       };
     }
