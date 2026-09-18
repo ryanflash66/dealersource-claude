@@ -14,7 +14,7 @@ describe("configuration", () => {
     expect(existsSync(resolve(ROOT, "business.yaml"))).toBe(true);
     expect(existsSync(resolve(ROOT, ".env.example"))).toBe(true);
     const p = contractProviders(config().providers);
-    expect(p).toMatchObject({ paid_enabled: false, geocoder: "census", parcels: "nc_onemap", drivetime: "ors", imagery: "mapillary", poi: "overpass", crawler: "anycrawl", tiles: "protomaps" });
+    expect(p).toMatchObject({ paid_enabled: false, geocoder: "census", parcels: "nc_onemap", drivetime: "ors", imagery: "mapillary", poi: "overpass", crawler: "fetch", tiles: "protomaps" });
   });
 
   it("business.yaml carries every section 2 key plus score.weights", () => {

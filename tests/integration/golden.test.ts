@@ -132,7 +132,7 @@ describe("golden-v1 fixture run (spec sections 13 and 14)", () => {
   });
 
   it("report.providers reflects the selected providers even offline; switching the geocoder is a config-only change", async () => {
-    expect(run1.report!.providers).toMatchObject({ geocoder: "census", parcels: "nc_onemap", drivetime: "ors", imagery: "mapillary", poi: "overpass", crawler: "anycrawl", tiles: "protomaps" });
+    expect(run1.report!.providers).toMatchObject({ geocoder: "census", parcels: "nc_onemap", drivetime: "ors", imagery: "mapillary", poi: "overpass", crawler: "fetch", tiles: "protomaps" });
     const dir = tmp("switch-");
     const providersPath = writeProvidersYaml(dir, { [expected.provider_switch.key]: expected.provider_switch.to });
     const r = await runOffline({ fixturesDir: GOLDEN, outDir: join(dir, "out"), runDate: GOLDEN_RUN_DATE, providersPath });

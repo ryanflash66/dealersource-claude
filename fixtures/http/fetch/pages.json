@@ -1,0 +1,25 @@
+{
+  "_note": "Recorded responses for the plain-fetch crawler: a static town page, a redirected page (final URL reported via response.url, as fetch's redirect: follow does), and a robots.txt that disallows one path.",
+  "fixtures": [
+    {
+      "match": { "method": "GET", "url_pattern": "^https://www\\.greenvillenc\\.gov/robots\\.txt$" },
+      "response": { "body": "User-agent: Baiduspider\nDisallow: /\nUser-agent: *\nDisallow: /admin\nDisallow: /Search\nDisallow: /private/\n", "content_type": "text/plain" }
+    },
+    {
+      "match": { "method": "GET", "url_pattern": "^https://www\\.greenvillenc\\.gov/business/economic-development/available-properties$" },
+      "response": { "body_file": "pages/greenville-available-properties.html", "content_type": "text/html; charset=utf-8" }
+    },
+    {
+      "match": { "method": "GET", "url_pattern": "^https://www\\.pittcountync\\.gov/robots\\.txt$" },
+      "response": { "status": 404, "body": "Not Found", "content_type": "text/html" }
+    },
+    {
+      "match": { "method": "GET", "url_pattern": "^https://www\\.pittcountync\\.gov/business/available-sites-buildings$" },
+      "response": { "url": "https://www.pittcountync.gov/197/Available-Sites-Buildings", "body_file": "pages/pitt-county-sites.html", "content_type": "text/html" }
+    },
+    {
+      "match": { "method": "GET", "url_pattern": "^https://blocked\\.example/robots\\.txt$" },
+      "response": { "body": "User-agent: *\nDisallow: /\n", "content_type": "text/plain" }
+    }
+  ]
+}
