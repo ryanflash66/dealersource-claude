@@ -57,10 +57,10 @@ describe("adapters against recorded HTTP fixtures", () => {
     expect(ledger.calls[0]).toMatchObject({ adapter: "geocoder:google", cost_class: "paid" });
   });
 
-  it("nc_onemap parcels parses PARNO, owner, acreage and rings", async () => {
-    const r = await new NcOneMapParcels(adapterCtx("nc_onemap")).lookup(POINT);
-    expect(r).toMatchObject({ parcel_id: "4676.01", owner: "MEMORIAL DRIVE HOLDINGS LLC", acreage: 0.62, jurisdiction: "GREENVILLE", county: "PITT" });
-    expect(r!.geometry?.coordinates[0]).toHaveLength(5);
+  it("nc_onemap parcels parses the live layer-1 response (details in nc-onemap.test.ts)", async () => {
+    const r = await new NcOneMapParcels(adapterCtx("nc_onemap")).lookup({ lat: 35.600682, lon: -77.392251 }, { address: "2100 DICKINSON AVE, GREENVILLE, NC, 27834" });
+    expect(r).toMatchObject({ parcel_id: "4677776335", owner: "WARD HOLDINGS LLC", acreage: 0.65, county: "Pitt" });
+    expect(r!.geometry?.coordinates[0]).toHaveLength(11);
     expect(await new NcOneMapParcels(adapterCtx("nc_onemap")).lookup({ lat: 0, lon: 0 })).toBeNull();
   });
 

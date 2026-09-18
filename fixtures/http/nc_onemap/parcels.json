@@ -1,53 +1,681 @@
 {
-  "_note": "Recorded shape of NC OneMap NC1Map_Parcels FeatureServer/0/query?f=json (attributes abridged to the fields the adapter reads).",
+  "_note": "Recorded from https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/FeatureServer on 2026-09-18. Layer 0 is a point layer (never intersects a query point); layer 1 holds the polygons with lowercase field names. Envelope around -77.392251,35.600682 (2100 Dickinson Ave, Greenville) returns 5 neighbouring parcels; outSR=4326 works when every requested field exists; the JSON point form returns []. An unknown outFields name (e.g. munic) yields HTTP 400 'Unable to complete operation'.",
   "fixtures": [
     {
       "match": {
         "method": "GET",
-        "url_pattern": "NC1Map_Parcels/FeatureServer/0/query\\?geometry=-77\\.4(?:,|%2C)35\\.577(?:&|$)"
+        "url_pattern": "NC1Map_Parcels/FeatureServer/0\\?f=json$"
       },
       "response": {
         "json": {
-          "objectIdFieldName": "OBJECTID",
+          "currentVersion": 10.91,
+          "id": 0,
+          "name": "Parcels (pts)",
+          "type": "Feature Layer",
+          "geometryType": "esriGeometryPoint",
+          "minScale": 200000,
+          "maxScale": 50000,
+          "extent": {
+            "xmin": 407567.08062930405,
+            "ymin": 35548.78277172148,
+            "xmax": 3051911.5038721412,
+            "ymax": 1480316.2826666385,
+            "spatialReference": {
+              "wkid": 102719,
+              "latestWkid": 2264,
+              "xyTolerance": 0.003280833333333333,
+              "zTolerance": 0.001,
+              "mTolerance": 0.001,
+              "falseX": -121841900,
+              "falseY": -93659000,
+              "xyUnits": 36365718.124241434,
+              "falseZ": -100000,
+              "zUnits": 10000,
+              "falseM": -100000,
+              "mUnits": 10000
+            }
+          },
+          "objectIdField": "objectid",
+          "fields": [
+            {
+              "name": "objectid",
+              "type": "esriFieldTypeOID",
+              "alias": "OBJECTID",
+              "domain": null,
+              "editable": false,
+              "nullable": false,
+              "defaultValue": null,
+              "modelName": "objectid"
+            },
+            {
+              "name": "parno",
+              "type": "esriFieldTypeString",
+              "alias": "Local Parcel Number",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 100,
+              "defaultValue": null,
+              "modelName": "PARNO"
+            },
+            {
+              "name": "altparno",
+              "type": "esriFieldTypeString",
+              "alias": "Alternate Parcel Number",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 25,
+              "defaultValue": null,
+              "modelName": "ALTPARNO"
+            },
+            {
+              "name": "ownname",
+              "type": "esriFieldTypeString",
+              "alias": "Full Owner Name",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 200,
+              "defaultValue": null,
+              "modelName": "OWNNAME"
+            },
+            {
+              "name": "mailadd",
+              "type": "esriFieldTypeString",
+              "alias": "Full Mailing Address\n",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 200,
+              "defaultValue": null,
+              "modelName": "MAILADD"
+            },
+            {
+              "name": "mcity",
+              "type": "esriFieldTypeString",
+              "alias": "Mailing Address City",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 100,
+              "defaultValue": null,
+              "modelName": "MCITY"
+            },
+            {
+              "name": "siteadd",
+              "type": "esriFieldTypeString",
+              "alias": "Full Site Address",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 200,
+              "defaultValue": null,
+              "modelName": "SITEADD"
+            },
+            {
+              "name": "scity",
+              "type": "esriFieldTypeString",
+              "alias": "Site Address City",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 100,
+              "defaultValue": null,
+              "modelName": "SCITY"
+            },
+            {
+              "name": "gisacres",
+              "type": "esriFieldTypeDouble",
+              "alias": "GIS Acres",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "defaultValue": null,
+              "modelName": "GISACRES"
+            },
+            {
+              "name": "parusedesc",
+              "type": "esriFieldTypeString",
+              "alias": "Tax Parcel Use Code Description",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 125,
+              "defaultValue": null,
+              "modelName": "PARUSEDESC"
+            },
+            {
+              "name": "recareano",
+              "type": "esriFieldTypeDouble",
+              "alias": "Record Area Number",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "defaultValue": null,
+              "modelName": "RECAREANO"
+            },
+            {
+              "name": "cntyname",
+              "type": "esriFieldTypeString",
+              "alias": "County Name",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 50,
+              "defaultValue": null,
+              "modelName": "CNTYNAME"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "NC1Map_Parcels/FeatureServer/1\\?f=json$"
+      },
+      "response": {
+        "json": {
+          "currentVersion": 10.91,
+          "id": 1,
+          "name": "Parcels (polys)",
+          "type": "Feature Layer",
+          "geometryType": "esriGeometryPolygon",
+          "minScale": 50000,
+          "maxScale": 0,
+          "extent": {
+            "xmin": 406837.58996230364,
+            "ymin": 34980.069670304656,
+            "xmax": 3052125.0562665462,
+            "ymax": 1480319.5634999722,
+            "spatialReference": {
+              "wkid": 102719,
+              "latestWkid": 2264,
+              "xyTolerance": 0.003280833333333333,
+              "zTolerance": 0.001,
+              "mTolerance": 0.001,
+              "falseX": -121841900,
+              "falseY": -93659000,
+              "xyUnits": 36365718.124241434,
+              "falseZ": -100000,
+              "zUnits": 10000,
+              "falseM": -100000,
+              "mUnits": 10000
+            }
+          },
+          "objectIdField": "objectid",
+          "fields": [
+            {
+              "name": "objectid",
+              "type": "esriFieldTypeOID",
+              "alias": "OBJECTID",
+              "domain": null,
+              "editable": false,
+              "nullable": false,
+              "defaultValue": null,
+              "modelName": "objectid"
+            },
+            {
+              "name": "parno",
+              "type": "esriFieldTypeString",
+              "alias": "Parcel Number",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 100,
+              "defaultValue": null,
+              "modelName": "PARNO"
+            },
+            {
+              "name": "altparno",
+              "type": "esriFieldTypeString",
+              "alias": "Alternate Parcel Number",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 25,
+              "defaultValue": null,
+              "modelName": "ALTPARNO"
+            },
+            {
+              "name": "ownname",
+              "type": "esriFieldTypeString",
+              "alias": "Owner Name",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 200,
+              "defaultValue": null,
+              "modelName": "OWNNAME"
+            },
+            {
+              "name": "mailadd",
+              "type": "esriFieldTypeString",
+              "alias": "Mailing Address",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 200,
+              "defaultValue": null,
+              "modelName": "MAILADD"
+            },
+            {
+              "name": "mcity",
+              "type": "esriFieldTypeString",
+              "alias": "Mailing Address City",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 100,
+              "defaultValue": null,
+              "modelName": "MCITY"
+            },
+            {
+              "name": "siteadd",
+              "type": "esriFieldTypeString",
+              "alias": "Full Site Address",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 200,
+              "defaultValue": null,
+              "modelName": "SITEADD"
+            },
+            {
+              "name": "scity",
+              "type": "esriFieldTypeString",
+              "alias": "Site Address City",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 100,
+              "defaultValue": null,
+              "modelName": "SCITY"
+            },
+            {
+              "name": "gisacres",
+              "type": "esriFieldTypeDouble",
+              "alias": "GIS Acres",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "defaultValue": null,
+              "modelName": "GISACRES"
+            },
+            {
+              "name": "parusedesc",
+              "type": "esriFieldTypeString",
+              "alias": "Tax Parcel Use Code Description",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 125,
+              "defaultValue": null,
+              "modelName": "PARUSEDESC"
+            },
+            {
+              "name": "recareano",
+              "type": "esriFieldTypeDouble",
+              "alias": "Record Area Number",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "defaultValue": null,
+              "modelName": "RECAREANO"
+            },
+            {
+              "name": "cntyname",
+              "type": "esriFieldTypeString",
+              "alias": "County Name",
+              "domain": null,
+              "editable": true,
+              "nullable": true,
+              "length": 50,
+              "defaultValue": null,
+              "modelName": "CNTYNAME"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "NC1Map_Parcels/FeatureServer/1/query?.*geometry=-77.39[0-9]*%2C35.600[0-9]*%2C-77.39[0-9]*%2C35.60[0-9]*.*geometryType=esriGeometryEnvelope.*outSR=4326"
+      },
+      "response": {
+        "json": {
+          "objectIdFieldName": "objectid",
+          "globalIdFieldName": "",
           "geometryType": "esriGeometryPolygon",
           "spatialReference": {
-            "wkid": 4326
+            "wkid": 4326,
+            "latestWkid": 4326
           },
+          "fields": [
+            {
+              "name": "parno",
+              "alias": "Parcel Number",
+              "type": "esriFieldTypeString",
+              "length": 100
+            },
+            {
+              "name": "altparno",
+              "alias": "Alternate Parcel Number",
+              "type": "esriFieldTypeString",
+              "length": 25
+            },
+            {
+              "name": "ownname",
+              "alias": "Owner Name",
+              "type": "esriFieldTypeString",
+              "length": 200
+            },
+            {
+              "name": "siteadd",
+              "alias": "Full Site Address",
+              "type": "esriFieldTypeString",
+              "length": 200
+            },
+            {
+              "name": "scity",
+              "alias": "Site Address City",
+              "type": "esriFieldTypeString",
+              "length": 100
+            },
+            {
+              "name": "cntyname",
+              "alias": "County Name",
+              "type": "esriFieldTypeString",
+              "length": 50
+            },
+            {
+              "name": "gisacres",
+              "alias": "GIS Acres",
+              "type": "esriFieldTypeDouble"
+            },
+            {
+              "name": "parusedesc",
+              "alias": "Tax Parcel Use Code Description",
+              "type": "esriFieldTypeString",
+              "length": 125
+            }
+          ],
           "features": [
             {
               "attributes": {
-                "OBJECTID": 1187221,
-                "PARNO": "4676.01",
-                "ALTPARNO": "35770-77400",
-                "CNTYNAME": "PITT",
-                "OWNNAME": "MEMORIAL DRIVE HOLDINGS LLC",
-                "SITEADD": "2400 S MEMORIAL DR",
-                "MUNICIPALITY": "GREENVILLE",
-                "GISACRES": 0.62,
-                "PARUSEDESC": "COMMERCIAL"
+                "parno": "4677778086",
+                "altparno": "05100",
+                "ownname": "PITT GROCERY INVESTMENTS LLC",
+                "siteadd": "2105 DICKINSON AV",
+                "scity": "",
+                "cntyname": "Pitt",
+                "gisacres": 1.51,
+                "parusedesc": "CDF 07-COMM-CONST(14-SPRMRKT)"
               },
               "geometry": {
                 "rings": [
                   [
                     [
-                      -77.4006,
-                      35.5766
+                      -77.39244225755203,
+                      35.60043522299196
                     ],
                     [
-                      -77.3994,
-                      35.5766
+                      -77.39225352115471,
+                      35.600536570532306
                     ],
                     [
-                      -77.3994,
-                      35.5774
+                      -77.39210587912213,
+                      35.60050965905259
                     ],
                     [
-                      -77.4006,
-                      35.5774
+                      -77.39201078818574,
+                      35.60042001240096
                     ],
                     [
-                      -77.4006,
-                      35.5766
+                      -77.39194592003602,
+                      35.600326301271515
+                    ],
+                    [
+                      -77.39159287040559,
+                      35.599156558587964
+                    ],
+                    [
+                      -77.39198656234075,
+                      35.599068799808784
+                    ],
+                    [
+                      -77.39227714283686,
+                      35.599939234745634
+                    ],
+                    [
+                      -77.39244225755203,
+                      35.60043522299196
+                    ]
+                  ]
+                ]
+              }
+            },
+            {
+              "attributes": {
+                "parno": "4677776335",
+                "altparno": "07369",
+                "ownname": "WARD HOLDINGS LLC",
+                "siteadd": "2100 DICKINSON AV",
+                "scity": "",
+                "cntyname": "Pitt",
+                "gisacres": 0.65,
+                "parusedesc": "CH"
+              },
+              "geometry": {
+                "rings": [
+                  [
+                    [
+                      -77.3932997438656,
+                      35.60092468050493
+                    ],
+                    [
+                      -77.39308500827036,
+                      35.60093729795369
+                    ],
+                    [
+                      -77.39278762770074,
+                      35.60096084469757
+                    ],
+                    [
+                      -77.39270210773624,
+                      35.60096830063894
+                    ],
+                    [
+                      -77.39269758138079,
+                      35.60095820156117
+                    ],
+                    [
+                      -77.39263023360058,
+                      35.60083784004179
+                    ],
+                    [
+                      -77.39250861344975,
+                      35.60065901712718
+                    ],
+                    [
+                      -77.39245765442473,
+                      35.600591937862816
+                    ],
+                    [
+                      -77.39252822009307,
+                      35.600553943077635
+                    ],
+                    [
+                      -77.39291191041865,
+                      35.600334613272935
+                    ],
+                    [
+                      -77.3932997438656,
+                      35.60092468050493
+                    ]
+                  ]
+                ]
+              }
+            },
+            {
+              "attributes": {
+                "parno": "4677777153",
+                "altparno": "37182",
+                "ownname": "NOBLES WANDA G",
+                "siteadd": "2107 DICKINSON AV",
+                "scity": "",
+                "cntyname": "Pitt",
+                "gisacres": 0.39,
+                "parusedesc": "CH 07-COMM-CONST(10-COMM)"
+              },
+              "geometry": {
+                "rings": [
+                  [
+                    [
+                      -77.39277320891998,
+                      35.600245649959376
+                    ],
+                    [
+                      -77.39244225755203,
+                      35.60043522299196
+                    ],
+                    [
+                      -77.39227714283686,
+                      35.599939234745634
+                    ],
+                    [
+                      -77.39248622924269,
+                      35.59982956944685
+                    ],
+                    [
+                      -77.39277320891998,
+                      35.600245649959376
+                    ]
+                  ]
+                ]
+              }
+            },
+            {
+              "attributes": {
+                "parno": "4677778426",
+                "altparno": "88212",
+                "ownname": "WARD HOLDINGS LLC",
+                "siteadd": "0 DICKINSON AV",
+                "scity": "",
+                "cntyname": "Pitt",
+                "gisacres": 0.12,
+                "parusedesc": "CH"
+              },
+              "geometry": {
+                "rings": [
+                  [
+                    [
+                      -77.39239011063623,
+                      35.600825940193886
+                    ],
+                    [
+                      -77.39245765442473,
+                      35.600591937862816
+                    ],
+                    [
+                      -77.39250861344975,
+                      35.60065901712718
+                    ],
+                    [
+                      -77.39263023360058,
+                      35.60083784004179
+                    ],
+                    [
+                      -77.39269758138079,
+                      35.60095820156117
+                    ],
+                    [
+                      -77.39270210773624,
+                      35.60096830063894
+                    ],
+                    [
+                      -77.39261658554892,
+                      35.60097575649092
+                    ],
+                    [
+                      -77.39253121387374,
+                      35.600983191735885
+                    ],
+                    [
+                      -77.39239011063623,
+                      35.600825940193886
+                    ]
+                  ]
+                ]
+              }
+            },
+            {
+              "attributes": {
+                "parno": "4677779591",
+                "altparno": "15240",
+                "ownname": "GREENVILLE CITY OF",
+                "siteadd": "2099 DICKINSON AV",
+                "scity": "",
+                "cntyname": "Pitt",
+                "gisacres": 0.16,
+                "parusedesc": "CH"
+              },
+              "geometry": {
+                "rings": [
+                  [
+                    [
+                      -77.39210746946506,
+                      35.60087793356721
+                    ],
+                    [
+                      -77.39222629284565,
+                      35.601009347319504
+                    ],
+                    [
+                      -77.39160249596866,
+                      35.60105980192877
+                    ],
+                    [
+                      -77.39197245855676,
+                      35.600858892445544
+                    ],
+                    [
+                      -77.39198733208897,
+                      35.60085301936252
+                    ],
+                    [
+                      -77.39200313941639,
+                      35.60084909597799
+                    ],
+                    [
+                      -77.39201949893956,
+                      35.600847217310545
+                    ],
+                    [
+                      -77.39203601790356,
+                      35.60084742864842
+                    ],
+                    [
+                      -77.39205229793335,
+                      35.60084972472088
+                    ],
+                    [
+                      -77.39206794717258,
+                      35.60085404985928
+                    ],
+                    [
+                      -77.39208258795463,
+                      35.60086030080278
+                    ],
+                    [
+                      -77.39209586894125,
+                      35.600868326858944
+                    ],
+                    [
+                      -77.39210746946506,
+                      35.60087793356721
                     ]
                   ]
                 ]
@@ -60,10 +688,415 @@
     {
       "match": {
         "method": "GET",
+        "url_pattern": "NC1Map_Parcels/FeatureServer/1/query?.*geometry=-77.39[0-9]*%2C35.600[0-9]*%2C-77.39[0-9]*%2C35.60[0-9]*.*geometryType=esriGeometryEnvelope.*returnGeometry=true(?!.*outSR=)"
+      },
+      "response": {
+        "json": {
+          "objectIdFieldName": "objectid",
+          "globalIdFieldName": "",
+          "geometryType": "esriGeometryPolygon",
+          "spatialReference": {
+            "wkid": 102719,
+            "latestWkid": 2264
+          },
+          "fields": [
+            {
+              "name": "parno",
+              "alias": "Parcel Number",
+              "type": "esriFieldTypeString",
+              "length": 100
+            },
+            {
+              "name": "altparno",
+              "alias": "Alternate Parcel Number",
+              "type": "esriFieldTypeString",
+              "length": 25
+            },
+            {
+              "name": "ownname",
+              "alias": "Owner Name",
+              "type": "esriFieldTypeString",
+              "length": 200
+            },
+            {
+              "name": "siteadd",
+              "alias": "Full Site Address",
+              "type": "esriFieldTypeString",
+              "length": 200
+            },
+            {
+              "name": "scity",
+              "alias": "Site Address City",
+              "type": "esriFieldTypeString",
+              "length": 100
+            },
+            {
+              "name": "cntyname",
+              "alias": "County Name",
+              "type": "esriFieldTypeString",
+              "length": 50
+            },
+            {
+              "name": "gisacres",
+              "alias": "GIS Acres",
+              "type": "esriFieldTypeDouble"
+            },
+            {
+              "name": "parusedesc",
+              "alias": "Tax Parcel Use Code Description",
+              "type": "esriFieldTypeString",
+              "length": 125
+            }
+          ],
+          "features": [
+            {
+              "attributes": {
+                "parno": "4677778086",
+                "altparno": "05100",
+                "ownname": "PITT GROCERY INVESTMENTS LLC",
+                "siteadd": "2105 DICKINSON AV",
+                "scity": "",
+                "cntyname": "Pitt",
+                "gisacres": 1.51,
+                "parusedesc": "CDF 07-COMM-CONST(14-SPRMRKT)"
+              },
+              "geometry": {
+                "rings": [
+                  [
+                    [
+                      2477849.875094801,
+                      677324.6248736382
+                    ],
+                    [
+                      2477905.3749838024,
+                      677362.4164647311
+                    ],
+                    [
+                      2477949.4165623933,
+                      677353.3334776461
+                    ],
+                    [
+                      2477978.208499551,
+                      677321.1665472239
+                    ],
+                    [
+                      2477998.0414651334,
+                      677287.374948144
+                    ],
+                    [
+                      2478109.874902889,
+                      676863.3751399815
+                    ],
+                    [
+                      2477993.3751358837,
+                      676829.5415462255
+                    ],
+                    [
+                      2477901.874990806,
+                      677144.9165716469
+                    ],
+                    [
+                      2477849.875094801,
+                      677324.6248736382
+                    ]
+                  ]
+                ]
+              }
+            },
+            {
+              "attributes": {
+                "parno": "4677776335",
+                "altparno": "07369",
+                "ownname": "WARD HOLDINGS LLC",
+                "siteadd": "2100 DICKINSON AV",
+                "scity": "",
+                "cntyname": "Pitt",
+                "gisacres": 0.65,
+                "parusedesc": "CH"
+              },
+              "geometry": {
+                "rings": [
+                  [
+                    [
+                      2477592.124954134,
+                      677498.6248537302
+                    ],
+                    [
+                      2477655.8751547188,
+                      677504.2498424798
+                    ],
+                    [
+                      2477744.1249782145,
+                      677514.2501505613
+                    ],
+                    [
+                      2477769.4995993823,
+                      677517.3751443177
+                    ],
+                    [
+                      2477770.9044522196,
+                      677513.7216083109
+                    ],
+                    [
+                      2477791.6311168075,
+                      677470.2430207282
+                    ],
+                    [
+                      2477828.8334702253,
+                      677405.7500394732
+                    ],
+                    [
+                      2477844.3751057982,
+                      677381.5834211409
+                    ],
+                    [
+                      2477823.625147298,
+                      677367.4164547324
+                    ],
+                    [
+                      2477710.8750447184,
+                      677285.7499513924
+                    ],
+                    [
+                      2477592.124954134,
+                      677498.6248537302
+                    ]
+                  ]
+                ]
+              }
+            },
+            {
+              "attributes": {
+                "parno": "4677777153",
+                "altparno": "37182",
+                "ownname": "NOBLES WANDA G",
+                "siteadd": "2107 DICKINSON AV",
+                "scity": "",
+                "cntyname": "Pitt",
+                "gisacres": 0.39,
+                "parusedesc": "CH 07-COMM-CONST(10-COMM)"
+              },
+              "geometry": {
+                "rings": [
+                  [
+                    [
+                      2477752.624961227,
+                      677254.0413533896
+                    ],
+                    [
+                      2477849.875094801,
+                      677324.6248736382
+                    ],
+                    [
+                      2477901.874990806,
+                      677144.9165716469
+                    ],
+                    [
+                      2477840.3751138,
+                      677103.9999868125
+                    ],
+                    [
+                      2477752.624961227,
+                      677254.0413533896
+                    ]
+                  ]
+                ]
+              }
+            },
+            {
+              "attributes": {
+                "parno": "4677778426",
+                "altparno": "88212",
+                "ownname": "WARD HOLDINGS LLC",
+                "siteadd": "0 DICKINSON AV",
+                "scity": "",
+                "cntyname": "Pitt",
+                "gisacres": 0.12,
+                "parusedesc": "CH"
+              },
+              "geometry": {
+                "rings": [
+                  [
+                    [
+                      2477863.0715907216,
+                      677467.0681583136
+                    ],
+                    [
+                      2477844.3751057982,
+                      677381.5834211409
+                    ],
+                    [
+                      2477828.8334702253,
+                      677405.7500394732
+                    ],
+                    [
+                      2477791.6311168075,
+                      677470.2430207282
+                    ],
+                    [
+                      2477770.9044522196,
+                      677513.7216083109
+                    ],
+                    [
+                      2477769.4995993823,
+                      677517.3751443177
+                    ],
+                    [
+                      2477794.8748767227,
+                      677520.5001380593
+                    ],
+                    [
+                      2477820.2055347264,
+                      677523.6169297248
+                    ],
+                    [
+                      2477863.0715907216,
+                      677467.0681583136
+                    ]
+                  ]
+                ]
+              }
+            },
+            {
+              "attributes": {
+                "parno": "4677779591",
+                "altparno": "15240",
+                "ownname": "GREENVILLE CITY OF",
+                "siteadd": "2099 DICKINSON AV",
+                "scity": "",
+                "cntyname": "Pitt",
+                "gisacres": 0.16,
+                "parusedesc": "CH"
+              },
+              "geometry": {
+                "rings": [
+                  [
+                    [
+                      2477946.77286689,
+                      677487.350598067
+                    ],
+                    [
+                      2477910.681075558,
+                      677534.6034563035
+                    ],
+                    [
+                      2478095.7906134725,
+                      677555.9688991457
+                    ],
+                    [
+                      2477987.0136000514,
+                      677481.071083054
+                    ],
+                    [
+                      2477982.627453968,
+                      677478.8620979786
+                    ],
+                    [
+                      2477977.9522664696,
+                      677477.3581639826
+                    ],
+                    [
+                      2477973.100898221,
+                      677476.5956983119
+                    ],
+                    [
+                      2477968.1898187995,
+                      677476.5930736512
+                    ],
+                    [
+                      2477963.3374662995,
+                      677477.3502899706
+                    ],
+                    [
+                      2477958.660638392,
+                      677478.8489746451
+                    ],
+                    [
+                      2477954.2721957266,
+                      677481.0533665568
+                    ],
+                    [
+                      2477950.27745305,
+                      677483.9103162289
+                    ],
+                    [
+                      2477946.77286689,
+                      677487.350598067
+                    ]
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "NC1Map_Parcels/FeatureServer/1/query\\?.*geometryType=esriGeometryPoint"
+      },
+      "response": {
+        "json": {
+          "objectIdFieldName": "objectid",
+          "globalIdFieldName": "",
+          "geometryType": "esriGeometryPolygon",
+          "spatialReference": {
+            "wkid": 102719,
+            "latestWkid": 2264
+          },
+          "features": []
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
         "url_pattern": "NC1Map_Parcels/FeatureServer/0/query"
       },
       "response": {
         "json": {
+          "objectIdFieldName": "objectid",
+          "globalIdFieldName": "",
+          "geometryType": "esriGeometryPoint",
+          "spatialReference": {
+            "wkid": 102719,
+            "latestWkid": 2264
+          },
+          "features": []
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "NC1Map_Parcels/FeatureServer/1/query\\?.*outFields=[^&]*munic"
+      },
+      "response": {
+        "status": 400,
+        "json": {
+          "error": {
+            "code": 400,
+            "extendedCode": -2147467259,
+            "message": "Unable to complete operation.",
+            "details": []
+          }
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "NC1Map_Parcels/FeatureServer/1/query"
+      },
+      "response": {
+        "json": {
+          "objectIdFieldName": "objectid",
+          "geometryType": "esriGeometryPolygon",
+          "spatialReference": {
+            "wkid": 4326,
+            "latestWkid": 4326
+          },
           "features": []
         }
       }
