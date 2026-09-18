@@ -33,7 +33,7 @@
           "parcel_id": { "type": "string" },
           "listing_ids": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
           "address": { "type": "string" },
-          "in_search_area": { "type": "boolean" },
+          "in_search_area": { "type": ["boolean", "null"] },
           "drive_minutes": { "type": ["number", "null"] },
           "shared_lot": { "type": "boolean" },
           "gates": {

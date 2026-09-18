@@ -18,7 +18,8 @@ import { StageCounter, allEvidence, currentEvidence, errMsg, writeEvidence, type
  */
 export async function verify(ctx: RunContext): Promise<StageCounter> {
   const c = new StageCounter(ctx, "verify");
-  const sites = (await ctx.store.list("sites")).filter((s) => s.in_search_area === true);
+  // Sites confirmed outside the area get no outreach; unknown distance (null) is still verified.
+  const sites = (await ctx.store.list("sites")).filter((s) => s.in_search_area !== false);
   for (const site of sites) {
     try {
       await openCases(ctx, c, site);

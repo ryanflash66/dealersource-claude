@@ -40,7 +40,7 @@ export interface ContractSite {
   parcel_id: string;
   listing_ids: string[];
   address: string;
-  in_search_area: boolean;
+  in_search_area: boolean | null; // null = drive time unknown (parent schema: add null)
   drive_minutes: number | null;
   shared_lot: boolean;
   gates: Record<"zoning" | "rent" | "flood", { status: "pass" | "fail" | "pending"; evidence_ids: string[]; detail: string; warning: string | null }>;
@@ -150,7 +150,7 @@ export async function report(ctx: RunContext): Promise<{ counter: StageCounter; 
       parcel_id: site.parcel_id,
       listing_ids: site.listing_ids,
       address: site.canonical_address,
-      in_search_area: site.in_search_area === true,
+      in_search_area: site.in_search_area,
       drive_minutes: site.drive_minutes,
       shared_lot: site.shared_lot,
       gates: sc

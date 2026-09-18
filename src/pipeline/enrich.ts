@@ -19,22 +19,34 @@ export async function enrich(ctx: RunContext): Promise<StageCounter> {
       // --- drive time / search area ---------------------------------------
       let drive = await currentEvidence(ctx, site.id, "drive_minutes");
       if (!drive) {
-        const r = await ctx.providers.drivetime.driveMinutes(ctx.homeBase ?? point, point, hints);
-        drive = await writeEvidence(ctx, {
-          site_id: site.id,
-          fact: "drive_minutes",
-          value: { minutes: r.minutes, from: ctx.config.business.search.home_base, provider: ctx.providers.drivetime.name },
-          source_url: r.source_url,
-          method: "api",
-        });
-        c.inc("drivetime_fetched");
+        try {
+          const r = await ctx.providers.drivetime.driveMinutes(ctx.homeBase ?? point, point, hints);
+          drive = await writeEvidence(ctx, {
+            site_id: site.id,
+            fact: "drive_minutes",
+            value: { minutes: r.minutes, from: ctx.config.business.search.home_base, provider: ctx.providers.drivetime.name },
+            source_url: r.source_url,
+            method: "api",
+          });
+          c.inc("drivetime_fetched");
+        } catch (e) {
+          // Unknown is not "outside": keep gating, flag it, and leave ranking until the distance is known.
+          c.inc("drivetime_unavailable");
+          const msg = `drive time unavailable for ${site.id} (${site.canonical_address}): ${errMsg(e)}; gated but not ranked`;
+          if (!ctx.run.warnings.includes(msg)) ctx.run.warnings.push(msg);
+          ctx.logger.warn("drive time unavailable", { site: site.id, error: errMsg(e) });
+        }
       }
-      const minutes = (drive.value as { minutes: number }).minutes;
-      const inArea = minutes <= ctx.config.business.search.max_drive_minutes;
-      site = await touchSite(ctx, site, { drive_minutes: minutes, in_search_area: inArea, stage: inArea ? "enriched" : "out_of_area" });
-      if (!inArea) {
-        c.inc("sites_out_of_area");
-        continue;
+      if (drive) {
+        const minutes = (drive.value as { minutes: number }).minutes;
+        const inArea = minutes <= ctx.config.business.search.max_drive_minutes;
+        site = await touchSite(ctx, site, { drive_minutes: minutes, in_search_area: inArea, stage: inArea ? "enriched" : "out_of_area" });
+        if (!inArea) {
+          c.inc("sites_out_of_area");
+          continue;
+        }
+      } else {
+        site = await touchSite(ctx, site, { drive_minutes: null, in_search_area: null, stage: "enriched" });
       }
 
       // --- listing-stated facts (written statements, source = listing URL) ---

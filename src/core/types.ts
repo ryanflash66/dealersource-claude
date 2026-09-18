@@ -278,7 +278,7 @@ export interface ScoreRow {
   id: string; // = site_id (one current score per site)
   site_id: string;
   run_id: string;
-  in_search_area: boolean;
+  in_search_area: boolean | null; // null = drive time unknown: gated, not ranked
   viable: boolean;
   shortlisted: boolean;
   shared_lot: boolean;
