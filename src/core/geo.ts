@@ -108,3 +108,22 @@ export function ringsToPolygon(rings: number[][][] | undefined): Polygon | null 
   if (!rings || !rings.length) return null;
   return { type: "Polygon", coordinates: rings };
 }
+
+/** Shortest distance in metres from a point to the outer ring of a polygon (0 when inside). */
+export function distanceToPolygonMeters(p: LatLon, poly: Polygon): number {
+  if (pointInPolygon(p, poly)) return 0;
+  const k = Math.cos((p.lat * Math.PI) / 180);
+  const toXY = (lon: number, lat: number) => ({ x: (lon - p.lon) * k, y: lat - p.lat });
+  let best = Infinity;
+  for (const ring of poly.coordinates) {
+    for (let i = 0; i < ring.length - 1; i++) {
+      const a = toXY(ring[i]![0]!, ring[i]![1]!), b = toXY(ring[i + 1]![0]!, ring[i + 1]![1]!);
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const len2 = dx * dx + dy * dy;
+      const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, (-(a.x * dx) - a.y * dy) / len2));
+      const ex = a.x + t * dx, ey = a.y + t * dy;
+      best = Math.min(best, Math.hypot(ex, ey));
+    }
+  }
+  return best * 111_320;
+}
