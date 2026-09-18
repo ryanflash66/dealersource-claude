@@ -88,7 +88,7 @@ sources.yaml ──discover──> raw_documents + listings
 | `config/sources.yaml` | the source allowlist with researched `terms_status` / `robots_txt` |
 | `config/use-tables.yaml` | zoning use tables with the cited ordinance section per district |
 | `config/mail-templates.yaml` | approved outreach text |
-| `src/providers/` | one interface per data layer, free + paid adapters (crawler: `fetch` default, `anycrawl`, `anycrawl_cloud`), fixture-backed fakes |
+| `src/providers/` | one interface per data layer, free + paid adapters (crawler: `fetch` default, `anycrawl`, `anycrawl_cloud`; parcels: `nc_onemap` default = NC OneMap polygon layer `FeatureServer/1`, `county`, `regrid`), fixture-backed fakes |
 | `src/pipeline/` | the six idempotent stages, gates, scoring, templates |
 | `src/store/` | JSON-file store (offline default) and Supabase/PostgREST store |
 | `fixtures/golden-v1/` | the sample fixture set (copied from the parent repo) |

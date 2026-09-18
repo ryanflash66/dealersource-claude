@@ -9,7 +9,7 @@ golden integration test asserts `run.json.paid_calls == []` and `report.json.ext
 | Layer | Default | Cost | Limits to know |
 |---|---|---|---|
 | geocoder | `census` | free, no key | polite use; batch endpoint exists for bulk |
-| parcels | `nc_onemap` | free, no key | ArcGIS REST rate limits |
+| parcels | `nc_onemap` | free, no key | NC OneMap polygon layer (FeatureServer/1); ArcGIS REST rate limits |
 | zoning | `arcgis` | free, official layers | per-municipality endpoints |
 | drivetime | `ors` | free tier key | 2,000 directions + 500 isochrones/day on the free plan |
 | traffic | `ncdot` | free | - |

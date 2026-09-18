@@ -76,6 +76,27 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
     `tests/contract/` already has it). robots.txt is also checked at the discover stage for
     any source whose `robots_txt` is `unknown`, as before.
 
+14b. **NC OneMap parcels query the polygon layer 1 with an envelope** (live-run bug fix,
+    2026-09-18). Verified against the service: `FeatureServer/0` is "Parcels (pts)", so a
+    point-intersects query never returns a feature; fields are lowercase (`parno`, `ownname`,
+    `siteadd`, `gisacres`, `cntyname`, `scity`) and attribute reads are now case-insensitive;
+    the JSON point form returns `[]`, so the adapter queries an envelope of +-0.00025 deg on
+    layer 1; the HTTP 400 "Unable to complete operation" was caused by requesting a field
+    that does not exist (`munic`), not by `outSR=4326`, which works and is the default.
+    Selection among the returned neighbours: the recorded geocode for 2100 Dickinson Ave sits
+    in the street right-of-way, which no parcel covers (a centreline-interpolated geocode
+    always will), and the nearest polygon by centroid is the city-owned 2099 strip; so an
+    exact house-number-and-street match on `siteadd` wins first, then the polygon that
+    contains the point, then the nearest polygon edge within 60 m, then a partial address
+    match. Fallbacks for the request itself: native-SR geometry (EPSG:2264 NC State Plane
+    feet, reprojected in `src/core/proj.ts`; it matches the service's own 4326 output to a
+    constant 0.2 m E / 0.8 m N, the NAD83->WGS84 datum shift ArcGIS applies), then attributes
+    only with geometry left null. The point form stays available behind
+    `options.nc_onemap.point_query_first: true`. Real responses (layer metadata, the five
+    Dickinson Ave parcels in both SRs, the empty point-form and layer-0 answers, the 400 for an
+    unknown field) are recorded under `fixtures/http/nc_onemap/`. Site jurisdiction falls
+    back to the geocoder's city when the parcel layer leaves `scity` empty, as it does here.
+
 15. **Sources appearing only in `listings.json` are auto-registered** with
     `terms_status: allowed` and a note, because the operator's crawler already fetched them;
     a listing whose `source_id` matches a `prohibited`/`disallowed` row in `sources.yaml` is
