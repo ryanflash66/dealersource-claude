@@ -18,22 +18,26 @@ sources:
     url: https://www.greenvillenc.gov/business/economic-development/available-properties
     robots_txt: allowed
     terms_status: allowed
-    enabled: true
+    enabled: false
     cadence: daily
     notes: >-
-      City of Greenville government site. robots.txt (checked 2026-09-16) only
-      disallows admin/search paths for User-agent *. Public-records content.
+      DISABLED 2026-09-18: /business/economic-development/available-properties and
+      /business/small-business-resources/find-a-building-or-site both return 404. The
+      city routes property search to ZoomProspector (excluded below). Re-enable if a
+      static city listings page is found.
 
   - id: pitt-county-available-sites
     kind: crawl
-    url: https://www.pittcountync.gov/business/available-sites-buildings
+    url: https://www.pittcountync.gov/1172/Sites-Buildings
     robots_txt: allowed
     terms_status: allowed
     enabled: true
     cadence: daily
     notes: >-
-      Pitt County government site. Same CMS and robots.txt pattern as
-      greenvillenc.gov (checked 2026-09-16).
+      Pitt County government site, Sites & Buildings page (URL corrected 2026-09-18;
+      the previous path returned 404). Static HTML. Lists the Technology Enterprise
+      Center office rooms directly; industrial sites hand off to ZoomProspector, which
+      is recorded below as excluded. robots.txt only disallows admin paths (2026-09-18).
 
   - id: kinston-lenoir-econ-dev-properties
     kind: crawl
@@ -114,6 +118,45 @@ sources:
     enabled: true
     cadence: daily
     notes: Hand-entered leads (drive-bys, word of mouth). Local file, no fetch.
+
+  # --- Local broker websites (static HTML, discovered 2026-09-18) -----------
+  - id: ron-harrell-commercial
+    kind: crawl
+    url: https://ronharrellandassociates.com/commercial-properties/
+    robots_txt: allowed
+    terms_status: allowed
+    enabled: true
+    cadence: daily
+    notes: >-
+      Ron Harrell & Associates, Greenville NC commercial broker. Static WordPress
+      page listing ~10 properties (retail, flex, office, land; lease prices not
+      shown). robots.txt disallows only /wp-admin/ (checked 2026-09-18). No terms
+      of use published on the site.
+
+  # --- Recorded as NOT FETCHABLE by a plain crawler ------------------------
+  - id: zoomprospector-pitt-county
+    kind: crawl
+    url: https://properties.zoomprospector.com/PITTCOUNTYNC
+    robots_txt: disallowed
+    terms_status: unclear
+    enabled: false
+    cadence: daily
+    notes: >-
+      Where Greenville and Pitt County send property searches. robots.txt allows
+      only Googlebot and Bingbot and disallows every other agent (checked
+      2026-09-18). Refused by policy. Lists industrial and office sites, not lots.
+
+  - id: rofo-greenville
+    kind: crawl
+    url: https://www.rofo.com/commercial-real-estate/NC/greenville
+    robots_txt: allowed
+    terms_status: unclear
+    enabled: false
+    cadence: daily
+    notes: >-
+      Aggregator. robots.txt allows all; Terms of Use (2026-09-18) contain no clause
+      on automated access. Listings are JavaScript-rendered, so the plain fetch
+      crawler sees no content. Candidate only if a headless crawler is hosted later.
 
   # --- Recorded as EXCLUDED so the PM can see what is left out and why -----
   - id: loopnet
