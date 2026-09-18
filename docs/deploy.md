@@ -51,9 +51,18 @@ only if you select `crawler: anycrawl`. Optional self-hosted URLs:
 
 `config/use-tables.yaml` and the `arcgis` layer list in `providers.yaml` must be extended
 for each municipality you want to auto-verify from the zoning layer; anything else opens a
-planning case instead.
+planning case instead. Only add a layer after checking it live (`<url>?f=json` must name a
+polygon layer and its district field): the shipped list is Greenville `OpenData/MapServer/21`
+(`ZONE`) and Pitt County `PittOpenData/ZoningPitt/MapServer/0` (`ZONE`, empty inside town
+limits). Layers are queried with the parcel polygon, never the geocode, because Census geocodes
+land in the road right-of-way. Winterville, Ayden and Washington publish no ArcGIS zoning layer
+and always go to a planning case.
 
 ## 4. Sources
+
+Broker pages rarely publish a per-listing email. Put the office address in `contact_email` on the
+source row in `config/sources.yaml` (Ron Harrell Commercial ships blank); listings without their own
+email use it, and a site with neither is escalated once with a digest note naming the listing.
 
 Run `npm run sources:check` to see what will be fetched. Discover brokers with
 `npm run sources:discover -- --out out` (Overpass POI query near home base) and research each

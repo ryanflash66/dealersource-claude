@@ -550,7 +550,7 @@ const PROV: Record<string, { kind: string; name: string; sub: string; fallback: 
   nc_onemap: { kind: "Parcels", name: "NC OneMap parcels", sub: "statewide parcel layer, ArcGIS REST", fallback: "County GIS" },
   county: { kind: "Parcels", name: "County GIS parcels", sub: "per-county ArcGIS services", fallback: "NC OneMap" },
   regrid: { kind: "Parcels", name: "Regrid", sub: "paid parcel API", fallback: "" },
-  arcgis: { kind: "Zoning", name: "Town GIS layers", sub: "", fallback: "Email to planning office" },
+  arcgis: { kind: "Zoning", name: "Official GIS layers", sub: "Greenville OpenData layer 21, Pitt County ZoningPitt; queried at the parcel", fallback: "Email to planning office" },
   ors: { kind: "Drive time", name: "OpenRouteService", sub: "free tier key", fallback: "Valhalla (self-hosted)" },
   valhalla: { kind: "Drive time", name: "Valhalla (self-hosted)", sub: "OSM routing on your own server", fallback: "OpenRouteService" },
   ncdot: { kind: "Traffic", name: "NCDOT AADT", sub: "annual average daily traffic stations", fallback: "None" },
@@ -602,7 +602,7 @@ function viewConfig(d: Data): HTMLElement[] {
     const kind = p.kind || (layer === "geocoder" ? "Geocoding" : layer);
     const paid = PAID_IDS.has(id);
     const fixture = (r.fixture_layers ?? []).includes(layer);
-    const sub = layer === "zoning" ? "Greenville, Winterville, Ayden, Washington + use tables" : p.sub;
+    const sub = layer === "zoning" ? "Greenville OpenData layer 21, Pitt County ZoningPitt + use tables; other towns go to a planning case" : p.sub;
     return h("div", { class: "trow prov cols-prov" },
       h("span", { class: "muted", text: kind }),
       h("div", { style: "min-width:0" }, h("div", { class: "pname", text: p.name }), h("div", { class: "psub", text: sub })),

@@ -88,7 +88,7 @@ sources.yaml ──discover──> raw_documents + listings
 | `config/sources.yaml` | the source allowlist with researched `terms_status` / `robots_txt` |
 | `config/use-tables.yaml` | zoning use tables with the cited ordinance section per district |
 | `config/mail-templates.yaml` | approved outreach text |
-| `src/providers/` | one interface per data layer, free + paid adapters (crawler: `fetch` default, `anycrawl`, `anycrawl_cloud`; parcels: `nc_onemap` default = NC OneMap polygon layer `FeatureServer/1`, `county`, `regrid`), fixture-backed fakes |
+| `src/providers/` | one interface per data layer, free + paid adapters (crawler: `fetch` default, `anycrawl`, `anycrawl_cloud`; parcels: `nc_onemap` default = NC OneMap polygon layer `FeatureServer/1`, `county` = Pitt `PittOpenData/CadastralPitt` layer 0, `regrid`; zoning: `arcgis` = Greenville `OpenData/MapServer/21` and Pitt County `ZoningPitt` layer 0, queried at the parcel, other towns go to a planning case), fixture-backed fakes |
 | `src/pipeline/` | the six idempotent stages, gates, scoring, templates |
 | `src/store/` | JSON-file store (offline default) and Supabase/PostgREST store |
 | `fixtures/golden-v1/` | the sample fixture set (copied from the parent repo) |
@@ -138,6 +138,8 @@ Steps:
    (`supabase db push`, the SQL editor, or `DATABASE_URL=... npm run db:migrate`).
    For a local stack instead: `npm run db:local` and point `SUPABASE_URL=http://localhost:3000`
    (see the header of `docker-compose.yml` for the service-role JWT). Details: `supabase/README.md`.
+   Existing projects: apply the newest migration too (`20260918000000` adds `sources.contact_email`
+   and `sites.enrich_warnings`).
 2. **Mail**: create a Gmail API OAuth client, authorise the owner's (or operator's) mailbox once,
    store the refresh token. Then set `verified: true` on each `business.yaml` jurisdiction after
    re-checking its `source_url`: the Gmail adapter refuses planning addresses that are not verified.

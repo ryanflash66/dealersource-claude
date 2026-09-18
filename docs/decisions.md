@@ -112,6 +112,36 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
     unknown field) are recorded under `fixtures/http/nc_onemap/`. Site jurisdiction falls
     back to the geocoder's city when the parcel layer leaves `scity` empty, as it does here.
 
+14c. **Zoning layers are the verified official ones, queried at the parcel** (live-run fixes,
+    2026-09-18). The earlier layer URLs were guesses. `providers.yaml` now lists only layers
+    checked against the live services: Greenville `OpenData/MapServer/21` (Greenville_Zoning,
+    field `ZONE`) and Pitt County `PittOpenData/ZoningPitt/MapServer/0` (County Zoning, `ZONE`,
+    empty inside town limits, tried after the municipality). Winterville, Ayden, Washington,
+    Farmville and Kinston publish no ArcGIS zoning layer: they return null with no request, so
+    the gate stays pending and a planning case opens. Because Census geocodes sit in the road
+    right-of-way (layer 21 returns `[]` at the 2100 Dickinson Ave geocode and `CH` at the parcel
+    centroid), the site point is the parcel centroid and zoning is queried with the parcel
+    polygon (district with the largest sampled overlap), the centroid when there is no polygon,
+    and the geocode only when there is no parcel; flood already used the parcel, and traffic and
+    competitors use the centroid. The county parcels fallback now points at Pitt's verified
+    `PittOpenData/CadastralPitt/MapServer/0` (`NCPIN` = OneMap `parno`, `OwnerName`,
+    `Municipality`, `Acres`). Responses recorded under `fixtures/http/arcgis` and
+    `fixtures/http/county`.
+
+14d. **Per-item failures degrade, they do not abort.** A layer failing for one site records a
+    warning on that site (`sites.enrich_warnings`, surfaced as report flags and run warnings)
+    and leaves that gate pending; score and report still complete and the `reports` row is
+    written. `run.errors` (and a non-zero exit) is reserved for a stage failing entirely:
+    every enabled source failing to fetch, no listing resolving to a parcel, a stage throwing,
+    or the report not being writable. Per-source, per-listing, per-site and per-send failures
+    are warnings.
+
+14e. **Source-level leasing contact.** Broker pages rarely carry a per-listing email, so
+    `config/sources.yaml` rows take an optional `contact_email` used when the listing has none
+    (Ron Harrell's entry carries a blank value for the PM to fill). A site with neither is
+    escalated once per case type with a note that names the listing and the fix; when a contact
+    appears later the escalated case reopens and the inquiry goes out.
+
 15. **Sources appearing only in `listings.json` are auto-registered** with
     `terms_status: allowed` and a note, because the operator's crawler already fetched them;
     a listing whose `source_id` matches a `prohibited`/`disallowed` row in `sources.yaml` is
