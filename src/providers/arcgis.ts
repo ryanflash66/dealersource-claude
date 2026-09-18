@@ -8,6 +8,7 @@ export interface ArcgisFeature<A = Record<string, unknown>> {
 }
 export interface ArcgisQueryResponse<A = Record<string, unknown>> {
   features?: ArcgisFeature<A>[];
+  spatialReference?: { wkid?: number; latestWkid?: number };
   error?: { code: number; message: string };
 }
 

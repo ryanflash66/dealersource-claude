@@ -36,7 +36,7 @@ options:
   google:
     base_url: https://maps.googleapis.com/maps/api
   nc_onemap:
-    parcels_url: https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/FeatureServer/0
+    parcels_url: https://services.nconemap.gov/secure/rest/services/NC1Map_Parcels/FeatureServer/1   # layer 1 = polygons; layer 0 is a point layer
   county:
     layers:
       Pitt: https://gis.pittcountync.gov/arcgis/rest/services/Parcels/FeatureServer/0

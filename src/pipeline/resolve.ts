@@ -46,7 +46,7 @@ export async function resolve(ctx: RunContext): Promise<StageCounter> {
             has_office: existing.has_office ?? ex.has_office,
             vehicle_capacity: Math.max(existing.vehicle_capacity ?? -1, ex.vehicle_capacity ?? -1) >= 0 ? Math.max(existing.vehicle_capacity ?? 0, ex.vehicle_capacity ?? 0) : null,
             contact_email: existing.contact_email ?? ex.contact_email,
-            jurisdiction: existing.jurisdiction ?? parcel.jurisdiction,
+            jurisdiction: existing.jurisdiction ?? parcel.jurisdiction ?? geo.city,
             county: existing.county ?? parcel.county,
           })
         : {
@@ -55,7 +55,7 @@ export async function resolve(ctx: RunContext): Promise<StageCounter> {
             canonical_address: geo.canonical_address,
             lat: parcel.centroid?.lat ?? geo.lat,
             lon: parcel.centroid?.lon ?? geo.lon,
-            jurisdiction: parcel.jurisdiction,
+            jurisdiction: parcel.jurisdiction ?? geo.city,
             county: parcel.county,
             planning_email: null,
             stage: "resolved",
