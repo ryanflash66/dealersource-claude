@@ -53,6 +53,7 @@ export async function score(ctx: RunContext): Promise<StageCounter> {
     for (const g of Object.values(gates)) if (g.warning) flags.push(`${g.gate}: ${g.warning}`);
     if (site.shared_lot) flags.push(`shared lot (${b.site.shared_lot})`);
     for (const r of reqs) if (r.outcome !== "met") flags.push(`${r.name}: ${r.detail}`);
+    for (const w of site.enrich_warnings ?? []) flags.push(w);
     const distanceUnknown = site.in_search_area === null;
     if (distanceUnknown) flags.push("drive time unknown: gated but not ranked until the distance is known");
 

@@ -100,9 +100,17 @@ export class StageCounter {
   inc(key: string, by = 1): void {
     this.counts[key] = (this.counts[key] ?? 0) + by;
   }
+  /** Stage-level failure: the run exits non-zero. Use for a stage that failed entirely. */
   error(msg: string, data: Record<string, unknown> = {}): void {
     this.errors.push(`${this.stage}: ${msg}`);
     this.ctx.logger.error(msg, { stage: this.stage, ...data });
+  }
+  /** Per-item degradation (one site, one source, one layer): recorded, surfaced, never aborts the run. */
+  warn(msg: string, data: Record<string, unknown> = {}): void {
+    const line = `${this.stage}: ${msg}`;
+    if (!this.ctx.run.warnings.includes(line)) this.ctx.run.warnings.push(line);
+    this.inc("warnings");
+    this.ctx.logger.warn(msg, { stage: this.stage, ...data });
   }
   summary(): StageSummary {
     return { started_at: this.started, finished_at: this.ctx.clock.iso(), counts: this.counts, errors: this.errors };

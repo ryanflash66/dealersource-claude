@@ -9,7 +9,7 @@ import type { SourceRow } from "../../src/core/types.js";
 import { cleanEnv, tmp } from "../helpers.js";
 
 const src = (id: string, enabled = true): SourceRow => ({
-  id, kind: "crawl", url: `https://${id}.test`, robots_txt: "unknown", terms_status: "allowed", enabled, cadence: "daily", fixture_only: false, notes: null, last_run_at: null, last_status: null, last_error: null,
+  id, kind: "crawl", url: `https://${id}.test`, robots_txt: "unknown", terms_status: "allowed", enabled, cadence: "daily", fixture_only: false, contact_email: null, notes: null, last_run_at: null, last_status: null, last_error: null,
 });
 
 describe("JsonFileStore (Supabase fake)", () => {

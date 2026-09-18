@@ -42,6 +42,7 @@ async function seedSources(ctx: RunContext): Promise<void> {
     enabled: s.enabled,
     cadence: s.cadence,
     fixture_only: s.fixture_only,
+    contact_email: s.contact_email,
     notes: s.notes,
     last_run_at: existing.get(s.id)?.last_run_at ?? null,
     last_status: existing.get(s.id)?.last_status ?? null,
@@ -70,6 +71,7 @@ async function discoverFromFixtures(ctx: RunContext, c: StageCounter): Promise<v
         enabled: true,
         cadence: "daily",
         fixture_only: false,
+        contact_email: null,
         notes: "auto-registered from listings.json (already-fetched listing); review terms",
         last_run_at: now,
         last_status: "ok",
@@ -165,11 +167,13 @@ async function discoverOnline(ctx: RunContext, c: StageCounter): Promise<void> {
     } catch (e) {
       source.last_status = "error";
       source.last_error = errMsg(e);
-      c.error(`source ${source.id} failed: ${errMsg(e)}`, { source: source.id });
+      c.warn(`source ${source.id} failed: ${errMsg(e)}`, { source: source.id });
     }
     source.last_run_at = now;
     await ctx.store.upsert("sources", [source]);
   }
+  // Discovery failed entirely only when every eligible source failed and nothing was fetched.
+  if ((c.counts.sources_fetched ?? 0) === 0 && (c.counts.warnings ?? 0) > 0) c.error("every enabled source failed to fetch; nothing discovered");
 }
 
 async function ingestPage(ctx: RunContext, c: StageCounter, source: SourceRow, ua: string): Promise<void> {

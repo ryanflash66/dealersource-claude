@@ -140,6 +140,13 @@ export const sourceSchema = z.object({
   enabled: z.boolean(),
   cadence: z.string().default("daily"),
   fixture_only: z.boolean().default(false),
+  /** Published leasing contact for the whole source (broker sites rarely put one on each listing). */
+  contact_email: z
+    .string()
+    .trim()
+    .transform((s) => (s === "" ? null : s))
+    .nullable()
+    .default(null),
   notes: z.string().nullable().default(null),
 });
 export const sourcesSchema = z.object({ sources: z.array(sourceSchema) });

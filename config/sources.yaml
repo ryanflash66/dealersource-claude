@@ -126,6 +126,7 @@ sources:
     robots_txt: allowed
     terms_status: allowed
     enabled: true
+    contact_email: ""            # leasing contact published on the site's contact page; PM to fill in
     cadence: daily
     notes: >-
       Ron Harrell & Associates, Greenville NC commercial broker. Static WordPress

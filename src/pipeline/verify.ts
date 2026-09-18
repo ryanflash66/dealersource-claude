@@ -24,7 +24,7 @@ export async function verify(ctx: RunContext): Promise<StageCounter> {
     try {
       await openCases(ctx, c, site);
     } catch (e) {
-      c.error(`cases for ${site.id}: ${errMsg(e)}`, { site: site.id });
+      c.warn(`cases for ${site.id}: ${errMsg(e)}`, { site: site.id });
     }
   }
   await closeCasesForExcludedSites(ctx, c);
@@ -61,9 +61,16 @@ async function openCases(ctx: RunContext, c: StageCounter, site: SiteRow): Promi
 
   for (const w of want) {
     const prev = existing.get(w.type);
-    if (prev && prev.status !== "closed") continue; // already tracked
     let contact: ContactRow | null = null;
     if (w.email) contact = await upsertContact(ctx, w.email, w.role, w.derivedFrom);
+    if (prev && prev.status !== "closed") {
+      // Escalated once for a missing contact: reopen only when a contact has since been published.
+      if (prev.status === "escalated" && !prev.contact_id && contact) {
+        await ctx.store.upsert("cases", [{ ...prev, status: "open", owner: "system", contact_id: contact.id, next_action: `email ${w.role} contact`, next_action_at: now, updated_at: now }]);
+        c.inc("cases_reopened_with_contact");
+      }
+      continue;
+    }
     const row: CaseRow = {
       id: caseId(site.id, w.type),
       site_id: site.id,
@@ -73,7 +80,7 @@ async function openCases(ctx: RunContext, c: StageCounter, site: SiteRow): Promi
       owner: contact ? "system" : "human",
       contact_id: contact?.id ?? null,
       contact_role: w.role,
-      next_action: contact ? `email ${w.role} contact` : `no ${w.role} address published; human to locate a contact`,
+      next_action: contact ? `email ${w.role} contact` : missingContactNote(site, w.role),
       next_action_at: now,
       followups_sent: 0,
       last_contacted_at: null,
@@ -261,7 +268,7 @@ async function sendOutbound(ctx: RunContext, c: StageCounter): Promise<void> {
       }
       row.status = "refused";
       await ctx.store.upsert("messages", [row]);
-      c.error(`send to ${g.contact.email} failed: ${errMsg(e)}`, { site: g.site.id });
+      c.warn(`send to ${g.contact.email} failed: ${errMsg(e)}`, { site: g.site.id });
       continue;
     }
     await ctx.store.upsert("messages", [row]);
@@ -300,7 +307,7 @@ async function ingestReplies(ctx: RunContext, c: StageCounter): Promise<void> {
   try {
     inbound = await ctx.providers.mail.fetchInbound({ since, until: ctx.cutoffIso, threads });
   } catch (e) {
-    c.error(`inbound poll failed: ${errMsg(e)}`);
+    c.warn(`inbound poll failed: ${errMsg(e)}`);
     return;
   }
 
@@ -400,4 +407,13 @@ async function evidenceFromReply(
     return last;
   }
   return null;
+}
+
+/** Says exactly which contact is missing so the digest and dashboard are actionable. */
+function missingContactNote(site: SiteRow, role: ContactRole): string {
+  if (role === "planning") {
+    return `no planning email for ${site.jurisdiction ?? "unknown jurisdiction"}: add it under business.yaml jurisdictions (verified: true) to open outreach`;
+  }
+  const ids = site.listing_ids.join(", ");
+  return `no leasing contact for ${site.canonical_address}: listing${site.listing_ids.length === 1 ? "" : "s"} ${ids} carry no email; set contact_email on the source in config/sources.yaml or add a manual lead`;
 }

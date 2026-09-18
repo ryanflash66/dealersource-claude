@@ -7,60 +7,74 @@ import { StageCounter, currentEvidence, errMsg, touchSite, writeEvidence, type R
  * zoning layer + use table, flood, traffic, competitors, imagery, and the
  * facts stated on the listing itself (rent, office, capacity). Each fact is
  * fetched only when no fresh evidence exists, so re-runs are cheap.
+ *
+ * Point-in-polygon layers are queried at the PARCEL (polygon, else centroid):
+ * Census geocodes are centreline-interpolated and land in the road right-of-way,
+ * which zoning polygons exclude. A layer failing for one site records a
+ * warning on that site and leaves that gate pending; it never aborts the run.
  */
 export async function enrich(ctx: RunContext): Promise<StageCounter> {
   const c = new StageCounter(ctx, "enrich");
   const sites = await ctx.store.list("sites");
   const listings = await ctx.store.list("listings");
   for (let site of sites) {
-    const hints = { parcel_id: site.parcel_id, county: site.county, address: site.canonical_address };
-    const point = { lat: site.lat, lon: site.lon };
-    try {
-      // --- drive time / search area ---------------------------------------
-      let drive = await currentEvidence(ctx, site.id, "drive_minutes");
-      if (!drive) {
-        try {
-          const r = await ctx.providers.drivetime.driveMinutes(ctx.homeBase ?? point, point, hints);
-          drive = await writeEvidence(ctx, {
-            site_id: site.id,
-            fact: "drive_minutes",
-            value: { minutes: r.minutes, from: ctx.config.business.search.home_base, provider: ctx.providers.drivetime.name },
-            source_url: r.source_url,
-            method: "api",
-          });
-          c.inc("drivetime_fetched");
-        } catch (e) {
-          // Unknown is not "outside": keep gating, flag it, and leave ranking until the distance is known.
-          c.inc("drivetime_unavailable");
-          const msg = `drive time unavailable for ${site.id} (${site.canonical_address}): ${errMsg(e)}; gated but not ranked`;
-          if (!ctx.run.warnings.includes(msg)) ctx.run.warnings.push(msg);
-          ctx.logger.warn("drive time unavailable", { site: site.id, error: errMsg(e) });
-        }
+    const parcel = await ctx.store.get("parcels", site.parcel_id);
+    // The parcel centroid is the query point; sites already carry it from resolve, the geocode is the last resort.
+    const point = parcel?.geometry ? polyCentroid(parcel.geometry) : { lat: site.lat, lon: site.lon };
+    const hints = { parcel_id: site.parcel_id, county: site.county, address: site.canonical_address, geometry: parcel?.geometry ?? null };
+    const warnings: string[] = [];
+    const attempt = async (fact: string, fn: () => Promise<void>) => {
+      try {
+        await fn();
+      } catch (e) {
+        const msg = `${fact} unavailable for ${site.canonical_address}: ${errMsg(e)}`;
+        warnings.push(msg);
+        c.warn(`site ${site.id}: ${msg}`, { site: site.id, fact });
       }
-      if (drive) {
-        const minutes = (drive.value as { minutes: number }).minutes;
-        const inArea = minutes <= ctx.config.business.search.max_drive_minutes;
-        site = await touchSite(ctx, site, { drive_minutes: minutes, in_search_area: inArea, stage: inArea ? "enriched" : "out_of_area" });
-        if (!inArea) {
-          c.inc("sites_out_of_area");
-          continue;
-        }
-      } else {
-        site = await touchSite(ctx, site, { drive_minutes: null, in_search_area: null, stage: "enriched" });
+    };
+
+    // --- drive time / search area ---------------------------------------
+    let drive = await currentEvidence(ctx, site.id, "drive_minutes");
+    if (!drive) {
+      await attempt("drive time", async () => {
+        const r = await ctx.providers.drivetime.driveMinutes(ctx.homeBase ?? point, point, hints);
+        drive = await writeEvidence(ctx, {
+          site_id: site.id,
+          fact: "drive_minutes",
+          value: { minutes: r.minutes, from: ctx.config.business.search.home_base, provider: ctx.providers.drivetime.name },
+          source_url: r.source_url,
+          method: "api",
+        });
+        c.inc("drivetime_fetched");
+      });
+      if (!drive) c.inc("drivetime_unavailable");
+    }
+    if (drive) {
+      const minutes = (drive.value as { minutes: number }).minutes;
+      const inArea = minutes <= ctx.config.business.search.max_drive_minutes;
+      site = await touchSite(ctx, site, { drive_minutes: minutes, in_search_area: inArea, stage: inArea ? "enriched" : "out_of_area", enrich_warnings: warnings });
+      if (!inArea) {
+        c.inc("sites_out_of_area");
+        continue;
       }
+    } else {
+      // Unknown is not "outside": keep gating, flag it, and leave ranking until the distance is known.
+      site = await touchSite(ctx, site, { drive_minutes: null, in_search_area: null, stage: "enriched", enrich_warnings: warnings });
+    }
 
-      // --- listing-stated facts (written statements, source = listing URL) ---
-      const mine = listings.filter((l) => site.listing_ids.includes(l.id));
-      await listingFacts(ctx, c, site, mine);
+    // --- listing-stated facts (written statements, source = listing URL) ---
+    const mine = listings.filter((l) => site.listing_ids.includes(l.id));
+    await attempt("listing facts", () => listingFacts(ctx, c, site, mine));
 
-      // --- zoning ----------------------------------------------------------
-      if (!(await currentEvidence(ctx, site.id, "zoning_district"))) {
+    // --- zoning ----------------------------------------------------------
+    if (!(await currentEvidence(ctx, site.id, "zoning_district"))) {
+      await attempt("zoning layer", async () => {
         const z = await ctx.providers.zoning.lookup(point, site.jurisdiction, hints);
         if (z) {
           await writeEvidence(ctx, {
             site_id: site.id,
             fact: "zoning_district",
-            value: { district: z.district, jurisdiction: z.jurisdiction, dealer_use: z.dealer_use ?? "unknown" },
+            value: { district: z.district, jurisdiction: z.jurisdiction, dealer_use: z.dealer_use ?? "unknown", queried: hints.geometry ? "parcel polygon" : "parcel centroid" },
             source_url: z.source_url,
             method: "layer",
           });
@@ -83,13 +97,13 @@ export async function enrich(ctx: RunContext): Promise<StageCounter> {
           if (planning && !site.planning_email) site = await touchSite(ctx, site, { planning_email: planning });
           c.inc("zoning_no_layer");
         }
-      }
+      });
+    }
 
-      // --- flood ----------------------------------------------------------
-      if (!(await currentEvidence(ctx, site.id, "flood_zone"))) {
-        const parcel = await ctx.store.get("parcels", site.parcel_id);
-        const cen = parcel?.geometry ? polyCentroid(parcel.geometry) : point;
-        const f = await ctx.providers.flood.zonesFor(parcel?.geometry ?? null, cen, ctx.config.business.flood.high_risk_zones, hints);
+    // --- flood: majority of the parcel area, centroid zone ------------------
+    if (!(await currentEvidence(ctx, site.id, "flood_zone"))) {
+      await attempt("flood layer", async () => {
+        const f = await ctx.providers.flood.zonesFor(parcel?.geometry ?? null, point, ctx.config.business.flood.high_risk_zones, hints);
         await writeEvidence(ctx, {
           site_id: site.id,
           fact: "flood_zone",
@@ -98,10 +112,12 @@ export async function enrich(ctx: RunContext): Promise<StageCounter> {
           method: "layer",
         });
         c.inc("flood_fetched");
-      }
+      });
+    }
 
-      // --- traffic --------------------------------------------------------
-      if (!(await currentEvidence(ctx, site.id, "traffic_aadt"))) {
+    // --- traffic (nearest count station to the parcel centroid) ----------
+    if (!(await currentEvidence(ctx, site.id, "traffic_aadt"))) {
+      await attempt("traffic layer", async () => {
         const t = await ctx.providers.traffic.aadtNear(point, hints);
         if (t) {
           await writeEvidence(ctx, {
@@ -113,10 +129,12 @@ export async function enrich(ctx: RunContext): Promise<StageCounter> {
           });
           c.inc("traffic_fetched");
         } else c.inc("traffic_missing");
-      }
+      });
+    }
 
-      // --- competitors ----------------------------------------------------
-      if (!(await currentEvidence(ctx, site.id, "competitor_count"))) {
+    // --- competitors (around the parcel centroid) --------------------------
+    if (!(await currentEvidence(ctx, site.id, "competitor_count"))) {
+      await attempt("competitor POI", async () => {
         const p = await ctx.providers.poi.dealersWithin(point, ctx.config.business.competitors.radius_m, hints);
         await writeEvidence(ctx, {
           site_id: site.id,
@@ -126,10 +144,12 @@ export async function enrich(ctx: RunContext): Promise<StageCounter> {
           method: "api",
         });
         c.inc("competitors_fetched");
-      }
+      });
+    }
 
-      // --- imagery ----------------------------------------------------------
-      if (!(await currentEvidence(ctx, site.id, "imagery"))) {
+    // --- imagery ----------------------------------------------------------
+    if (!(await currentEvidence(ctx, site.id, "imagery"))) {
+      await attempt("imagery", async () => {
         const im = await ctx.providers.imagery.nearby(point, hints);
         await writeEvidence(ctx, {
           site_id: site.id,
@@ -139,11 +159,11 @@ export async function enrich(ctx: RunContext): Promise<StageCounter> {
           method: "api",
         });
         c.inc("imagery_fetched");
-      }
-      c.inc("sites_enriched");
-    } catch (e) {
-      c.error(`site ${site.id}: ${errMsg(e)}`, { site: site.id });
+      });
     }
+
+    await touchSite(ctx, site, { enrich_warnings: warnings });
+    c.inc(warnings.length ? "sites_enriched_with_warnings" : "sites_enriched");
   }
   return c;
 }

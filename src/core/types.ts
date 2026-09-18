@@ -30,6 +30,7 @@ export interface SourceRow {
   enabled: boolean;
   cadence: string;
   fixture_only: boolean;
+  contact_email: string | null; // source-level leasing contact used when a listing has none
   notes: string | null;
   last_run_at: ISODate | null;
   last_status: "ok" | "refused" | "error" | "skipped" | null;
@@ -100,6 +101,7 @@ export interface SiteRow {
   listing_ids: string[];
   drive_minutes: number | null;
   in_search_area: boolean | null;
+  enrich_warnings: string[]; // per-site layer failures from the last run; the affected gate stays pending
   created_at: ISODate;
   updated_at: ISODate;
 }
