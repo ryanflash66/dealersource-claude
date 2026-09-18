@@ -64,8 +64,17 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
     centroid zone is high-risk or the share exceeds `flood.majority_fail_pct` (50%). The
     fixture supplies `pct_area_high_risk` directly.
 
-14. **Crawler default is self-hosted AnyCrawl** (`crawler: anycrawl`, the section-14.1
-    default). robots.txt is checked before fetching a source whose `robots_txt` is `unknown`.
+14. **Crawler default is `fetch`** (plain Node `fetch`), added on the PM's zero-cost constraint:
+    nothing to host, no paid API, no Docker. It follows redirects, times out at 15 s, sends a
+    polite User-Agent naming the parent repo, executes no JavaScript, checks robots.txt for
+    every page (cached per origin) and refuses disallowed paths, then returns the same
+    document shape as the AnyCrawl adapters (raw HTML for `raw_documents`, readable text,
+    absolute links). `anycrawl` (self-hosted, free) and `anycrawl_cloud` (paid) remain
+    selectable. Section 14.1 lists `crawler: anycrawl` as the default and the parent
+    `report.schema.json` enum only knows `anycrawl | anycrawl_cloud`; `report.providers.crawler`
+    now echoes `fetch`, so the parent enum needs `fetch` added (the local schema copy under
+    `tests/contract/` already has it). robots.txt is also checked at the discover stage for
+    any source whose `robots_txt` is `unknown`, as before.
 
 15. **Sources appearing only in `listings.json` are auto-registered** with
     `terms_status: allowed` and a note, because the operator's crawler already fetched them;

@@ -16,7 +16,7 @@ golden integration test asserts `run.json.paid_calls == []` and `report.json.ext
 | flood | `fema` | free | - |
 | imagery | `mapillary` | free token | fair-use |
 | poi | `overpass` | free public instance | 1 request / 2 s enforced by the adapter; self-host with `OVERPASS_URL` for scheduled loads |
-| crawler | `anycrawl` | self-hosted, free software | your own compute |
+| crawler | `fetch` | free, plain Node fetch | nothing to host; polite per-host interval, robots.txt honoured. `anycrawl` (self-hosted) is the free alternative |
 | social | `reddit` | free tier, OAuth app | 100 QPM; Developer Terms apply |
 | mail | `gmail` | free | Gmail sending limits; quota errors auto-pause outreach |
 | llm | `rules` | free | deterministic |
@@ -39,7 +39,7 @@ Every paid adapter exists in code but is unreachable until BOTH are true:
 | `google` (Distance Matrix) | `drivetime: google` | `GOOGLE_MAPS_API_KEY` | ors / valhalla |
 | `streetview` | `imagery: streetview` | `GOOGLE_MAPS_API_KEY` | mapillary |
 | `places` | `poi: places` | `GOOGLE_MAPS_API_KEY` | overpass |
-| `anycrawl_cloud` | `crawler: anycrawl_cloud` | `ANYCRAWL_API_KEY` | anycrawl (self-hosted) |
+| `anycrawl_cloud` | `crawler: anycrawl_cloud` | `ANYCRAWL_API_KEY` | fetch / anycrawl (self-hosted) |
 | `claude_api` | `llm: claude_api` | `ANTHROPIC_API_KEY` | rules / claude_agent |
 | `mapbox` | `tiles: mapbox` | `MAPBOX_TOKEN` | protomaps |
 

@@ -88,7 +88,7 @@ sources.yaml ──discover──> raw_documents + listings
 | `config/sources.yaml` | the source allowlist with researched `terms_status` / `robots_txt` |
 | `config/use-tables.yaml` | zoning use tables with the cited ordinance section per district |
 | `config/mail-templates.yaml` | approved outreach text |
-| `src/providers/` | one interface per data layer, free + paid adapters, fixture-backed fakes |
+| `src/providers/` | one interface per data layer, free + paid adapters (crawler: `fetch` default, `anycrawl`, `anycrawl_cloud`), fixture-backed fakes |
 | `src/pipeline/` | the six idempotent stages, gates, scoring, templates |
 | `src/store/` | JSON-file store (offline default) and Supabase/PostgREST store |
 | `fixtures/golden-v1/` | the sample fixture set (copied from the parent repo) |
@@ -129,7 +129,7 @@ to its fixture-backed fake and the run records it under `fixture_layers`.
 | Storage (Supabase) | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (pipeline), `SUPABASE_ANON_KEY` (dashboard) |
 | Email (Gmail API, OAuth) | `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_SENDER_ADDRESS`; pick the mailbox with `business.yaml mail.sender: owner|operator` |
 | Reddit official API | `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_USER_AGENT` |
-| Free providers needing a key/URL | `ORS_API_KEY`, `MAPILLARY_ACCESS_TOKEN`, `ANYCRAWL_URL`, `NOMINATIM_URL`, `VALHALLA_URL`, `OVERPASS_URL`, `PMTILES_URL` |
+| Free providers needing a key/URL | `ORS_API_KEY`, `MAPILLARY_ACCESS_TOKEN`, `NOMINATIM_URL`, `VALHALLA_URL`, `OVERPASS_URL`, `PMTILES_URL`; `ANYCRAWL_URL` only if you switch `crawler` from the default `fetch` to self-hosted `anycrawl` |
 | Paid providers (off by default) | `GOOGLE_MAPS_API_KEY`, `REGRID_API_KEY`, `ANTHROPIC_API_KEY`, `ANYCRAWL_API_KEY`, `MAPBOX_TOKEN` |
 
 Steps:
@@ -154,7 +154,13 @@ Steps:
 
 Edit one line in `providers.yaml`, e.g. `geocoder: nominatim` (and set `NOMINATIM_URL` to your
 self-hosted instance; the public Nominatim server is refused). No code changes. `report.json.providers`
-reflects the selection even offline. Paid adapters (`google`, `regrid`, `streetview`, `places`,
+reflects the selection even offline.
+
+Crawler: `crawler: fetch  # fetch | anycrawl | anycrawl_cloud`. The default `fetch` is plain Node
+`fetch` with nothing to host: follows redirects, 15 s timeout, polite User-Agent naming this project,
+robots.txt checked per page and disallowed paths refused, no JavaScript execution; the fetched HTML is
+stored in `raw_documents` and its readable text and links feed the listing extractor. `anycrawl`
+(self-hosted, `ANYCRAWL_URL`) and `anycrawl_cloud` (paid) return the same document shape. Paid adapters (`google`, `regrid`, `streetview`, `places`,
 `anycrawl_cloud`, `claude_api`, `mapbox`) additionally require `paid_enabled: true` and the matching
 key; otherwise startup fails with `PaidProviderDisabledError` and no call can happen.
 See `docs/costs.md` for exactly what starts costing money.

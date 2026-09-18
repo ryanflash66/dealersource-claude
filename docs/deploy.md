@@ -44,8 +44,9 @@ and the run is online; otherwise it uses the JSON store under `<out>/state/`.
 ## 3. Providers
 
 Edit `providers.yaml`; each key is one line. Free defaults need these variables when used
-for real: `ORS_API_KEY` (drivetime), `MAPILLARY_ACCESS_TOKEN` (imagery), `ANYCRAWL_URL`
-(self-hosted crawler), `REDDIT_CLIENT_ID/SECRET/USER_AGENT`. Optional self-hosted URLs:
+for real: `ORS_API_KEY` (drivetime), `MAPILLARY_ACCESS_TOKEN` (imagery),
+`REDDIT_CLIENT_ID/SECRET/USER_AGENT`. The default crawler `fetch` needs nothing; `ANYCRAWL_URL`
+only if you select `crawler: anycrawl`. Optional self-hosted URLs:
 `NOMINATIM_URL`, `VALHALLA_URL`, `OVERPASS_URL`. Paid adapters: see `docs/costs.md`.
 
 `config/use-tables.yaml` and the `arcgis` layer list in `providers.yaml` must be extended
