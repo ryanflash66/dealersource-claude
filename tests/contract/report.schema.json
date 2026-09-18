@@ -19,7 +19,7 @@
         "drivetime": { "enum": ["ors", "valhalla", "google"] },
         "imagery": { "enum": ["mapillary", "streetview"] },
         "poi": { "enum": ["overpass", "places"] },
-        "crawler": { "enum": ["anycrawl", "anycrawl_cloud"] },
+        "crawler": { "enum": ["fetch", "anycrawl", "anycrawl_cloud"] },
         "tiles": { "enum": ["protomaps", "mapbox"] }
       }
     },

@@ -13,7 +13,7 @@ parcels: nc_onemap      # nc_onemap | county | regrid (paid)
 drivetime: ors          # ors | valhalla | google (paid)
 imagery: mapillary      # mapillary | streetview (paid)
 poi: overpass           # overpass | places (paid)
-crawler: anycrawl       # anycrawl (self-hosted) | anycrawl_cloud (paid)
+crawler: fetch          # fetch | anycrawl | anycrawl_cloud (paid). fetch = plain Node fetch, nothing to host
 tiles: protomaps        # protomaps (self-hosted PMTiles) | mapbox (paid)
 
 # --- Additional layers (always free / official-source) ----------------------
@@ -82,10 +82,14 @@ options:
     min_interval_ms: 2000
   places:
     base_url: https://maps.googleapis.com/maps/api
+  fetch:
+    user_agent: "dealersource/0.1 (+https://github.com/ryanflash66/dealersource)"   # polite UA naming the parent repo
+    min_interval_ms: 1500                                                                # per host
+    timeout_ms: 15000
   anycrawl:
     base_url_env: ANYCRAWL_URL
     default_base_url: http://localhost:8080
-    user_agent: "dealersource/0.1 (+https://github.com/ryanflash66/dealersource-claude)"
+    user_agent: "dealersource/0.1 (+https://github.com/ryanflash66/dealersource)"
   anycrawl_cloud:
     base_url: https://api.anycrawl.dev
   reddit:

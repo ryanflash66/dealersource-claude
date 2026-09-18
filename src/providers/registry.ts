@@ -14,7 +14,7 @@ import { NcdotAadt } from "./traffic.js";
 import { FemaNfhlFlood } from "./flood.js";
 import { GoogleStreetViewImagery, MapillaryImagery } from "./imagery.js";
 import { GooglePlacesPoi, OverpassPoi } from "./competitors.js";
-import { AnyCrawlCloud, AnyCrawlSelfHosted } from "./crawl.js";
+import { AnyCrawlCloud, AnyCrawlSelfHosted, FetchCrawl } from "./crawl.js";
 import { RedditSocial } from "./social.js";
 import { GmailMail } from "./mail.js";
 import { ClaudeAgentLlm, ClaudeApiLlm, RulesLlm } from "./llm.js";
@@ -64,6 +64,7 @@ export const ADAPTERS: AdapterSpec[] = [
   { id: "streetview", layer: "imagery", paid: true, envVars: ["GOOGLE_MAPS_API_KEY"], create: (c) => new GoogleStreetViewImagery(c) },
   { id: "overpass", layer: "poi", paid: false, envVars: [], create: (c) => new OverpassPoi(c) },
   { id: "places", layer: "poi", paid: true, envVars: ["GOOGLE_MAPS_API_KEY"], create: (c) => new GooglePlacesPoi(c) },
+  { id: "fetch", layer: "crawler", paid: false, envVars: [], create: (c) => new FetchCrawl(c) },
   { id: "anycrawl", layer: "crawler", paid: false, envVars: ["ANYCRAWL_URL"], create: (c) => new AnyCrawlSelfHosted(c) },
   { id: "anycrawl_cloud", layer: "crawler", paid: true, envVars: ["ANYCRAWL_API_KEY"], create: (c) => new AnyCrawlCloud(c) },
   { id: "reddit", layer: "social", paid: false, envVars: ["REDDIT_CLIENT_ID", "REDDIT_CLIENT_SECRET"], create: (c) => new RedditSocial(c) },

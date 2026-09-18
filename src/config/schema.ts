@@ -98,7 +98,7 @@ export const providersSchema = z.object({
   drivetime: z.enum(["ors", "valhalla", "google"]),
   imagery: z.enum(["mapillary", "streetview"]),
   poi: z.enum(["overpass", "places"]),
-  crawler: z.enum(["anycrawl", "anycrawl_cloud"]),
+  crawler: z.enum(["fetch", "anycrawl", "anycrawl_cloud"]),
   tiles: z.enum(["protomaps", "mapbox"]),
   zoning: z.enum(["arcgis"]).default("arcgis"),
   traffic: z.enum(["ncdot"]).default("ncdot"),
