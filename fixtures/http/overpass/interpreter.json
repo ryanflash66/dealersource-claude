@@ -2,26 +2,125 @@
   "_note": "Recorded shape of Overpass API [out:json] responses for shop=car and office=estate_agent around a point.",
   "fixtures": [
     {
-      "match": { "method": "POST", "url_pattern": "overpass", "body_pattern": "shop.*%3D.*car|shop%22%3D%22car|shop\"=\"car" },
+      "_note": "radius 3210: main instance answers 504 (as seen live 2026-09-18), kumi answers",
+      "match": {
+        "method": "POST",
+        "url_pattern": "overpass-api\\.de",
+        "body_pattern": "around%3A3210"
+      },
+      "response": {
+        "status": 504,
+        "body": "<html><body><h1>504 Gateway Time-out</h1></body></html>",
+        "content_type": "text/html"
+      }
+    },
+    {
+      "match": {
+        "method": "POST",
+        "url_pattern": "overpass\\.kumi\\.systems",
+        "body_pattern": "around%3A3210"
+      },
       "response": {
         "json": {
           "version": 0.6,
-          "generator": "Overpass API 0.7.62",
+          "generator": "Overpass API",
           "elements": [
-            { "type": "node", "id": 4129001, "lat": 35.5801, "lon": -77.4011, "tags": { "shop": "car", "name": "Coastal Motors", "second_hand": "only" } },
-            { "type": "way", "id": 55102, "center": { "lat": 35.5852, "lon": -77.4103 }, "tags": { "shop": "car", "name": "Memorial Auto Sales" } }
+            {
+              "type": "node",
+              "id": 9000000001,
+              "lat": 35.6012,
+              "lon": -77.3931,
+              "tags": {
+                "shop": "car",
+                "name": "Failover Motors"
+              }
+            }
           ]
         }
       }
     },
     {
-      "match": { "method": "POST", "url_pattern": "overpass", "body_pattern": "estate_agent" },
+      "_note": "radius 3211: every instance is down",
+      "match": {
+        "method": "POST",
+        "url_pattern": "overpass",
+        "body_pattern": "around%3A3211"
+      },
+      "response": {
+        "status": 504,
+        "body": "<html><body><h1>504 Gateway Time-out</h1></body></html>",
+        "content_type": "text/html"
+      }
+    },
+    {
+      "match": {
+        "method": "POST",
+        "url_pattern": "overpass",
+        "body_pattern": "shop.*%3D.*car|shop%22%3D%22car|shop\"=\"car"
+      },
+      "response": {
+        "json": {
+          "version": 0.6,
+          "generator": "Overpass API 0.7.62",
+          "elements": [
+            {
+              "type": "node",
+              "id": 4129001,
+              "lat": 35.5801,
+              "lon": -77.4011,
+              "tags": {
+                "shop": "car",
+                "name": "Coastal Motors",
+                "second_hand": "only"
+              }
+            },
+            {
+              "type": "way",
+              "id": 55102,
+              "center": {
+                "lat": 35.5852,
+                "lon": -77.4103
+              },
+              "tags": {
+                "shop": "car",
+                "name": "Memorial Auto Sales"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "POST",
+        "url_pattern": "overpass",
+        "body_pattern": "estate_agent"
+      },
       "response": {
         "json": {
           "version": 0.6,
           "elements": [
-            { "type": "node", "id": 7710021, "lat": 35.5912, "lon": -77.3701, "tags": { "office": "estate_agent", "name": "Tarheel Commercial", "website": "https://tarheel-commercial.example" } },
-            { "type": "node", "id": 7710022, "lat": 35.6011, "lon": -77.3801, "tags": { "office": "estate_agent", "name": "No Website Realty" } }
+            {
+              "type": "node",
+              "id": 7710021,
+              "lat": 35.5912,
+              "lon": -77.3701,
+              "tags": {
+                "office": "estate_agent",
+                "name": "Tarheel Commercial",
+                "website": "https://tarheel-commercial.example"
+              }
+            },
+            {
+              "type": "node",
+              "id": 7710022,
+              "lat": 35.6011,
+              "lon": -77.3801,
+              "tags": {
+                "office": "estate_agent",
+                "name": "No Website Realty"
+              }
+            }
           ]
         }
       }
