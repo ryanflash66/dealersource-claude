@@ -142,6 +142,30 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
     escalated once per case type with a note that names the listing and the fix; when a contact
     appears later the escalated case reopens and the inquiry goes out.
 
+14f. **Traffic comes from NCDOT's ArcGIS Online AADT layers, matched to the site's street** (live-run
+    fix, 2026-09-18). The `gis11.services.ncdot.gov` URL answered "Service not found". The official
+    layers (owner TrafficSurvey.NCDOT.GOV) are point layers whose `AADT_YYYY` columns are strings
+    with `" "` for uncounted years, so the adapter takes the latest non-blank year per station and
+    parses it. Default is the 2024 release (`NCDOT__2024_AADT_Stations_published_September_2025`,
+    `AADT_2002..AADT_2024`, road text in `Location`); the older `NCDOT_AADT_Stations` service (through
+    `AADT_2022`, `ROUTE` + `LOCATION`) is `fallback_url` and is queried when the primary errors. At the
+    2100 Dickinson Ave centroid the nearest station (45 m) is on Line Ave; the adapter prefers a
+    station whose road matches the parcel's fronting road or the address street after normalising
+    `AVE/AV/AVENUE`, `BV/BLVD` and stripping `SR 1598 (` designations, so Dickinson Ave (85 m,
+    8,700 in 2024) is reported; nearest wins only without a road match. Search radius 600 m.
+
+14g. **Overpass: 60 s, one retry, ordered instance list.** Competitor lookups aborted at the 30 s
+    HTTP timeout while the QL asked for 25 s, and the public instance returned 504 for a whole
+    afternoon. `timeout_s` (default 60) sets the QL `[timeout:N]` and the HTTP timeout is N + 30 s.
+    `OVERPASS_URL` is one URL or a comma-separated list tried in order (default: overpass-api.de,
+    then overpass.kumi.systems); each instance is retried once on 429/502/503/504, an abort or a
+    connection error, and a 200 with a "timed out" remark counts as a failure. Only when every
+    instance failed does the adapter throw, which enrich records as a per-site warning (14d).
+
+14h. **`in_search_area` is nullable in SQL.** Decision 5b made unknown distance `null`; the live
+    `scores` table still had `not null`. Migration `20260918000100` drops it on `scores` and `sites`
+    (already applied by hand to the live database); a unit test asserts the migration text.
+
 15. **Sources appearing only in `listings.json` are auto-registered** with
     `terms_status: allowed` and a note, because the operator's crawler already fetched them;
     a listing whose `source_id` matches a `prohibited`/`disallowed` row in `sources.yaml` is

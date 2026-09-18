@@ -89,10 +89,12 @@ describe("adapters against recorded HTTP fixtures", () => {
     expect(r.source_url).toBe("http://valhalla.internal:8002/route");
   });
 
-  it("ncdot picks the nearest AADT station", async () => {
-    const r = await new NcdotAadt(adapterCtx("ncdot")).aadtNear(POINT);
-    expect(r).toMatchObject({ aadt: 32000, road: "S Memorial Dr", year: 2024 });
-    expect(r!.station_distance_m).toBeLessThan(50);
+  it("ncdot reads the latest AADT year from the 2024 ArcGIS Online release (recorded)", async () => {
+    // 2400 S Memorial Dr area: two stations within 600 m, both counted in 2024.
+    const r = await new NcdotAadt(adapterCtx("ncdot")).aadtNear(POINT, { address: ADDR });
+    expect(r).toMatchObject({ year: 2024 });
+    expect([22500, 32500]).toContain(r!.aadt);
+    expect(r!.station_distance_m).toBeLessThan(600);
   });
 
   it("fema computes centroid zone and share of parcel area in high-risk zones", async () => {

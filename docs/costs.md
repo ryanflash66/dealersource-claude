@@ -12,10 +12,10 @@ golden integration test asserts `run.json.paid_calls == []` and `report.json.ext
 | parcels | `nc_onemap` | free, no key | NC OneMap polygon layer (FeatureServer/1); ArcGIS REST rate limits |
 | zoning | `arcgis` | free, official layers | per-municipality endpoints |
 | drivetime | `ors` | free tier key | 2,000 directions + 500 isochrones/day on the free plan |
-| traffic | `ncdot` | free | - |
+| traffic | `ncdot` | free (ArcGIS Online, NCDOT) | 2024 release, 2022 service as fallback |
 | flood | `fema` | free | - |
 | imagery | `mapillary` | free token | fair-use |
-| poi | `overpass` | free public instance | 1 request / 2 s enforced by the adapter; self-host with `OVERPASS_URL` for scheduled loads |
+| poi | `overpass` | free public instances | 1 request / 2 s enforced by the adapter; main instance then kumi, 60 s timeout, one retry each; self-host with `OVERPASS_URL` for scheduled loads |
 | crawler | `fetch` | free, plain Node fetch | nothing to host; polite per-host interval, robots.txt honoured. `anycrawl` (self-hosted) is the free alternative |
 | social | `reddit` | free tier, OAuth app | 100 QPM; Developer Terms apply |
 | mail | `gmail` | free | Gmail sending limits; quota errors auto-pause outreach |
