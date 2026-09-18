@@ -15,7 +15,7 @@ interface Factor { factor: string; raw: number | null; normalized: number; weigh
 interface OpenCase { case_type: "rent" | "zoning" | "space"; status: string; recipient: string; opened_at?: string; last_contacted_at?: string | null; followups_sent?: number; next_action?: string; next_action_at?: string | null }
 interface ListingRef { listing_id: string; source_id: string; url: string; rent_monthly: number | null; fetched_at: string }
 interface Site {
-  site_id: string; parcel_id: string; listing_ids: string[]; address: string; in_search_area: boolean; drive_minutes: number | null; shared_lot: boolean;
+  site_id: string; parcel_id: string; listing_ids: string[]; address: string; in_search_area: boolean | null; drive_minutes: number | null; shared_lot: boolean;
   gates: { zoning: Gate; rent: Gate; flood: Gate }; viable: boolean; score: number | null; rank: number | null;
   metrics: { aadt: number | null; visibility: number | null; drive_minutes: number | null; rent_monthly: number | null; competitors: number | null };
   open_cases: OpenCase[]; stage?: string; jurisdiction?: string | null; flags?: string[]; factors?: Factor[];
@@ -93,7 +93,10 @@ const hostOf = (u: string) => { try { return new URL(u).hostname.replace(/^www\.
 const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
 const failed = (s: Site) => Object.values(s.gates).some((g) => g.status === "fail");
 const pendingGates = (s: Site) => (["zoning", "rent", "flood"] as const).filter((g) => s.gates[g].status === "pending");
-const isOneAway = (s: Site) => s.in_search_area && !s.viable && !failed(s) && pendingGates(s).length >= 1;
+const distanceUnknown = (s: Site) => s.in_search_area === null;
+const isOneAway = (s: Site) => s.in_search_area !== false && !s.viable && !failed(s) && pendingGates(s).length >= 1;
+// Gates passed but drive time unknown: shown with the waiting sites, never ranked.
+const isUnrankedViable = (s: Site) => distanceUnknown(s) && s.viable && s.rank === null;
 
 // ------------------------------------------------------------------ components
 function gateEl(gate: "zoning" | "rent" | "flood", g: Gate, size = 11): HTMLElement {
@@ -243,8 +246,8 @@ function pendingCard(d: Data, s: Site): HTMLElement {
 function viewShortlist(d: Data): HTMLElement[] {
   const sites = d.report.sites;
   const viable = sites.filter((s) => s.viable && s.rank !== null).sort((a, b) => a.rank! - b.rank!);
-  const oneAway = sites.filter(isOneAway);
-  const excluded = sites.filter((s) => !s.in_search_area || failed(s));
+  const oneAway = sites.filter((s) => isOneAway(s) || isUnrankedViable(s));
+  const excluded = sites.filter((s) => s.in_search_area === false || failed(s));
   if (!SELECTED || !sites.some((s) => s.site_id === SELECTED)) SELECTED = viable[0]?.site_id ?? null;
   const count = (k: string, n: number) => h("div", { class: "count" }, h("div", { class: "k", text: k }), h("div", { class: "n", text: String(n) }));
   const col = h("aside", { class: "col", "aria-label": "Ranked sites" },
@@ -259,7 +262,7 @@ function viewShortlist(d: Data): HTMLElement[] {
 // ---- map
 function mapPane(d: Data): HTMLElement {
   const sites = d.report.sites.filter((s) => typeof s.lat === "number" && typeof s.lon === "number");
-  const inArea = sites.filter((s) => s.in_search_area);
+  const inArea = sites.filter((s) => s.in_search_area !== false);
   const pts = inArea.length ? inArea : sites;
   const lats = pts.map((s) => s.lat!), lons = pts.map((s) => s.lon!);
   const minLat = Math.min(...lats), maxLat = Math.max(...lats), minLon = Math.min(...lons), maxLon = Math.max(...lons);
@@ -270,7 +273,7 @@ function mapPane(d: Data): HTMLElement {
   for (const s of sites) {
     const inside = s.lon! >= minLon && s.lon! <= maxLon && s.lat! >= minLat && s.lat! <= maxLat;
     if (!inside) continue;
-    const kind = s.viable ? (s.shared_lot ? "shared" : "rank") : isOneAway(s) ? "pend" : "excl";
+    const kind = s.viable && s.rank !== null ? (s.shared_lot ? "shared" : "rank") : isOneAway(s) || isUnrankedViable(s) ? "pend" : "excl";
     const street = splitAddress(s.address).street.replace(/^\d+\s+/, "");
     const b = h("button", { type: "button", class: `mk ${kind}${s.site_id === SELECTED ? " selected" : ""}`, style: `left:${px(s.lon!).toFixed(1)}%;top:${py(s.lat!).toFixed(1)}%`, "aria-label": s.viable ? `Rank ${s.rank}, ${s.address}` : isOneAway(s) ? `One answer away, ${s.address}` : `Excluded, ${s.address}` },
       h("span", { class: "disc" }, kind === "pend" ? svgIcon(ICON.clock, 13) : kind === "excl" ? null : String(s.rank)),
@@ -309,9 +312,9 @@ async function mountMapLibre(pane: HTMLElement, sites: Site[]): Promise<void> {
     const map = new ml.Map({ container: "map", style: { version: 8, glyphs: "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf", sources: { protomaps: { type: "vector", url: `pmtiles://${window.DS_CONFIG!.pmtilesUrl}`, attribution: "© OpenStreetMap contributors · Protomaps" } }, layers: themes.default("protomaps", dark ? "dark" : "light") }, attributionControl: false });
     MAP = map;
     const bounds = new ml.LngLatBounds();
-    for (const s of sites.filter((x) => x.in_search_area)) {
+    for (const s of sites.filter((x) => x.in_search_area !== false)) {
       bounds.extend([s.lon!, s.lat!]);
-      const kind = s.viable ? (s.shared_lot ? "shared" : "rank") : isOneAway(s) ? "pend" : "excl";
+      const kind = s.viable && s.rank !== null ? (s.shared_lot ? "shared" : "rank") : isOneAway(s) || isUnrankedViable(s) ? "pend" : "excl";
       const el = h("button", { type: "button", class: `mk ${kind}`, style: "position:relative;transform:none" }, h("span", { class: "disc" }, kind === "pend" ? svgIcon(ICON.clock, 13) : kind === "excl" ? null : String(s.rank)), kind === "excl" ? null : h("span", { class: "lbl", text: splitAddress(s.address).street.replace(/^\d+\s+/, "") }));
       el.addEventListener("click", () => { SELECTED = s.site_id; render(); });
       new ml.Marker({ element: el, anchor: "left" }).setLngLat([s.lon!, s.lat!]).addTo(map);
@@ -378,8 +381,10 @@ function drawerFor(d: Data, s: Site): HTMLElement {
     ? h("div", { class: "verdict" }, h("span", { class: "lead" }, svgIcon(ICON.ok, 14, 2), "Viable. All three gates passed."), h("span", { class: "sc", text: `Score ${score100(s)}` }))
     : failed(s)
     ? h("div", { class: "verdict fail" }, h("span", { class: "lead" }, svgIcon(ICON.x, 14, 2), `Excluded. ${(["zoning", "rent", "flood"] as const).filter((g) => s.gates[g].status === "fail").map((g) => g[0]!.toUpperCase() + g.slice(1)).join(" and ")} failed.`))
-    : !s.in_search_area
+    : s.in_search_area === false
     ? h("div", { class: "verdict fail" }, h("span", { class: "lead" }, svgIcon(ICON.x, 14, 2), `Outside the ${d.report.business?.max_drive_minutes ?? 60} minute search area.`))
+    : distanceUnknown(s) && s.viable
+    ? h("div", { class: "verdict wait" }, h("span", { class: "lead" }, svgIcon(ICON.clock, 14, 2), "Gates passed. Distance unknown, so not ranked yet."), h("span", { class: "sc muted", text: "No rank" }))
     : h("div", { class: "verdict wait" }, h("span", { class: "lead" }, svgIcon(ICON.clock, 14, 2), `Not viable yet. ${pendingGates(s).map((g) => g[0]!.toUpperCase() + g.slice(1)).join(" and ")} pending.`), h("span", { class: "sc muted", text: "No score" }));
   const listingsTxt = (s.listings ?? []).map((l) => `${l.listing_id} ${l.source_id}${l.rent_monthly !== null ? `, ${fmtMoney(l.rent_monthly)}/mo` : ""}`).join(" · ") || s.listing_ids.join(" · ");
   const cases = s.open_cases;
@@ -387,13 +392,13 @@ function drawerFor(d: Data, s: Site): HTMLElement {
     h("div", { class: "dr-head" },
       h("div", {},
         h("div", { class: "dr-title" }, h("span", { class: `disc${s.rank === null ? " muted" : ""}`, text: s.rank === null ? "–" : String(s.rank) }), h("span", { class: "t", text: `${a.street}${a.town ? ", " + a.town : ""}` })),
-        h("div", { class: "dr-meta" }, mono(s.parcel_id), ` · ${s.drive_minutes ?? "–"} min from home base · ${s.in_search_area ? "inside" : "outside"} search area · ${s.shared_lot ? "shared lot" : "standalone lot"}`)),
+        h("div", { class: "dr-meta" }, mono(s.parcel_id), ` · ${s.drive_minutes === null ? "distance unknown" : `${s.drive_minutes} min from home base`} · ${s.in_search_area === null ? "search area unknown" : s.in_search_area ? "inside" : "outside"} search area · ${s.shared_lot ? "shared lot" : "standalone lot"}`)),
       h("button", { type: "button", class: "dr-close", "aria-label": "Close", id: "dr-close" }, svgIcon(ICON.x, 16, 1.75))),
     h("div", { class: "dr-body" },
       h("div", { class: "dr-photos" }, photoSlot(s, "street", "Street photo"), photoSlot(s, "aerial", "Aerial")),
       verdict,
       h("div", {}, h("div", { class: "eyebrow", style: "margin-bottom:6px", text: "Gates and evidence" }), gateRow("zoning"), gateRow("rent"), gateRow("flood")),
-      s.in_search_area ? h("div", {}, h("div", { class: "eyebrow", style: "margin-bottom:8px", text: s.rank === 1 ? "Why it ranks first" : s.viable ? `Why it ranks ${s.rank}` : "Score factors (not scored until viable)" }), bars(s, true)) : null,
+      s.in_search_area !== false ? h("div", {}, h("div", { class: "eyebrow", style: "margin-bottom:8px", text: s.rank === 1 ? "Why it ranks first" : s.viable ? `Why it ranks ${s.rank}` : "Score factors (not scored until viable)" }), bars(s, true)) : null,
       h("div", {}, h("div", { class: "eyebrow", style: "margin-bottom:6px", text: `Merged from ${plural(s.listing_ids.length, "listing")}` }), h("div", { class: "dr-text", text: listingsTxt })),
       h("div", {}, h("div", { class: "eyebrow", style: "margin-bottom:6px", text: "Open cases" }),
         cases.length
@@ -409,10 +414,10 @@ function viewPipeline(d: Data): HTMLElement[] {
   const listings = sites.reduce((a, s) => a + s.listing_ids.length, 0);
   const unresolved = (r.exceptions ?? []).filter((e) => /^Listing .* unresolved/.test(e)).length;
   const sourcesOk = (r.sources ?? []).filter((s) => s.last_status === "ok").length;
-  const inArea = sites.filter((s) => s.in_search_area).length;
-  const verifying = sites.filter(isOneAway).length;
-  const viable = sites.filter((s) => s.viable).length;
-  const outside = sites.filter((s) => !s.in_search_area).length, failedN = sites.filter((s) => s.in_search_area && failed(s)).length;
+  const inArea = sites.filter((s) => s.in_search_area !== false).length;
+  const verifying = sites.filter((s) => isOneAway(s) || isUnrankedViable(s)).length;
+  const viable = sites.filter((s) => s.viable && s.rank !== null).length;
+  const outside = sites.filter((s) => s.in_search_area === false).length, failedN = sites.filter((s) => s.in_search_area !== false && failed(s)).length;
   const stage = (n: number, l: string, dsc: string, i: number) => h("div", { class: `stage s${i}` }, h("div", { class: "l", text: l }), h("div", { class: "n", text: String(n) }), h("div", { class: "d", text: dsc }));
   const stages = h("div", { class: "stages" },
     stage(listings + unresolved, "Discovered", `listings from ${plural(sourcesOk, "source")}`, 1),
@@ -421,10 +426,11 @@ function viewPipeline(d: Data): HTMLElement[] {
     stage(verifying, "Verifying", "waiting on email", 4),
     stage(viable, "Scored", "viable, ranked", 5),
     stage(outside + failedN, "Excluded", `${outside} outside area, ${failedN} failed a gate`, 6));
-  const stageOf = (s: Site): [string, number] => (s.viable ? ["Scored", 5] : !s.in_search_area || failed(s) ? ["Excluded", 6] : isOneAway(s) ? ["Verifying", 4] : s.stage === "resolved" ? ["Resolved", 2] : ["Enriched", 3]);
+  const stageOf = (s: Site): [string, number] => (s.viable && s.rank !== null ? ["Scored", 5] : s.in_search_area === false || failed(s) ? ["Excluded", 6] : isOneAway(s) || isUnrankedViable(s) ? ["Verifying", 4] : s.stage === "resolved" ? ["Resolved", 2] : ["Enriched", 3]);
   const outcome = (s: Site): [string, string] => {
-    if (s.viable) return s.shared_lot ? [`Rank ${s.rank}, ranks last`, "muted"] : [`Rank ${s.rank}, score ${score100(s)}`, ""];
-    if (!s.in_search_area) return [`Outside ${r.business?.max_drive_minutes ?? 60} min`, "fail"];
+    if (s.viable && s.rank !== null) return s.shared_lot ? [`Rank ${s.rank}, ranks last`, "muted"] : [`Rank ${s.rank}, score ${score100(s)}`, ""];
+    if (distanceUnknown(s)) return ["Distance unknown", "wait"];
+    if (s.in_search_area === false) return [`Outside ${r.business?.max_drive_minutes ?? 60} min`, "fail"];
     if (s.gates.rent.status === "fail") return [`Rent ${fmtMoney(s.metrics.rent_monthly)} ${s.metrics.rent_monthly !== null && r.business && s.metrics.rent_monthly > r.business.rent_max ? "over" : "outside"} budget`, "fail"];
     if (s.gates.zoning.status === "fail") return [s.gates.zoning.detail ? s.gates.zoning.detail.replace(/^use prohibited in /, "") + " does not permit dealer" : "Zoning prohibits dealer", "fail"];
     if (s.gates.flood.status === "fail") return [`Flood zone ${String((d.report.evidence.find((e) => e.site_id === s.site_id && e.fact === "flood_zone")?.value as any)?.zone ?? "")}`.trim(), "fail"];
@@ -441,7 +447,7 @@ function viewPipeline(d: Data): HTMLElement[] {
       h("span", { class: "tc-parcel", text: s.parcel_id }),
       h("div", { class: "tc-site" }, h("div", { class: "a", text: `${a.street}${a.town ? ", " + a.town : ""}` }), h("div", { class: "s", text: `${plural(s.listing_ids.length, "listing")} · ${s.drive_minutes ?? "–"} min${open ? ` · ${plural(open, "case")} open` : answered}${s.shared_lot ? " · shared lot" : ""}` })),
       h("span", { class: "stagedot" }, h("i", { class: `st${si}` }), h("span", { text: stg })),
-      h("div", { class: "tc-gates" }, ...(s.in_search_area ? (["zoning", "rent", "flood"] as const).map((g) => gatePill(g, s.gates[g], true)) : [h("span", { class: "tc-plain", text: "Not checked" })])),
+      h("div", { class: "tc-gates" }, ...(s.in_search_area !== false ? (["zoning", "rent", "flood"] as const).map((g) => gatePill(g, s.gates[g], true)) : [h("span", { class: "tc-plain", text: "Not checked" })])),
       h("span", { class: `outcome ${ocls}`, text: otxt }));
   });
   const paused = !!r.sending_paused;
@@ -649,9 +655,9 @@ async function loadData(): Promise<Data> {
   if (cfg.supabaseUrl && cfg.supabaseAnonKey) {
     const base = cfg.supabaseUrl.replace(/\/+$/, "") + (/\.supabase\.(co|in)$/.test(new URL(cfg.supabaseUrl).hostname) ? "/rest/v1" : "");
     const headers = { apikey: cfg.supabaseAnonKey, Authorization: `Bearer ${cfg.supabaseAnonKey}` };
-    const rows = await fetchJson<Array<{ payload: Report; messages: Message[]; created_at: string }>>(`${base}/reports?select=payload,messages,created_at&order=created_at.desc&limit=1`, { headers });
+    const rows = await fetchJson<Array<{ payload: Report; messages: Message[]; created_at: string }>>(`${base}/reports?select=payload,messages,created_at&order=created_at.desc,id.desc&limit=1`, { headers });
     if (rows && rows[0]) {
-      const runs = await fetchJson<Run[]>(`${base}/runs?select=*&order=started_at.desc&limit=1`, { headers });
+      const runs = await fetchJson<Run[]>(`${base}/runs?select=*&order=started_at.desc,id.desc&limit=1`, { headers });
       return { report: rows[0].payload, messages: rows[0].messages ?? [], run: runs?.[0] ?? null, source: `Supabase ${new URL(cfg.supabaseUrl).hostname}` };
     }
     console.warn("Supabase unreachable; falling back to fixture data");
