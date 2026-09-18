@@ -160,10 +160,12 @@ export interface PoiProvider {
 
 // --------------------------------------------------------------- crawler
 export interface CrawlResult {
-  url: string;
+  url: string; // final URL after redirects
   status: number;
   content_type: string;
-  body: string;
+  body: string; // raw HTML, stored in raw_documents
+  text: string; // readable text, scripts and tags removed
+  links: string[]; // absolute http(s) links found on the page
   fetched_at: ISODate;
 }
 export interface RobotsResult {

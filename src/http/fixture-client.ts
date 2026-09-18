@@ -14,7 +14,7 @@ import { makeResponse, type HttpClient, type HttpRequest, type HttpResponse } fr
  */
 export interface FixtureEntry {
   match: { method?: string; url_pattern: string; body_pattern?: string };
-  response: { status?: number; json?: unknown; body?: string; body_file?: string; content_type?: string };
+  response: { status?: number; json?: unknown; body?: string; body_file?: string; content_type?: string; url?: string };
 }
 
 export class FixtureMissError extends Error {
@@ -56,7 +56,8 @@ export class FixtureHttpClient implements HttpClient {
       else if (r.json !== undefined) body = JSON.stringify(r.json);
       else body = r.body ?? "";
       const ct = r.content_type ?? (r.json !== undefined ? "application/json" : "text/html");
-      return makeResponse(r.status ?? 200, req.url, body, { "content-type": ct });
+      // `response.url` records the final URL after redirects, as fetch(redirect: "follow") reports it.
+      return makeResponse(r.status ?? 200, r.url ?? req.url, body, { "content-type": ct });
     }
     throw new FixtureMissError(this.adapter, req);
   }
