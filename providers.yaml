@@ -64,8 +64,12 @@ options:
     base_url_env: VALHALLA_URL
     default_base_url: http://localhost:8002
   ncdot:
-    url: https://gis11.services.ncdot.gov/arcgis/rest/services/NCDOT_AADT_Stations/FeatureServer/0
-    search_radius_m: 400
+    # NCDOT AADT stations on ArcGIS Online (owner TrafficSurvey.NCDOT.GOV), verified live 2026-09-18. Point layers;
+    # every AADT_YYYY column is a string with " " for years without a count. The adapter takes the latest
+    # non-blank year and prefers the station on the site's street (fronting road / address) over the nearest one.
+    url: https://services.arcgis.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/NCDOT__2024_AADT_Stations_published_September_2025/FeatureServer/0   # AADT_2002..AADT_2024, road text in Location
+    fallback_url: https://services.arcgis.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/NCDOT_AADT_Stations/FeatureServer/0   # same stations through AADT_2022, ROUTE + LOCATION text
+    search_radius_m: 600
   fema:
     url: https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28
     sample_grid: 7                       # NxN sample points for majority-of-parcel-area
@@ -75,8 +79,9 @@ options:
   streetview:
     base_url: https://maps.googleapis.com/maps/api
   overpass:
-    base_url_env: OVERPASS_URL
-    default_base_url: https://overpass-api.de/api/interpreter   # polite: 1 req / 2s
+    base_url_env: OVERPASS_URL      # one URL or a comma-separated list tried in order
+    default_base_url: https://overpass-api.de/api/interpreter,https://overpass.kumi.systems/api/interpreter   # polite: 1 req / 2s; main then kumi
+    timeout_s: 60                    # Overpass-QL [timeout:N]; the HTTP timeout is N + 30 s; one retry per instance on 504/abort
     min_interval_ms: 2000
   places:
     base_url: https://maps.googleapis.com/maps/api

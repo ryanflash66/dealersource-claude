@@ -21,7 +21,7 @@ export async function enrich(ctx: RunContext): Promise<StageCounter> {
     const parcel = await ctx.store.get("parcels", site.parcel_id);
     // The parcel centroid is the query point; sites already carry it from resolve, the geocode is the last resort.
     const point = parcel?.geometry ? polyCentroid(parcel.geometry) : { lat: site.lat, lon: site.lon };
-    const hints = { parcel_id: site.parcel_id, county: site.county, address: site.canonical_address, geometry: parcel?.geometry ?? null };
+    const hints = { parcel_id: site.parcel_id, county: site.county, address: site.canonical_address, geometry: parcel?.geometry ?? null, fronting_road: parcel?.fronting_road ?? null };
     const warnings: string[] = [];
     const attempt = async (fact: string, fn: () => Promise<void>) => {
       try {

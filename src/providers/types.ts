@@ -26,6 +26,8 @@ export interface LookupHints {
   county?: string | null;
   address?: string | null;
   geometry?: Polygon | null;
+  /** Road the parcel fronts (parcel layer), used to pick the traffic station on the site's street. */
+  fronting_road?: string | null;
 }
 
 // ------------------------------------------------------------- geocoding

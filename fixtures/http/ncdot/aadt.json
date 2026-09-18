@@ -1,39 +1,2037 @@
 {
-  "_note": "Recorded shape of NCDOT AADT stations FeatureServer/0/query with a distance buffer (two stations, nearest wins).",
+  "_note": "Recorded live 2026-09-18 from ArcGIS Online (owner TrafficSurvey.NCDOT.GOV). Point layers; every AADT_YYYY column is a string with ' ' for years without a count. Query point -77.392810,35.600786 = 2100 Dickinson Ave parcel centroid (NC OneMap parno 4677776335), distance=600 m. The -77.5,35.5 error entry is synthetic (fallback path).",
   "fixtures": [
     {
       "match": {
         "method": "GET",
-        "url_pattern": "NCDOT_AADT_Stations/FeatureServer/0/query\\?geometry=-77\\.4(?:,|%2C)35\\.577(?:&|$)"
+        "url_pattern": "services\\.arcgis\\.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/NCDOT__2024_AADT_Stations_published_September_2025/FeatureServer/0\\?f=json$"
       },
       "response": {
         "json": {
+          "currentVersion": 12,
+          "id": 0,
+          "name": "NCDOT__2024_AADT_Stations_published_September_2025",
+          "type": "Feature Layer",
+          "serviceItemId": "9a4c0ef17ee2456c8fb745fe85de6baf",
+          "cacheMaxAge": 30,
+          "displayField": "",
+          "description": "",
+          "copyrightText": "",
+          "defaultVisibility": true,
+          "editingInfo": {
+            "lastEditDate": 1757098481688,
+            "schemaLastEditDate": 1757094697049,
+            "dataLastEditDate": 1757094697049
+          },
+          "relationships": [],
+          "isDataVersioned": false,
+          "hasContingentValuesDefinition": false,
+          "supportsAppend": true,
+          "supportsCalculate": true,
+          "supportsASyncCalculate": true,
+          "supportsTruncate": true,
+          "supportsAttachmentsByUploadId": true,
+          "supportsAttachmentsResizing": true,
+          "supportsRollbackOnFailureParameter": true,
+          "supportsStatistics": true,
+          "supportsExceedsLimitStatistics": true,
+          "supportsAdvancedQueries": true,
+          "supportsValidateSql": true,
+          "supportsCoordinatesQuantization": true,
+          "supportsLayerOverrides": true,
+          "supportsTilesAndBasicQueriesMode": true,
+          "supportsFieldDescriptionProperty": true,
+          "supportsQuantizationEditMode": true,
+          "supportsColumnStoreIndex": true,
+          "supportsApplyEditsWithGlobalIds": false,
+          "supportsReturningQueryGeometry": true,
+          "enableNullGeometry": false,
+          "advancedQueryCapabilities": {
+            "supportsPagination": true,
+            "supportsPaginationOnAggregatedQueries": true,
+            "supportsQueryRelatedPagination": true,
+            "supportsQueryWithDistance": true,
+            "supportsOutDistance": true,
+            "supportsReturningQueryExtent": true,
+            "supportsStatistics": true,
+            "supportsOrderBy": true,
+            "supportsDistinct": true,
+            "supportsQueryWithResultType": true,
+            "supportsSqlExpression": true,
+            "supportsTimeRelation": true,
+            "supportsAdvancedQueryRelated": true,
+            "supportsCountDistinct": true,
+            "supportsPercentileStatistics": true,
+            "supportsApproxPercentileStatistics": true,
+            "supportsSpatialAggregationStatistics": true,
+            "supportedSpatialAggregationStatistics": [
+              "EnvelopeAggregate",
+              "CentroidAggregate",
+              "ConvexHullAggregate"
+            ],
+            "supportsLod": true,
+            "supportsQueryWithLodSR": false,
+            "supportedLodTypes": [
+              "geohash"
+            ],
+            "supportsReturningGeometryCentroid": false,
+            "supportsReturningGeometryEnvelope": false,
+            "supportsQueryWithDatumTransformation": true,
+            "supportsCurrentUserQueries": true,
+            "supportsHavingClause": true,
+            "supportsOutFieldSQLExpression": true,
+            "supportsMaxRecordCountFactor": true,
+            "supportsTopFeaturesQuery": true,
+            "supportsDisjointSpatialRel": true,
+            "supportsQueryWithCacheHint": true,
+            "supportedOperationsWithCacheHint": [
+              "query",
+              "queryTopFilter",
+              "queryAnalytics",
+              "queryAttachments",
+              "queryRelated",
+              "queryBins",
+              "queryPivot"
+            ],
+            "supportsQueryAnalytic": true,
+            "supportsQueryPivot": true,
+            "supportsQueryBins": true,
+            "supportsDefaultSR": true,
+            "supportsTranslations": false,
+            "supportsAggIds": true,
+            "supportsQueryWithCollation": true,
+            "supportsISODOW": true,
+            "supportsISOWeek": true,
+            "supportsFullTextSearch": true,
+            "fullTextSearchCapabilities": {
+              "supportsAccentSensitivity": true,
+              "supportsStopWords": true,
+              "supportsSearchOperator": true,
+              "supportsOperator": true
+            }
+          },
+          "advancedQueryAnalyticCapabilities": {
+            "supportsLinearRegression": true,
+            "supportsTrendlineRegression": true,
+            "supportsAsync": true,
+            "supportsPercentileAnalytic": true
+          },
+          "queryBinsCapabilities": {
+            "supportsAsync": true,
+            "supportsAutoIntervalBin": true,
+            "supportsFixedIntervalBin": true,
+            "supportsFixedBoundariesBin": true,
+            "supportsDateBin": true,
+            "supportsClassificationBin": true,
+            "supportsStackBy": true,
+            "supportsSplitBy": true,
+            "supportsFirstDayOfWeek": true,
+            "supportsSnapToData": true,
+            "supportsReturnFullIntervalBin": true,
+            "supportsReturnStackValueRange": true,
+            "supportsNormalization": true,
+            "supportedStatisticTypes": [
+              "COUNT",
+              "SUM",
+              "AVG",
+              "VAR",
+              "STDDEV",
+              "MIN",
+              "MAX",
+              "PERCENTILE_CONT",
+              "PERCENTILE_DISC",
+              "APPROX_PERCENTILE_CONT",
+              "APPROX_PERCENTILE_DISC",
+              "CentroidAggregate",
+              "EnvelopeAggregate",
+              "ConvexHullAggregate"
+            ],
+            "supportedNormalizationTypes": [
+              "boxCox",
+              "field",
+              "inverse",
+              "log",
+              "naturalLog",
+              "percentOfTotal",
+              "squareRoot"
+            ]
+          },
+          "supportedOperationsWithCollation": "query,addField,updateField",
+          "advancedEditingCapabilities": {
+            "supportedSqlFormatsInCalculate": [
+              "standard"
+            ],
+            "supportsAsyncApplyEdits": true,
+            "supportsReturnEditResults": true,
+            "supportsApplyEditsbyUploadID": true,
+            "supportedApplyEditsUploadIDFormats": "JSON,PBF",
+            "supportsTranslation": false,
+            "supportsMaxTranslations": 10
+          },
+          "infoInEstimates": [
+            "extent",
+            "count"
+          ],
+          "useStandardizedQueries": true,
           "geometryType": "esriGeometryPoint",
+          "minScale": 0,
+          "maxScale": 0,
+          "extent": {
+            "xmin": -9386519.79773964,
+            "ymin": 4011231.6256095986,
+            "xmax": -8401023.6677615,
+            "ymax": 4380381.70905849,
+            "spatialReference": {
+              "wkid": 102100,
+              "latestWkid": 3857
+            }
+          },
+          "spatialReference": {
+            "wkid": 102100,
+            "latestWkid": 3857
+          },
+          "allowGeometryUpdates": true,
+          "hasAttachments": false,
+          "htmlPopupType": "esriServerHTMLPopupTypeNone",
+          "hasMetadata": true,
+          "hasM": false,
+          "hasZ": false,
+          "objectIdField": "FID",
+          "uniqueIdField": {
+            "name": "FID",
+            "isSystemMaintained": true
+          },
+          "globalIdField": "",
+          "typeIdField": "",
+          "collation": {
+            "locale": "neutral",
+            "caseSensitive": false,
+            "accentSensitive": true
+          },
+          "fields": [
+            {
+              "name": "FID",
+              "type": "esriFieldTypeOID",
+              "actualType": "int",
+              "alias": "FID",
+              "sqlType": "sqlTypeInteger",
+              "nullable": false,
+              "editable": false,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "LocationID",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "LocationID",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "County",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "County",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Route",
+              "type": "esriFieldTypeDouble",
+              "actualType": "float",
+              "alias": "Route",
+              "sqlType": "sqlTypeFloat",
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Location",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "Location",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "RTE_CLS",
+              "type": "esriFieldTypeDouble",
+              "actualType": "float",
+              "alias": "RTE_CLS",
+              "sqlType": "sqlTypeFloat",
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "RTE_CLS_TX",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "RTE_CLS_TX",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "FUNC_CLS",
+              "type": "esriFieldTypeDouble",
+              "actualType": "float",
+              "alias": "FUNC_CLS",
+              "sqlType": "sqlTypeFloat",
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "FNC_CLS_TX",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "FNC_CLS_TX",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Latitude",
+              "type": "esriFieldTypeDouble",
+              "actualType": "float",
+              "alias": "Latitude",
+              "sqlType": "sqlTypeFloat",
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Longitude",
+              "type": "esriFieldTypeDouble",
+              "actualType": "float",
+              "alias": "Longitude",
+              "sqlType": "sqlTypeFloat",
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Coll_Cycle",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "Coll_Cycle",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Active",
+              "type": "esriFieldTypeInteger",
+              "actualType": "int",
+              "alias": "Active",
+              "sqlType": "sqlTypeInteger",
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Category",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "Category",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2002",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2002",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2003",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2003",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2004",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2004",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2005",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2005",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2006",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2006",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2007",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2007",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2008",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2008",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2009",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2009",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2010",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2010",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2011",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2011",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2012",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2012",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2013",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2013",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2014",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2014",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2015",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2015",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2016",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2016",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2017",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2017",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2018",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2018",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2019",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2019",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2020",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2020",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2021",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2021",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2022",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2022",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2023",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2023",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2024",
+              "type": "esriFieldTypeString",
+              "actualType": "nvarchar",
+              "alias": "AADT_2024",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            }
+          ],
+          "dateFieldsTimeReference": {
+            "timeZone": "UTC",
+            "timeZoneIANA": "Etc/UTC",
+            "respectsDaylightSaving": false
+          },
+          "preferredTimeReference": null,
+          "supportedQueryFormats": "JSON, geoJSON, PBF",
+          "supportedAppendFormats": "sqlite,geoPackage,shapefile,filegdb,featureCollection,geojson,csv,excel,jsonl,featureService,pbf",
+          "supportedAppendSourceFilterFormats": "sqlite,geoPackage,shapefile,filegdb,featureService",
+          "supportedExportFormats": "csv,shapefile,sqlite,geoPackage,filegdb,featureCollection,geojson,kml,excel,parquet",
+          "supportedConvertFileFormats": "JSON,PBF,Parquet",
+          "supportedConvertContentFormats": "LayerEditCollection,FeatureCollection",
+          "supportedSpatialRelationships": [
+            "esriSpatialRelIntersects",
+            "esriSpatialRelContains",
+            "esriSpatialRelCrosses",
+            "esriSpatialRelEnvelopeIntersects",
+            "esriSpatialRelIndexIntersects",
+            "esriSpatialRelOverlaps",
+            "esriSpatialRelTouches",
+            "esriSpatialRelWithin",
+            "esriSpatialRelDisjoint",
+            "esriSpatialRelRelation"
+          ],
+          "guidFormat": "",
+          "supportsContingentValues": true,
+          "supportsEditingContingentValues": true,
+          "supportedContingentValuesFormats": "JSON, PBF",
+          "supportsFieldGroups": true,
+          "supportedSyncDataOptions": 260,
+          "hasStaticData": true,
+          "maxRecordCount": 2000,
+          "standardMaxRecordCount": 16000,
+          "maxIdsCount": 1000000,
+          "standardMaxRecordCountNoGeometry": 32000,
+          "tileMaxRecordCount": 8000,
+          "maxRecordCountFactor": 1,
+          "capabilities": "Query"
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "services\\.arcgis\\.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/NCDOT_AADT_Stations/FeatureServer/0\\?f=json$"
+      },
+      "response": {
+        "json": {
+          "currentVersion": 12,
+          "id": 0,
+          "name": "NCDOT_AADT_Stations",
+          "type": "Feature Layer",
+          "serviceItemId": "85213c3e136747d48544b8d541f87e49",
+          "cacheMaxAge": 30,
+          "displayField": "LocationID",
+          "description": "<DIV STYLE=\"text-align:Left;\"><P STYLE=\"font-size:12ptmargin:0 0 11 0;\"><SPAN><SPAN>The AADT file is a station point location of Annual Average Daily Traffic (AADT) estimates. This includes the data submitted to FHWA for Highway Performance Monitoring System (HPMS) AADT reporting for 2022. Data are reported for AADT on all highways with a Functional Classification (FC) above Local. Full coverage is provided for these routes where AADT segmentation is based on network configuration, travel patterns, and land use. The extent of highway this AADT represents has not been determined. An AADT is an Annual Average Daily Traffic volume for all lanes in both directions passing a point on the highway system. It represents the average of all days during the year with typical traffic conditions. An AADT estimate is generated using procedures that comply with the standards specified in the Traffic Monitoring Guide published by the Federal Highway Administration. There are over 44,000 AADT stations that provide traffic data history from 2002 to the current year. With these collection locations, Traffic Survey has adopted the following data collection schedule: Interstate route volumes are collected on an annual basis; US and NC route volumes are also collected on an annual basis except for stations that fall within the off-cycle urban areas. (See urban area cycle below.) Secondary Road (SR) volumes are collected on a biennial cycle with approximately half being counted each year. If a particular secondary road is not available for the most current year, it may be available for the prior year. North Carolina's eighteen largest urban areas are counted on a biennial cycle with 10 urban areas counted during the even years, and 8 urban areas counted during the odd years. The following urban areas are collected during the even year cycle: Asheville, Charlotte, Concord-Kannapolis, Fayetteville, Gastonia, Goldsboro, Greenville, and Jacksonville. The following urban areas are collected during the odd year cycle: Burlington, Chapel Hill, Durham, Greensboro, Hickory, High Point, Raleigh, Rocky Mount, Wilmington, and Winston-Salem. Data in this file derives from NCDOT Roads &amp; Highways, Quarter 1 publication of the current calendar year. The referencing provided is based on the 2023 Quarter1publication of the NCDOT Linear Referencing System (LRS). Some differences will be found when using different quarterly publications with this data set. The data provided is seasonally factored to an estimate of an annual average of daily traffic. The statistics provided are Location_ID - 10-digit unique count location identifier, ROUTE: Numbered route identifier, or local name if not State maintained, LOCATION: Description of the Annual Average Daily Traffic station location. </SPAN></SPAN></P><P STYLE=\"font-size:12ptmargin:0 0 11 0;\"><SPAN>Note: A value of zero in the AADT field indicates no available AADT data for that year. If additional information is needed, or an issue with the data is identified, please contact the Traffic Survey Group at (919) 707-0936. Disclaimer related to the spatial accuracy of this file: This data cannot be construed to be a legal document.</SPAN></P></DIV>",
+          "copyrightText": "Traffic Survey Group, Transportation Planning Division, NCDOT.",
+          "defaultVisibility": true,
+          "editingInfo": {
+            "lastEditDate": 1700174710451,
+            "schemaLastEditDate": 1700174710451,
+            "dataLastEditDate": 1700174710451
+          },
+          "relationships": [],
+          "isDataVersioned": false,
+          "hasContingentValuesDefinition": false,
+          "supportsAppend": true,
+          "supportsCalculate": true,
+          "supportsASyncCalculate": true,
+          "supportsTruncate": true,
+          "supportsAttachmentsByUploadId": true,
+          "supportsAttachmentsResizing": true,
+          "supportsRollbackOnFailureParameter": true,
+          "supportsStatistics": true,
+          "supportsExceedsLimitStatistics": true,
+          "supportsAdvancedQueries": true,
+          "supportsValidateSql": true,
+          "supportsCoordinatesQuantization": true,
+          "supportsLayerOverrides": true,
+          "supportsTilesAndBasicQueriesMode": true,
+          "supportsFieldDescriptionProperty": true,
+          "supportsQuantizationEditMode": true,
+          "supportsColumnStoreIndex": true,
+          "supportsApplyEditsWithGlobalIds": false,
+          "supportsReturningQueryGeometry": true,
+          "enableNullGeometry": false,
+          "advancedQueryCapabilities": {
+            "supportsPagination": true,
+            "supportsPaginationOnAggregatedQueries": true,
+            "supportsQueryRelatedPagination": true,
+            "supportsQueryWithDistance": true,
+            "supportsOutDistance": true,
+            "supportsReturningQueryExtent": true,
+            "supportsStatistics": true,
+            "supportsOrderBy": true,
+            "supportsDistinct": true,
+            "supportsQueryWithResultType": true,
+            "supportsSqlExpression": true,
+            "supportsTimeRelation": true,
+            "supportsAdvancedQueryRelated": true,
+            "supportsCountDistinct": true,
+            "supportsPercentileStatistics": true,
+            "supportsApproxPercentileStatistics": true,
+            "supportsSpatialAggregationStatistics": true,
+            "supportedSpatialAggregationStatistics": [
+              "EnvelopeAggregate",
+              "CentroidAggregate",
+              "ConvexHullAggregate"
+            ],
+            "supportsLod": true,
+            "supportsQueryWithLodSR": false,
+            "supportedLodTypes": [
+              "geohash"
+            ],
+            "supportsReturningGeometryCentroid": false,
+            "supportsReturningGeometryEnvelope": false,
+            "supportsQueryWithDatumTransformation": true,
+            "supportsCurrentUserQueries": true,
+            "supportsHavingClause": true,
+            "supportsOutFieldSQLExpression": true,
+            "supportsMaxRecordCountFactor": true,
+            "supportsTopFeaturesQuery": true,
+            "supportsDisjointSpatialRel": true,
+            "supportsQueryWithCacheHint": true,
+            "supportedOperationsWithCacheHint": [
+              "query",
+              "queryTopFilter",
+              "queryAnalytics",
+              "queryAttachments",
+              "queryRelated",
+              "queryBins",
+              "queryPivot"
+            ],
+            "supportsQueryAnalytic": true,
+            "supportsQueryPivot": true,
+            "supportsQueryBins": true,
+            "supportsDefaultSR": true,
+            "supportsTranslations": false,
+            "supportsAggIds": true,
+            "supportsQueryWithCollation": true,
+            "supportsISODOW": true,
+            "supportsISOWeek": true,
+            "supportsFullTextSearch": true,
+            "fullTextSearchCapabilities": {
+              "supportsAccentSensitivity": true,
+              "supportsStopWords": true,
+              "supportsSearchOperator": true,
+              "supportsOperator": true
+            }
+          },
+          "advancedQueryAnalyticCapabilities": {
+            "supportsLinearRegression": true,
+            "supportsTrendlineRegression": true,
+            "supportsAsync": true,
+            "supportsPercentileAnalytic": true
+          },
+          "queryBinsCapabilities": {
+            "supportsAsync": true,
+            "supportsAutoIntervalBin": true,
+            "supportsFixedIntervalBin": true,
+            "supportsFixedBoundariesBin": true,
+            "supportsDateBin": true,
+            "supportsClassificationBin": true,
+            "supportsStackBy": true,
+            "supportsSplitBy": true,
+            "supportsFirstDayOfWeek": true,
+            "supportsSnapToData": true,
+            "supportsReturnFullIntervalBin": true,
+            "supportsReturnStackValueRange": true,
+            "supportsNormalization": true,
+            "supportedStatisticTypes": [
+              "COUNT",
+              "SUM",
+              "AVG",
+              "VAR",
+              "STDDEV",
+              "MIN",
+              "MAX",
+              "PERCENTILE_CONT",
+              "PERCENTILE_DISC",
+              "APPROX_PERCENTILE_CONT",
+              "APPROX_PERCENTILE_DISC",
+              "CentroidAggregate",
+              "EnvelopeAggregate",
+              "ConvexHullAggregate"
+            ],
+            "supportedNormalizationTypes": [
+              "boxCox",
+              "field",
+              "inverse",
+              "log",
+              "naturalLog",
+              "percentOfTotal",
+              "squareRoot"
+            ]
+          },
+          "supportedOperationsWithCollation": "query,addField,updateField",
+          "advancedEditingCapabilities": {
+            "supportedSqlFormatsInCalculate": [
+              "standard"
+            ],
+            "supportsAsyncApplyEdits": true,
+            "supportsReturnEditResults": true,
+            "supportsApplyEditsbyUploadID": true,
+            "supportedApplyEditsUploadIDFormats": "JSON,PBF",
+            "supportsTranslation": false,
+            "supportsMaxTranslations": 10
+          },
+          "infoInEstimates": [
+            "extent",
+            "count"
+          ],
+          "useStandardizedQueries": true,
+          "geometryType": "esriGeometryPoint",
+          "minScale": 500000,
+          "maxScale": 0,
+          "extent": {
+            "xmin": 385391.60780676093,
+            "ymin": 43329.68956124851,
+            "xmax": 3072229.4060712936,
+            "ymax": 1071035.861664825,
+            "spatialReference": {
+              "wkid": 102719,
+              "latestWkid": 2264,
+              "vcsWkid": 105703,
+              "latestVcsWkid": 6360
+            }
+          },
+          "spatialReference": {
+            "wkid": 102719,
+            "latestWkid": 2264,
+            "vcsWkid": 105703,
+            "latestVcsWkid": 6360
+          },
+          "allowGeometryUpdates": true,
+          "hasAttachments": false,
+          "htmlPopupType": "esriServerHTMLPopupTypeAsHTMLText",
+          "hasMetadata": true,
+          "hasM": false,
+          "hasZ": false,
+          "objectIdField": "FID",
+          "uniqueIdField": {
+            "name": "FID",
+            "isSystemMaintained": true
+          },
+          "globalIdField": "",
+          "typeIdField": "RTE_CLS",
+          "collation": {
+            "locale": "neutral",
+            "caseSensitive": false,
+            "accentSensitive": true
+          },
+          "fields": [
+            {
+              "name": "FID",
+              "type": "esriFieldTypeOID",
+              "alias": "FID",
+              "sqlType": "sqlTypeOther",
+              "nullable": false,
+              "editable": false,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "LocationID",
+              "type": "esriFieldTypeString",
+              "alias": "LocationID",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "COUNTY",
+              "type": "esriFieldTypeString",
+              "alias": "COUNTY",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "RTE_CLS",
+              "type": "esriFieldTypeDouble",
+              "alias": "RTE_CLS",
+              "sqlType": "sqlTypeOther",
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "ROUTE",
+              "type": "esriFieldTypeString",
+              "alias": "ROUTE",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "LOCATION",
+              "type": "esriFieldTypeString",
+              "alias": "LOCATION",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2002",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2002",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2003",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2003",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2004",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2004",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2005",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2005",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2006",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2006",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2007",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2007",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2008",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2008",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2009",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2009",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2010",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2010",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2011",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2011",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2012",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2012",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2013",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2013",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2014",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2014",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2015",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2015",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2016",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2016",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2017",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2017",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2018",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2018",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2019",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2019",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2020",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2020",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2021",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2021",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2022",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2022",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "nullable": true,
+              "editable": true,
+              "domain": null,
+              "defaultValue": null
+            }
+          ],
+          "dateFieldsTimeReference": {
+            "timeZone": "UTC",
+            "timeZoneIANA": "Etc/UTC",
+            "respectsDaylightSaving": false
+          },
+          "preferredTimeReference": null,
+          "supportedQueryFormats": "JSON, geoJSON, PBF",
+          "supportedAppendFormats": "sqlite,geoPackage,shapefile,filegdb,featureCollection,geojson,csv,excel,jsonl,featureService,pbf",
+          "supportedAppendSourceFilterFormats": "sqlite,geoPackage,shapefile,filegdb,featureService",
+          "supportedExportFormats": "csv,shapefile,sqlite,geoPackage,filegdb,featureCollection,geojson,kml,excel,parquet",
+          "supportedConvertFileFormats": "JSON,PBF,Parquet",
+          "supportedConvertContentFormats": "LayerEditCollection,FeatureCollection",
+          "supportedSpatialRelationships": [
+            "esriSpatialRelIntersects",
+            "esriSpatialRelContains",
+            "esriSpatialRelCrosses",
+            "esriSpatialRelEnvelopeIntersects",
+            "esriSpatialRelIndexIntersects",
+            "esriSpatialRelOverlaps",
+            "esriSpatialRelTouches",
+            "esriSpatialRelWithin",
+            "esriSpatialRelDisjoint",
+            "esriSpatialRelRelation"
+          ],
+          "guidFormat": "",
+          "supportsContingentValues": true,
+          "supportsEditingContingentValues": true,
+          "supportedContingentValuesFormats": "JSON, PBF",
+          "supportsFieldGroups": true,
+          "supportedSyncDataOptions": 260,
+          "hasStaticData": false,
+          "maxRecordCount": 1000,
+          "standardMaxRecordCount": 16000,
+          "maxIdsCount": 1000000,
+          "standardMaxRecordCountNoGeometry": 32000,
+          "tileMaxRecordCount": 8000,
+          "maxRecordCountFactor": 1,
+          "capabilities": "Query"
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "services\\.arcgis\\.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/NCDOT__2024_AADT_Stations_published_September_2025/FeatureServer/0/query\\?.*geometry=-77\\.39281(0)?(%2C|,)35\\.600786"
+      },
+      "response": {
+        "json": {
+          "objectIdFieldName": "FID",
+          "uniqueIdField": {
+            "name": "FID",
+            "isSystemMaintained": true
+          },
+          "globalIdFieldName": "",
+          "geometryType": "esriGeometryPoint",
+          "spatialReference": {
+            "wkid": 4326,
+            "latestWkid": 4326
+          },
+          "fields": [
+            {
+              "name": "FID",
+              "type": "esriFieldTypeOID",
+              "alias": "FID",
+              "sqlType": "sqlTypeInteger",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "LocationID",
+              "type": "esriFieldTypeString",
+              "alias": "LocationID",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "County",
+              "type": "esriFieldTypeString",
+              "alias": "County",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Route",
+              "type": "esriFieldTypeDouble",
+              "alias": "Route",
+              "sqlType": "sqlTypeFloat",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Location",
+              "type": "esriFieldTypeString",
+              "alias": "Location",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "RTE_CLS",
+              "type": "esriFieldTypeDouble",
+              "alias": "RTE_CLS",
+              "sqlType": "sqlTypeFloat",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "RTE_CLS_TX",
+              "type": "esriFieldTypeString",
+              "alias": "RTE_CLS_TX",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "FUNC_CLS",
+              "type": "esriFieldTypeDouble",
+              "alias": "FUNC_CLS",
+              "sqlType": "sqlTypeFloat",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "FNC_CLS_TX",
+              "type": "esriFieldTypeString",
+              "alias": "FNC_CLS_TX",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Latitude",
+              "type": "esriFieldTypeDouble",
+              "alias": "Latitude",
+              "sqlType": "sqlTypeFloat",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Longitude",
+              "type": "esriFieldTypeDouble",
+              "alias": "Longitude",
+              "sqlType": "sqlTypeFloat",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Coll_Cycle",
+              "type": "esriFieldTypeString",
+              "alias": "Coll_Cycle",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Active",
+              "type": "esriFieldTypeInteger",
+              "alias": "Active",
+              "sqlType": "sqlTypeInteger",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Category",
+              "type": "esriFieldTypeString",
+              "alias": "Category",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2002",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2002",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2003",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2003",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2004",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2004",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2005",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2005",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2006",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2006",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2007",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2007",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2008",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2008",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2009",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2009",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2010",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2010",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2011",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2011",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2012",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2012",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2013",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2013",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2014",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2014",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2015",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2015",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2016",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2016",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2017",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2017",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2018",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2018",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2019",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2019",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2020",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2020",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2021",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2021",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2022",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2022",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2023",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2023",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2024",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2024",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            }
+          ],
           "features": [
             {
               "attributes": {
-                "OBJECTID": 9101,
-                "AADT": 5000,
-                "ROUTE": "Side St",
-                "YEAR": 2024,
-                "LOCATION": "Side St at Memorial"
+                "FID": 34586,
+                "LocationID": "0740000863",
+                "County": "Pitt",
+                "Route": 50000904074,
+                "Location": "Moye Bv north of SR 1620 Dickinson Ave",
+                "RTE_CLS": 5,
+                "RTE_CLS_TX": "NS",
+                "FUNC_CLS": 5,
+                "FNC_CLS_TX": "Major Collector",
+                "Latitude": 35.6010116,
+                "Longitude": -77.39240523,
+                "Coll_Cycle": "E",
+                "Active": 1,
+                "Category": "VOLUME",
+                "AADT_2002": " ",
+                "AADT_2003": " ",
+                "AADT_2004": " ",
+                "AADT_2005": " ",
+                "AADT_2006": " ",
+                "AADT_2007": " ",
+                "AADT_2008": " ",
+                "AADT_2009": "9400",
+                "AADT_2010": " ",
+                "AADT_2011": " ",
+                "AADT_2012": "10000",
+                "AADT_2013": " ",
+                "AADT_2014": "12000",
+                "AADT_2015": " ",
+                "AADT_2016": " ",
+                "AADT_2017": " ",
+                "AADT_2018": " ",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "10500",
+                "AADT_2023": " ",
+                "AADT_2024": "10500"
               },
               "geometry": {
-                "x": -77.403,
-                "y": 35.579
+                "x": -77.39240522999995,
+                "y": 35.60101160000005
               }
             },
             {
               "attributes": {
-                "OBJECTID": 9102,
-                "AADT": 32000,
-                "ROUTE": "S Memorial Dr",
-                "YEAR": 2024,
-                "LOCATION": "S Memorial Dr south of Greenville Blvd"
+                "FID": 34479,
+                "LocationID": "0740000744",
+                "County": "Pitt",
+                "Route": 40001620074,
+                "Location": "SR 1620 (Dickinson Av) east of WEST ST",
+                "RTE_CLS": 4,
+                "RTE_CLS_TX": "SR",
+                "FUNC_CLS": 4,
+                "FNC_CLS_TX": "Minor Arterial",
+                "Latitude": 35.60006749,
+                "Longitude": -77.39318174,
+                "Coll_Cycle": "E",
+                "Active": 1,
+                "Category": "VOLUME",
+                "AADT_2002": "14000",
+                "AADT_2003": " ",
+                "AADT_2004": "10000",
+                "AADT_2005": " ",
+                "AADT_2006": "10000",
+                "AADT_2007": " ",
+                "AADT_2008": "11000",
+                "AADT_2009": " ",
+                "AADT_2010": "11000",
+                "AADT_2011": " ",
+                "AADT_2012": "9700",
+                "AADT_2013": " ",
+                "AADT_2014": "9800",
+                "AADT_2015": " ",
+                "AADT_2016": "9400",
+                "AADT_2017": " ",
+                "AADT_2018": "8200",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "8800",
+                "AADT_2023": " ",
+                "AADT_2024": "8700"
               },
               "geometry": {
-                "x": -77.4002,
-                "y": 35.5772
+                "x": -77.39318174,
+                "y": 35.60006749000007
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34563,
+                "LocationID": "0740000839",
+                "County": "Pitt",
+                "Route": 50000904074,
+                "Location": "Moye Bv north of Chestnut St",
+                "RTE_CLS": 5,
+                "RTE_CLS_TX": "NS",
+                "FUNC_CLS": 5,
+                "FNC_CLS_TX": "Major Collector",
+                "Latitude": 35.60173721,
+                "Longitude": -77.39330146,
+                "Coll_Cycle": "E",
+                "Active": 1,
+                "Category": "VOLUME",
+                "AADT_2002": " ",
+                "AADT_2003": " ",
+                "AADT_2004": " ",
+                "AADT_2005": " ",
+                "AADT_2006": " ",
+                "AADT_2007": " ",
+                "AADT_2008": "7300",
+                "AADT_2009": " ",
+                "AADT_2010": "9100",
+                "AADT_2011": " ",
+                "AADT_2012": "8200",
+                "AADT_2013": " ",
+                "AADT_2014": "8900",
+                "AADT_2015": " ",
+                "AADT_2016": "10000",
+                "AADT_2017": " ",
+                "AADT_2018": " ",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "8700",
+                "AADT_2023": " ",
+                "AADT_2024": "8800"
+              },
+              "geometry": {
+                "x": -77.39330145999998,
+                "y": 35.60173721000006
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34585,
+                "LocationID": "0740000862",
+                "County": "Pitt",
+                "Route": 50000904074,
+                "Location": "Hooker Rd north of MAY ST",
+                "RTE_CLS": 5,
+                "RTE_CLS_TX": "NS",
+                "FUNC_CLS": 5,
+                "FNC_CLS_TX": "Major Collector",
+                "Latitude": 35.59973569,
+                "Longitude": -77.39156438,
+                "Coll_Cycle": "E",
+                "Active": 1,
+                "Category": "VOLUME",
+                "AADT_2002": " ",
+                "AADT_2003": " ",
+                "AADT_2004": " ",
+                "AADT_2005": " ",
+                "AADT_2006": " ",
+                "AADT_2007": " ",
+                "AADT_2008": " ",
+                "AADT_2009": "11700",
+                "AADT_2010": " ",
+                "AADT_2011": " ",
+                "AADT_2012": "11000",
+                "AADT_2013": " ",
+                "AADT_2014": "13000",
+                "AADT_2015": " ",
+                "AADT_2016": "13000",
+                "AADT_2017": " ",
+                "AADT_2018": "15000",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "12500",
+                "AADT_2023": " ",
+                "AADT_2024": "13000"
+              },
+              "geometry": {
+                "x": -77.39156437999996,
+                "y": 35.59973569000004
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34473,
+                "LocationID": "0740000738",
+                "County": "Pitt",
+                "Route": 40001620074,
+                "Location": "SR 1620 (Dickinson Av) east of Hooker Rd",
+                "RTE_CLS": 4,
+                "RTE_CLS_TX": "SR",
+                "FUNC_CLS": 4,
+                "FNC_CLS_TX": "Minor Arterial",
+                "Latitude": 35.60156099,
+                "Longitude": -77.39048958,
+                "Coll_Cycle": "E",
+                "Active": 1,
+                "Category": "VOLUME",
+                "AADT_2002": "14000",
+                "AADT_2003": " ",
+                "AADT_2004": "13000",
+                "AADT_2005": " ",
+                "AADT_2006": "12000",
+                "AADT_2007": " ",
+                "AADT_2008": "13000",
+                "AADT_2009": " ",
+                "AADT_2010": "13000",
+                "AADT_2011": " ",
+                "AADT_2012": "12000",
+                "AADT_2013": " ",
+                "AADT_2014": "11000",
+                "AADT_2015": " ",
+                "AADT_2016": "14000",
+                "AADT_2017": " ",
+                "AADT_2018": "10500",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "10000",
+                "AADT_2023": " ",
+                "AADT_2024": "9600"
+              },
+              "geometry": {
+                "x": -77.39048957999995,
+                "y": 35.601560990000046
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34346,
+                "LocationID": "0740000625",
+                "County": "Pitt",
+                "Route": 20000013074,
+                "Location": "US 13 north of US 13 Dickinson Ave",
+                "RTE_CLS": 2,
+                "RTE_CLS_TX": "US",
+                "FUNC_CLS": 3,
+                "FNC_CLS_TX": "PA-Other",
+                "Latitude": 35.60022713,
+                "Longitude": -77.39542422,
+                "Coll_Cycle": "E",
+                "Active": 1,
+                "Category": "VOLUME",
+                "AADT_2002": "24000",
+                "AADT_2003": " ",
+                "AADT_2004": "22000",
+                "AADT_2005": " ",
+                "AADT_2006": "23000",
+                "AADT_2007": " ",
+                "AADT_2008": "23000",
+                "AADT_2009": " ",
+                "AADT_2010": "32000",
+                "AADT_2011": " ",
+                "AADT_2012": "22000",
+                "AADT_2013": " ",
+                "AADT_2014": "23000",
+                "AADT_2015": " ",
+                "AADT_2016": "22000",
+                "AADT_2017": " ",
+                "AADT_2018": "19500",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "19000",
+                "AADT_2023": " ",
+                "AADT_2024": "18500"
+              },
+              "geometry": {
+                "x": -77.39542421999994,
+                "y": 35.600227130000064
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34055,
+                "LocationID": "0740000308",
+                "County": "Pitt",
+                "Route": 30000011074,
+                "Location": "NC 11 south of US 13 Dickinson Ave",
+                "RTE_CLS": 3,
+                "RTE_CLS_TX": "NC",
+                "FUNC_CLS": 3,
+                "FNC_CLS_TX": "PA-Other",
+                "Latitude": 35.59775022,
+                "Longitude": -77.39516618,
+                "Coll_Cycle": "E",
+                "Active": 1,
+                "Category": "VOLUME",
+                "AADT_2002": "24000",
+                "AADT_2003": " ",
+                "AADT_2004": "24000",
+                "AADT_2005": " ",
+                "AADT_2006": "22000",
+                "AADT_2007": " ",
+                "AADT_2008": "21000",
+                "AADT_2009": " ",
+                "AADT_2010": "23000",
+                "AADT_2011": " ",
+                "AADT_2012": "21000",
+                "AADT_2013": " ",
+                "AADT_2014": "21000",
+                "AADT_2015": " ",
+                "AADT_2016": "22000",
+                "AADT_2017": " ",
+                "AADT_2018": "20500",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "17500",
+                "AADT_2023": " ",
+                "AADT_2024": "16500"
+              },
+              "geometry": {
+                "x": -77.39516617999999,
+                "y": 35.59775022000008
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34484,
+                "LocationID": "0740000751",
+                "County": "Pitt",
+                "Route": 50000904074,
+                "Location": "Moye Bv west of US 13/NC 11-43 S Memorial Dr",
+                "RTE_CLS": 5,
+                "RTE_CLS_TX": "NS",
+                "FUNC_CLS": 5,
+                "FNC_CLS_TX": "Major Collector",
+                "Latitude": 35.60225063,
+                "Longitude": -77.39778086,
+                "Coll_Cycle": "E",
+                "Active": 1,
+                "Category": "VOLUME",
+                "AADT_2002": "6100",
+                "AADT_2003": " ",
+                "AADT_2004": "7800",
+                "AADT_2005": " ",
+                "AADT_2006": "6600",
+                "AADT_2007": " ",
+                "AADT_2008": "5600",
+                "AADT_2009": " ",
+                "AADT_2010": "8600",
+                "AADT_2011": " ",
+                "AADT_2012": "8000",
+                "AADT_2013": " ",
+                "AADT_2014": "8500",
+                "AADT_2015": " ",
+                "AADT_2016": "8900",
+                "AADT_2017": " ",
+                "AADT_2018": "10000",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "8700",
+                "AADT_2023": " ",
+                "AADT_2024": "8400"
+              },
+              "geometry": {
+                "x": -77.39778085999995,
+                "y": 35.60225063000007
+              }
+            },
+            {
+              "attributes": {
+                "FID": 32228,
+                "LocationID": "0740000062",
+                "County": "Pitt",
+                "Route": 20000013074,
+                "Location": "US 13 east of MAXWELL ST",
+                "RTE_CLS": 2,
+                "RTE_CLS_TX": "US",
+                "FUNC_CLS": 3,
+                "FNC_CLS_TX": "PA-Other",
+                "Latitude": 35.59814553,
+                "Longitude": -77.39717615,
+                "Coll_Cycle": "E",
+                "Active": 1,
+                "Category": "VOLUME",
+                "AADT_2002": "8000",
+                "AADT_2003": " ",
+                "AADT_2004": "7900",
+                "AADT_2005": " ",
+                "AADT_2006": "8900",
+                "AADT_2007": " ",
+                "AADT_2008": "9700",
+                "AADT_2009": " ",
+                "AADT_2010": "10000",
+                "AADT_2011": " ",
+                "AADT_2012": "9900",
+                "AADT_2013": " ",
+                "AADT_2014": "10000",
+                "AADT_2015": " ",
+                "AADT_2016": "9900",
+                "AADT_2017": " ",
+                "AADT_2018": "9700",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "9900",
+                "AADT_2023": " ",
+                "AADT_2024": "8600"
+              },
+              "geometry": {
+                "x": -77.39717614999995,
+                "y": 35.59814553000007
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34387,
+                "LocationID": "0740000666",
+                "County": "Pitt",
+                "Route": 20000013074,
+                "Location": "US 13 south of SR 1467 Stantonsburg Rd",
+                "RTE_CLS": 2,
+                "RTE_CLS_TX": "US",
+                "FUNC_CLS": 3,
+                "FNC_CLS_TX": "PA-Other",
+                "Latitude": 35.60507415,
+                "Longitude": -77.39585902,
+                "Coll_Cycle": "E",
+                "Active": 1,
+                "Category": "VOLUME",
+                "AADT_2002": "23000",
+                "AADT_2003": " ",
+                "AADT_2004": "23000",
+                "AADT_2005": " ",
+                "AADT_2006": "24000",
+                "AADT_2007": " ",
+                "AADT_2008": "25000",
+                "AADT_2009": " ",
+                "AADT_2010": "24000",
+                "AADT_2011": " ",
+                "AADT_2012": "22000",
+                "AADT_2013": " ",
+                "AADT_2014": "22000",
+                "AADT_2015": " ",
+                "AADT_2016": "23000",
+                "AADT_2017": " ",
+                "AADT_2018": "21000",
+                "AADT_2019": " ",
+                "AADT_2020": "19000",
+                "AADT_2021": " ",
+                "AADT_2022": "19500",
+                "AADT_2023": " ",
+                "AADT_2024": "20000"
+              },
+              "geometry": {
+                "x": -77.39585901999999,
+                "y": 35.605074150000064
               }
             }
           ]
@@ -43,7 +2041,1764 @@
     {
       "match": {
         "method": "GET",
-        "url_pattern": "NCDOT_AADT_Stations/FeatureServer/0/query"
+        "url_pattern": "services\\.arcgis\\.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/NCDOT_AADT_Stations/FeatureServer/0/query\\?.*geometry=-77\\.39281(0)?(%2C|,)35\\.600786"
+      },
+      "response": {
+        "json": {
+          "objectIdFieldName": "FID",
+          "uniqueIdField": {
+            "name": "FID",
+            "isSystemMaintained": true
+          },
+          "globalIdFieldName": "",
+          "geometryType": "esriGeometryPoint",
+          "spatialReference": {
+            "wkid": 4326,
+            "latestWkid": 4326
+          },
+          "fields": [
+            {
+              "name": "FID",
+              "type": "esriFieldTypeOID",
+              "alias": "FID",
+              "sqlType": "sqlTypeOther",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "LocationID",
+              "type": "esriFieldTypeString",
+              "alias": "LocationID",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "COUNTY",
+              "type": "esriFieldTypeString",
+              "alias": "COUNTY",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "RTE_CLS",
+              "type": "esriFieldTypeDouble",
+              "alias": "RTE_CLS",
+              "sqlType": "sqlTypeOther",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "ROUTE",
+              "type": "esriFieldTypeString",
+              "alias": "ROUTE",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "LOCATION",
+              "type": "esriFieldTypeString",
+              "alias": "LOCATION",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2002",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2002",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2003",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2003",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2004",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2004",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2005",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2005",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2006",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2006",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2007",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2007",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2008",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2008",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2009",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2009",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2010",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2010",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2011",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2011",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2012",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2012",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2013",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2013",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2014",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2014",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2015",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2015",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2016",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2016",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2017",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2017",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2018",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2018",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2019",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2019",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2020",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2020",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2021",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2021",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2022",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2022",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            }
+          ],
+          "features": [
+            {
+              "attributes": {
+                "FID": 34803,
+                "LocationID": "0740000863",
+                "COUNTY": "PITT",
+                "RTE_CLS": 5,
+                "ROUTE": "LINE AVE",
+                "LOCATION": "NORTH OF SR 1598",
+                "AADT_2002": " ",
+                "AADT_2003": " ",
+                "AADT_2004": " ",
+                "AADT_2005": " ",
+                "AADT_2006": " ",
+                "AADT_2007": " ",
+                "AADT_2008": " ",
+                "AADT_2009": "9400",
+                "AADT_2010": " ",
+                "AADT_2011": " ",
+                "AADT_2012": "10000",
+                "AADT_2013": " ",
+                "AADT_2014": "12000",
+                "AADT_2015": " ",
+                "AADT_2016": " ",
+                "AADT_2017": " ",
+                "AADT_2018": " ",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "10500"
+              },
+              "geometry": {
+                "x": -77.39240522792024,
+                "y": 35.60101160330606
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34695,
+                "LocationID": "0740000744",
+                "COUNTY": "PITT",
+                "RTE_CLS": 4,
+                "ROUTE": "SR 1598 (DICKINSON AVE)",
+                "LOCATION": "EAST OF WEST ST",
+                "AADT_2002": "14000",
+                "AADT_2003": " ",
+                "AADT_2004": "10000",
+                "AADT_2005": " ",
+                "AADT_2006": "10000",
+                "AADT_2007": " ",
+                "AADT_2008": "11000",
+                "AADT_2009": " ",
+                "AADT_2010": "11000",
+                "AADT_2011": " ",
+                "AADT_2012": "9700",
+                "AADT_2013": " ",
+                "AADT_2014": "9800",
+                "AADT_2015": " ",
+                "AADT_2016": "9400",
+                "AADT_2017": " ",
+                "AADT_2018": "8200",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "8800"
+              },
+              "geometry": {
+                "x": -77.39318173495039,
+                "y": 35.60006749412287
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34780,
+                "LocationID": "0740000839",
+                "COUNTY": "PITT",
+                "RTE_CLS": 5,
+                "ROUTE": "CHESTNUT ST",
+                "LOCATION": "WEST OF LINE AVE",
+                "AADT_2002": " ",
+                "AADT_2003": " ",
+                "AADT_2004": " ",
+                "AADT_2005": " ",
+                "AADT_2006": " ",
+                "AADT_2007": " ",
+                "AADT_2008": "7300",
+                "AADT_2009": " ",
+                "AADT_2010": "9100",
+                "AADT_2011": " ",
+                "AADT_2012": "8200",
+                "AADT_2013": " ",
+                "AADT_2014": "8900",
+                "AADT_2015": " ",
+                "AADT_2016": "10000",
+                "AADT_2017": " ",
+                "AADT_2018": " ",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "8700"
+              },
+              "geometry": {
+                "x": -77.39330145629847,
+                "y": 35.601737208708464
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34802,
+                "LocationID": "0740000862",
+                "COUNTY": "PITT",
+                "RTE_CLS": 5,
+                "ROUTE": "HOOKER RD",
+                "LOCATION": "NORTH OF MAY ST",
+                "AADT_2002": " ",
+                "AADT_2003": " ",
+                "AADT_2004": " ",
+                "AADT_2005": " ",
+                "AADT_2006": " ",
+                "AADT_2007": " ",
+                "AADT_2008": " ",
+                "AADT_2009": "11700",
+                "AADT_2010": " ",
+                "AADT_2011": " ",
+                "AADT_2012": "11000",
+                "AADT_2013": " ",
+                "AADT_2014": "13000",
+                "AADT_2015": " ",
+                "AADT_2016": "13000",
+                "AADT_2017": " ",
+                "AADT_2018": "15000",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "12500"
+              },
+              "geometry": {
+                "x": -77.39156438069294,
+                "y": 35.59973569195191
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34689,
+                "LocationID": "0740000738",
+                "COUNTY": "PITT",
+                "RTE_CLS": 4,
+                "ROUTE": "SR 1598 (DICKINSON AVE)",
+                "LOCATION": "EAST OF HOOKER RD",
+                "AADT_2002": "14000",
+                "AADT_2003": " ",
+                "AADT_2004": "13000",
+                "AADT_2005": " ",
+                "AADT_2006": "12000",
+                "AADT_2007": " ",
+                "AADT_2008": "13000",
+                "AADT_2009": " ",
+                "AADT_2010": "13000",
+                "AADT_2011": " ",
+                "AADT_2012": "12000",
+                "AADT_2013": " ",
+                "AADT_2014": "11000",
+                "AADT_2015": " ",
+                "AADT_2016": "14000",
+                "AADT_2017": " ",
+                "AADT_2018": "10500",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "10000"
+              },
+              "geometry": {
+                "x": -77.39048958292923,
+                "y": 35.60156099464743
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34584,
+                "LocationID": "0740000625",
+                "COUNTY": "PITT",
+                "RTE_CLS": 2,
+                "ROUTE": "US 13/NC 11-43-903",
+                "LOCATION": "NORTH OF NC 11",
+                "AADT_2002": "24000",
+                "AADT_2003": " ",
+                "AADT_2004": "22000",
+                "AADT_2005": " ",
+                "AADT_2006": "23000",
+                "AADT_2007": " ",
+                "AADT_2008": "23000",
+                "AADT_2009": " ",
+                "AADT_2010": "32000",
+                "AADT_2011": " ",
+                "AADT_2012": "22000",
+                "AADT_2013": " ",
+                "AADT_2014": "23000",
+                "AADT_2015": " ",
+                "AADT_2016": "22000",
+                "AADT_2017": " ",
+                "AADT_2018": "19500",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "19000"
+              },
+              "geometry": {
+                "x": -77.39542421515668,
+                "y": 35.60022712558465
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34292,
+                "LocationID": "0740000308",
+                "COUNTY": "PITT",
+                "RTE_CLS": 3,
+                "ROUTE": "NC 11-43-903",
+                "LOCATION": "NORTH OF MAXWELL ST",
+                "AADT_2002": "24000",
+                "AADT_2003": " ",
+                "AADT_2004": "24000",
+                "AADT_2005": " ",
+                "AADT_2006": "22000",
+                "AADT_2007": " ",
+                "AADT_2008": "21000",
+                "AADT_2009": " ",
+                "AADT_2010": "23000",
+                "AADT_2011": " ",
+                "AADT_2012": "21000",
+                "AADT_2013": " ",
+                "AADT_2014": "21000",
+                "AADT_2015": " ",
+                "AADT_2016": "22000",
+                "AADT_2017": " ",
+                "AADT_2018": "20500",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "17500"
+              },
+              "geometry": {
+                "x": -77.39516618257456,
+                "y": 35.59775022359721
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34701,
+                "LocationID": "0740000751",
+                "COUNTY": "PITT",
+                "RTE_CLS": 5,
+                "ROUTE": "MOYE BLVD",
+                "LOCATION": "WEST OF US 13/NC 11-43",
+                "AADT_2002": "6100",
+                "AADT_2003": " ",
+                "AADT_2004": "7800",
+                "AADT_2005": " ",
+                "AADT_2006": "6600",
+                "AADT_2007": " ",
+                "AADT_2008": "5600",
+                "AADT_2009": " ",
+                "AADT_2010": "8600",
+                "AADT_2011": " ",
+                "AADT_2012": "8000",
+                "AADT_2013": " ",
+                "AADT_2014": "8500",
+                "AADT_2015": " ",
+                "AADT_2016": "8900",
+                "AADT_2017": " ",
+                "AADT_2018": "10000",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "8700"
+              },
+              "geometry": {
+                "x": -77.3977808580015,
+                "y": 35.602250626268685
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34060,
+                "LocationID": "0740000062",
+                "COUNTY": "PITT",
+                "RTE_CLS": 2,
+                "ROUTE": "US 13 (DICKINSON AVE)",
+                "LOCATION": "EAST OF MAXWELL ST",
+                "AADT_2002": "8000",
+                "AADT_2003": " ",
+                "AADT_2004": "7900",
+                "AADT_2005": " ",
+                "AADT_2006": "8900",
+                "AADT_2007": " ",
+                "AADT_2008": "9700",
+                "AADT_2009": " ",
+                "AADT_2010": "10000",
+                "AADT_2011": " ",
+                "AADT_2012": "9900",
+                "AADT_2013": " ",
+                "AADT_2014": "10000",
+                "AADT_2015": " ",
+                "AADT_2016": "9900",
+                "AADT_2017": " ",
+                "AADT_2018": "9700",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "9900"
+              },
+              "geometry": {
+                "x": -77.39717615205907,
+                "y": 35.59814553319303
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34624,
+                "LocationID": "0740000666",
+                "COUNTY": "PITT",
+                "RTE_CLS": 2,
+                "ROUTE": "US 13/NC 11-43-903",
+                "LOCATION": "SOUTH OF SR 1467",
+                "AADT_2002": "23000",
+                "AADT_2003": " ",
+                "AADT_2004": "23000",
+                "AADT_2005": " ",
+                "AADT_2006": "24000",
+                "AADT_2007": " ",
+                "AADT_2008": "25000",
+                "AADT_2009": " ",
+                "AADT_2010": "24000",
+                "AADT_2011": " ",
+                "AADT_2012": "22000",
+                "AADT_2013": " ",
+                "AADT_2014": "22000",
+                "AADT_2015": " ",
+                "AADT_2016": "23000",
+                "AADT_2017": " ",
+                "AADT_2018": "21000",
+                "AADT_2019": " ",
+                "AADT_2020": "19000",
+                "AADT_2021": " ",
+                "AADT_2022": "19500"
+              },
+              "geometry": {
+                "x": -77.39585901758086,
+                "y": 35.60507414675772
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "services\\.arcgis\\.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/NCDOT__2024_AADT_Stations_published_September_2025/FeatureServer/0/query\\?.*geometry=-77\\.4(%2C|,)35\\.577(&|$)"
+      },
+      "response": {
+        "json": {
+          "objectIdFieldName": "FID",
+          "uniqueIdField": {
+            "name": "FID",
+            "isSystemMaintained": true
+          },
+          "globalIdFieldName": "",
+          "geometryType": "esriGeometryPoint",
+          "spatialReference": {
+            "wkid": 4326,
+            "latestWkid": 4326
+          },
+          "fields": [
+            {
+              "name": "FID",
+              "type": "esriFieldTypeOID",
+              "alias": "FID",
+              "sqlType": "sqlTypeInteger",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "LocationID",
+              "type": "esriFieldTypeString",
+              "alias": "LocationID",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "County",
+              "type": "esriFieldTypeString",
+              "alias": "County",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Route",
+              "type": "esriFieldTypeDouble",
+              "alias": "Route",
+              "sqlType": "sqlTypeFloat",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Location",
+              "type": "esriFieldTypeString",
+              "alias": "Location",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "RTE_CLS",
+              "type": "esriFieldTypeDouble",
+              "alias": "RTE_CLS",
+              "sqlType": "sqlTypeFloat",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "RTE_CLS_TX",
+              "type": "esriFieldTypeString",
+              "alias": "RTE_CLS_TX",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "FUNC_CLS",
+              "type": "esriFieldTypeDouble",
+              "alias": "FUNC_CLS",
+              "sqlType": "sqlTypeFloat",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "FNC_CLS_TX",
+              "type": "esriFieldTypeString",
+              "alias": "FNC_CLS_TX",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Latitude",
+              "type": "esriFieldTypeDouble",
+              "alias": "Latitude",
+              "sqlType": "sqlTypeFloat",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Longitude",
+              "type": "esriFieldTypeDouble",
+              "alias": "Longitude",
+              "sqlType": "sqlTypeFloat",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Coll_Cycle",
+              "type": "esriFieldTypeString",
+              "alias": "Coll_Cycle",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Active",
+              "type": "esriFieldTypeInteger",
+              "alias": "Active",
+              "sqlType": "sqlTypeInteger",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "Category",
+              "type": "esriFieldTypeString",
+              "alias": "Category",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2002",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2002",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2003",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2003",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2004",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2004",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2005",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2005",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2006",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2006",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2007",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2007",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2008",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2008",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2009",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2009",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2010",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2010",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2011",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2011",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2012",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2012",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2013",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2013",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2014",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2014",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2015",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2015",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2016",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2016",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2017",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2017",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2018",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2018",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2019",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2019",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2020",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2020",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2021",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2021",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2022",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2022",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2023",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2023",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2024",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2024",
+              "sqlType": "sqlTypeNVarchar",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            }
+          ],
+          "features": [
+            {
+              "attributes": {
+                "FID": 32354,
+                "LocationID": "0740000198",
+                "County": "Pitt",
+                "Route": 30000011074,
+                "Location": "NC 11 north of US 264 ALT Greevnille Blvd",
+                "RTE_CLS": 3,
+                "RTE_CLS_TX": "NC",
+                "FUNC_CLS": 3,
+                "FNC_CLS_TX": "PA-Other",
+                "Latitude": 35.57395081,
+                "Longitude": -77.39885408,
+                "Coll_Cycle": "E",
+                "Active": 1,
+                "Category": "VOLUME",
+                "AADT_2002": "26000",
+                "AADT_2003": " ",
+                "AADT_2004": "26000",
+                "AADT_2005": " ",
+                "AADT_2006": "26000",
+                "AADT_2007": " ",
+                "AADT_2008": "25000",
+                "AADT_2009": " ",
+                "AADT_2010": "27000",
+                "AADT_2011": " ",
+                "AADT_2012": "26000",
+                "AADT_2013": " ",
+                "AADT_2014": "28000",
+                "AADT_2015": " ",
+                "AADT_2016": "25000",
+                "AADT_2017": " ",
+                "AADT_2018": " ",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "21000",
+                "AADT_2023": " ",
+                "AADT_2024": "22500"
+              },
+              "geometry": {
+                "x": -77.39885407999998,
+                "y": 35.57395081000005
+              }
+            },
+            {
+              "attributes": {
+                "FID": 32379,
+                "LocationID": "0740000223",
+                "County": "Pitt",
+                "Route": 21000264074,
+                "Location": "US 264 ALT east of NC 11-43-903 S Memorial Dr",
+                "RTE_CLS": 2,
+                "RTE_CLS_TX": "US",
+                "FUNC_CLS": 3,
+                "FNC_CLS_TX": "PA-Other",
+                "Latitude": 35.57241133,
+                "Longitude": -77.39749863,
+                "Coll_Cycle": "E",
+                "Active": 1,
+                "Category": "VOLUME",
+                "AADT_2002": "31000",
+                "AADT_2003": " ",
+                "AADT_2004": "32000",
+                "AADT_2005": " ",
+                "AADT_2006": "34000",
+                "AADT_2007": " ",
+                "AADT_2008": "33000",
+                "AADT_2009": " ",
+                "AADT_2010": "33000",
+                "AADT_2011": " ",
+                "AADT_2012": "31000",
+                "AADT_2013": " ",
+                "AADT_2014": "27000",
+                "AADT_2015": " ",
+                "AADT_2016": "30000",
+                "AADT_2017": " ",
+                "AADT_2018": " ",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "28500",
+                "AADT_2023": " ",
+                "AADT_2024": "32500"
+              },
+              "geometry": {
+                "x": -77.39749862999997,
+                "y": 35.57241133000009
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "services\\.arcgis\\.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/NCDOT_AADT_Stations/FeatureServer/0/query\\?.*geometry=-77\\.4(%2C|,)35\\.577(&|$)"
+      },
+      "response": {
+        "json": {
+          "objectIdFieldName": "FID",
+          "uniqueIdField": {
+            "name": "FID",
+            "isSystemMaintained": true
+          },
+          "globalIdFieldName": "",
+          "geometryType": "esriGeometryPoint",
+          "spatialReference": {
+            "wkid": 4326,
+            "latestWkid": 4326
+          },
+          "fields": [
+            {
+              "name": "FID",
+              "type": "esriFieldTypeOID",
+              "alias": "FID",
+              "sqlType": "sqlTypeOther",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "LocationID",
+              "type": "esriFieldTypeString",
+              "alias": "LocationID",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "COUNTY",
+              "type": "esriFieldTypeString",
+              "alias": "COUNTY",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "RTE_CLS",
+              "type": "esriFieldTypeDouble",
+              "alias": "RTE_CLS",
+              "sqlType": "sqlTypeOther",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "ROUTE",
+              "type": "esriFieldTypeString",
+              "alias": "ROUTE",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "LOCATION",
+              "type": "esriFieldTypeString",
+              "alias": "LOCATION",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2002",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2002",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2003",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2003",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2004",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2004",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2005",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2005",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2006",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2006",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2007",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2007",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2008",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2008",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2009",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2009",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2010",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2010",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2011",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2011",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2012",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2012",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2013",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2013",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2014",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2014",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2015",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2015",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2016",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2016",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2017",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2017",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2018",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2018",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2019",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2019",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2020",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2020",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2021",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2021",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2022",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2022",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            }
+          ],
+          "features": [
+            {
+              "attributes": {
+                "FID": 34190,
+                "LocationID": "0740000198",
+                "COUNTY": "PITT",
+                "RTE_CLS": 3,
+                "ROUTE": "NC 11-43-903",
+                "LOCATION": "NORTH OF US 264 ALT",
+                "AADT_2002": "26000",
+                "AADT_2003": " ",
+                "AADT_2004": "26000",
+                "AADT_2005": " ",
+                "AADT_2006": "26000",
+                "AADT_2007": " ",
+                "AADT_2008": "25000",
+                "AADT_2009": " ",
+                "AADT_2010": "27000",
+                "AADT_2011": " ",
+                "AADT_2012": "26000",
+                "AADT_2013": " ",
+                "AADT_2014": "28000",
+                "AADT_2015": " ",
+                "AADT_2016": "25000",
+                "AADT_2017": " ",
+                "AADT_2018": " ",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "21000"
+              },
+              "geometry": {
+                "x": -77.39885411522657,
+                "y": 35.573950657599994
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34215,
+                "LocationID": "0740000223",
+                "COUNTY": "PITT",
+                "RTE_CLS": 2,
+                "ROUTE": "US 264 ALT/NC 43 (GREENVILLE BLVD)",
+                "LOCATION": "EAST OF NC 11-43-903",
+                "AADT_2002": "31000",
+                "AADT_2003": " ",
+                "AADT_2004": "32000",
+                "AADT_2005": " ",
+                "AADT_2006": "34000",
+                "AADT_2007": " ",
+                "AADT_2008": "33000",
+                "AADT_2009": " ",
+                "AADT_2010": "33000",
+                "AADT_2011": " ",
+                "AADT_2012": "31000",
+                "AADT_2013": " ",
+                "AADT_2014": "27000",
+                "AADT_2015": " ",
+                "AADT_2016": "30000",
+                "AADT_2017": " ",
+                "AADT_2018": " ",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "28500"
+              },
+              "geometry": {
+                "x": -77.39748315182729,
+                "y": 35.57239218915147
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "services\\.arcgis\\.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/NCDOT__2024_AADT_Stations_published_September_2025/FeatureServer/0/query\\?.*geometry=-77\\.5(%2C|,)35\\.5(&|$)"
+      },
+      "response": {
+        "json": {
+          "error": {
+            "code": 400,
+            "message": "Unable to complete operation.",
+            "details": [
+              "synthetic: exercises the fallback to the 2022 service"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "services\\.arcgis\\.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/NCDOT_AADT_Stations/FeatureServer/0/query\\?.*geometry=-77\\.5(%2C|,)35\\.5(&|$)"
+      },
+      "response": {
+        "json": {
+          "objectIdFieldName": "FID",
+          "uniqueIdField": {
+            "name": "FID",
+            "isSystemMaintained": true
+          },
+          "globalIdFieldName": "",
+          "geometryType": "esriGeometryPoint",
+          "spatialReference": {
+            "wkid": 4326,
+            "latestWkid": 4326
+          },
+          "fields": [
+            {
+              "name": "FID",
+              "type": "esriFieldTypeOID",
+              "alias": "FID",
+              "sqlType": "sqlTypeOther",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "LocationID",
+              "type": "esriFieldTypeString",
+              "alias": "LocationID",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "COUNTY",
+              "type": "esriFieldTypeString",
+              "alias": "COUNTY",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "RTE_CLS",
+              "type": "esriFieldTypeDouble",
+              "alias": "RTE_CLS",
+              "sqlType": "sqlTypeOther",
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "ROUTE",
+              "type": "esriFieldTypeString",
+              "alias": "ROUTE",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "LOCATION",
+              "type": "esriFieldTypeString",
+              "alias": "LOCATION",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2002",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2002",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2003",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2003",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2004",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2004",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2005",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2005",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2006",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2006",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2007",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2007",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2008",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2008",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2009",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2009",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2010",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2010",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2011",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2011",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2012",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2012",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2013",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2013",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2014",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2014",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2015",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2015",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2016",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2016",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2017",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2017",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2018",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2018",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2019",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2019",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2020",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2020",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2021",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2021",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            },
+            {
+              "name": "AADT_2022",
+              "type": "esriFieldTypeString",
+              "alias": "AADT_2022",
+              "sqlType": "sqlTypeOther",
+              "length": 254,
+              "domain": null,
+              "defaultValue": null
+            }
+          ],
+          "features": [
+            {
+              "attributes": {
+                "FID": 34190,
+                "LocationID": "0740000198",
+                "COUNTY": "PITT",
+                "RTE_CLS": 3,
+                "ROUTE": "NC 11-43-903",
+                "LOCATION": "NORTH OF US 264 ALT",
+                "AADT_2002": "26000",
+                "AADT_2003": " ",
+                "AADT_2004": "26000",
+                "AADT_2005": " ",
+                "AADT_2006": "26000",
+                "AADT_2007": " ",
+                "AADT_2008": "25000",
+                "AADT_2009": " ",
+                "AADT_2010": "27000",
+                "AADT_2011": " ",
+                "AADT_2012": "26000",
+                "AADT_2013": " ",
+                "AADT_2014": "28000",
+                "AADT_2015": " ",
+                "AADT_2016": "25000",
+                "AADT_2017": " ",
+                "AADT_2018": " ",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "21000"
+              },
+              "geometry": {
+                "x": -77.39885411522657,
+                "y": 35.573950657599994
+              }
+            },
+            {
+              "attributes": {
+                "FID": 34215,
+                "LocationID": "0740000223",
+                "COUNTY": "PITT",
+                "RTE_CLS": 2,
+                "ROUTE": "US 264 ALT/NC 43 (GREENVILLE BLVD)",
+                "LOCATION": "EAST OF NC 11-43-903",
+                "AADT_2002": "31000",
+                "AADT_2003": " ",
+                "AADT_2004": "32000",
+                "AADT_2005": " ",
+                "AADT_2006": "34000",
+                "AADT_2007": " ",
+                "AADT_2008": "33000",
+                "AADT_2009": " ",
+                "AADT_2010": "33000",
+                "AADT_2011": " ",
+                "AADT_2012": "31000",
+                "AADT_2013": " ",
+                "AADT_2014": "27000",
+                "AADT_2015": " ",
+                "AADT_2016": "30000",
+                "AADT_2017": " ",
+                "AADT_2018": " ",
+                "AADT_2019": " ",
+                "AADT_2020": " ",
+                "AADT_2021": " ",
+                "AADT_2022": "28500"
+              },
+              "geometry": {
+                "x": -77.39748315182729,
+                "y": 35.57239218915147
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "services\\.arcgis\\.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/NCDOT__2024_AADT_Stations_published_September_2025/FeatureServer/0/query"
+      },
+      "response": {
+        "json": {
+          "features": []
+        }
+      }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "services\\.arcgis\\.com/NuWFvHYDMVmmxMeM/arcgis/rest/services/NCDOT_AADT_Stations/FeatureServer/0/query"
       },
       "response": {
         "json": {
