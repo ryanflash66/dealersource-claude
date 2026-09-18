@@ -125,7 +125,7 @@ to its fixture-backed fake and the run records it under `fixture_layers`.
 
 | Purpose | Variables |
 |---|---|
-| Real dealership address (never committed) | `DEALERSOURCE_HOME_BASE="<street address>, <city>, NC <zip>"` |
+| Home base: the address drive times are measured from, where the owner commutes from (never committed) | `DEALERSOURCE_HOME_BASE="<street address>, <city>, NC <zip>"` |
 | Storage (Supabase) | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (pipeline), `SUPABASE_ANON_KEY` (dashboard) |
 | Email (Gmail API, OAuth) | `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_SENDER_ADDRESS`; pick the mailbox with `business.yaml mail.sender: owner|operator` |
 | Reddit official API | `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_USER_AGENT` |
