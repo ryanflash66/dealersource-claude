@@ -67,7 +67,7 @@ export async function runPipeline(opts: RunOptions): Promise<RunResult> {
 
   const runDate = opts.runDate ?? env.DEALERSOURCE_RUN_DATE ?? todayIn(config.business.schedule.timezone);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(runDate)) throw new Error(`--run-date must be YYYY-MM-DD, got ${runDate}`);
-  const clock = makeClock(opts.now ?? env.DEALERSOURCE_NOW ?? `${runDate}T10:00:00.000Z`);
+  const clock = makeClock(resolveClockInput({ now: opts.now, envNow: env.DEALERSOURCE_NOW, offline, runDate }));
   const cutoffIso = `${runDate}T23:59:59.999Z`;
   const runId = stableId("run", runDate, clock.iso(), String(Math.random()));
   const logger = (opts.logger ?? new Logger(levelFromEnv(env))).child({ run_id: runId });
@@ -179,6 +179,18 @@ async function geocodeHomeBase(ctx: RunContext) {
 
 function isNetworkViolation(e: unknown): boolean {
   return e instanceof Error && /Network access is disabled in offline mode/.test(e.message);
+}
+
+/**
+ * Which clock a run uses for created_at / started_at / fetched_at / sent_at.
+ * `--now` or DEALERSOURCE_NOW always freeze it; `--offline` freezes it at
+ * 10:00Z on the run date so fixture runs are reproducible; online runs use the
+ * real wall clock (null). The run date stays the logical day either way.
+ */
+export function resolveClockInput(o: { now?: string | null; envNow?: string | null; offline: boolean; runDate: string }): string | null {
+  if (o.now?.trim()) return o.now.trim();
+  if (o.envNow?.trim()) return o.envNow.trim();
+  return o.offline ? `${o.runDate}T10:00:00.000Z` : null;
 }
 
 export function todayIn(timeZone: string): string {
