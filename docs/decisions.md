@@ -21,9 +21,24 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
    missing variables. Adapters that need no key (Census, NC OneMap, ArcGIS, NCDOT, FEMA,
    public Overpass) run for real.
 
-5. **Run-date clock.** `--run-date` freezes the clock at `<date>T10:00:00Z` (about 06:00
-   Eastern, matching the default cron). Inbound replies are visible up to `<date>T23:59:59.999Z`
-   ("received_at <= run-date" read as end of day, so same-day replies count, as golden-v1 needs).
+5. **Run-date clock.** `--offline` freezes the clock at `<date>T10:00:00Z` (about 06:00
+   Eastern, matching the default cron) so fixture runs are reproducible; `DEALERSOURCE_NOW` /
+   `--now` freeze it anywhere. Online runs use the real wall clock for `created_at`,
+   `started_at`, `finished_at`, `fetched_at` and `sent_at` (live-run fix, 2026-09-18: every
+   Supabase row had carried 10:00Z). The run date stays the logical day for idempotency keys,
+   expiry maths and reply visibility: inbound replies are visible up to `<date>T23:59:59.999Z`.
+   The `reports` row is written only by a completed report stage, so a run that fails earlier
+   never replaces the day's good report; the dashboard orders by `created_at desc, id desc`.
+
+5b. **Unknown drive time is not "outside".** When the drive-time provider is unavailable (for
+   example `ORS_API_KEY` unset), the site keeps `in_search_area: null`, stays in stage
+   `enriched`/`verifying`, is still enriched (zoning, flood, traffic, competitors), gated and
+   verified, a run warning is recorded, and it is excluded from ranking only (rank null, flag
+   "drive time unknown") until a later run learns the distance. `report.json` therefore emits
+   `in_search_area: null`; the local contract copy allows `["boolean", "null"]` and the parent
+   schema needs the same change. The dashboard shows "Distance unknown" and lists such sites
+   with the waiting ones. Fixture sets always carry `drivetime.json`, so golden behaviour is
+   unchanged.
 
 6. **Gate statuses are `pass | fail | pending` (s.14.4).** Expired evidence is `pending` with a
    warning, never `pass`. Rent stated on a listing page counts as *written* rent evidence
