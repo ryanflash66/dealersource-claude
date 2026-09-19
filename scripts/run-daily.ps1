@@ -33,7 +33,7 @@ try {
   Log ("env loaded: " + ($loaded -join ", "))
   $out = "out/$date"
   # Call tsx directly: npm.cmd invoked from PowerShell drops every argument after "--".
-  $tsx = Join-Path $repo "node_modules.bin	sx.cmd"
+  $tsx = Join-Path $repo "node_modules/.bin/tsx.cmd"
   Log "tsx src/cli.ts run --out $out --run-date $date"
   & $tsx src/cli.ts run --out $out --run-date $date 2>&1 | ForEach-Object { Add-Content -Path $log -Value $_ }
   $code = $LASTEXITCODE
