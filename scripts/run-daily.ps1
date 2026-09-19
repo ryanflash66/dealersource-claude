@@ -32,8 +32,10 @@ try {
   }
   Log ("env loaded: " + ($loaded -join ", "))
   $out = "out/$date"
-  Log "npm run pipeline -- --out $out --run-date $date"
-  npm run pipeline -- --out $out --run-date $date 2>&1 | ForEach-Object { Add-Content -Path $log -Value $_ }
+  # Call tsx directly: npm.cmd invoked from PowerShell drops every argument after "--".
+  $tsx = Join-Path $repo "node_modules.bin	sx.cmd"
+  Log "tsx src/cli.ts run --out $out --run-date $date"
+  & $tsx src/cli.ts run --out $out --run-date $date 2>&1 | ForEach-Object { Add-Content -Path $log -Value $_ }
   $code = $LASTEXITCODE
   $run = Join-Path $repo "$out\run.json"
   if (Test-Path $run) {
