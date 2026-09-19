@@ -31,7 +31,7 @@ try {
     }
   }
   Log ("env loaded: " + ($loaded -join ", "))
-  $out = "out\$date"
+  $out = "out/$date"
   Log "npm run pipeline -- --out $out --run-date $date"
   npm run pipeline -- --out $out --run-date $date 2>&1 | ForEach-Object { Add-Content -Path $log -Value $_ }
   $code = $LASTEXITCODE
