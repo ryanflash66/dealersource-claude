@@ -1,7 +1,8 @@
 # dealersource daily run for Windows Task Scheduler.
 # Pulls the latest main, installs deps if the lockfile changed, loads .env, runs the pipeline online,
 # and appends a dated log under out/logs/. Never prints secret values.
-$ErrorActionPreference = "Stop"
+# Native commands (git, npm) write progress to stderr; do not let PowerShell treat that as an error.
+$ErrorActionPreference = "Continue"
 $repo = Split-Path -Parent $PSScriptRoot
 Set-Location $repo
 $date = Get-Date -Format "yyyy-MM-dd"
@@ -13,10 +14,12 @@ try {
   Log "start; repo=$repo"
   $before = git rev-parse HEAD
   git pull --ff-only origin main 2>&1 | ForEach-Object { Log "git: $_" }
+  if ($LASTEXITCODE -ne 0) { throw "git pull failed with exit $LASTEXITCODE" }
   $after = git rev-parse HEAD
   if ($before -ne $after -or -not (Test-Path (Join-Path $repo "node_modules"))) {
     Log "installing dependencies (commit changed or node_modules missing)"
     npm ci --silent 2>&1 | ForEach-Object { Log "npm: $_" }
+    if ($LASTEXITCODE -ne 0) { throw "npm ci failed with exit $LASTEXITCODE" }
   }
   $envFile = Join-Path $repo ".env"
   if (-not (Test-Path $envFile)) { throw ".env not found at $envFile" }
