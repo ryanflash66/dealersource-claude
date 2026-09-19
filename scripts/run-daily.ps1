@@ -40,7 +40,10 @@ try {
   $run = Join-Path $repo "$out\run.json"
   if (Test-Path $run) {
     $r = Get-Content $run -Raw | ConvertFrom-Json
-    Log ("done exit=$code status=" + $r.status + " sites=" + $r.counts.'report.sites_reported' + " messages_sent=" + $r.counts.messages_sent + " errors=" + $r.errors.Count + " paused=" + $r.sending_paused)
+    # run.json carries no status field; derive one from the exit code and error count.
+    $status = if ($code -eq 0 -and $r.errors.Count -eq 0) { "ok" } else { "failed" }
+    $viable = $r.counts.'report.sites_reported' - $r.counts.'score.sites_not_viable'
+    Log ("done exit=$code status=$status sites=" + $r.counts.'report.sites_reported' + " viable=$viable messages_sent=" + $r.counts.messages_sent + " errors=" + $r.errors.Count + " paused=" + $r.sending_paused)
   } else {
     Log "done exit=$code (no run.json written)"
   }
