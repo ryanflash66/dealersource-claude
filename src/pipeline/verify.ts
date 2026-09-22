@@ -68,6 +68,10 @@ async function openCases(ctx: RunContext, c: StageCounter, site: SiteRow): Promi
       if (prev.status === "escalated" && !prev.contact_id && contact) {
         await ctx.store.upsert("cases", [{ ...prev, status: "open", owner: "system", contact_id: contact.id, next_action: `email ${w.role} contact`, next_action_at: now, updated_at: now }]);
         c.inc("cases_reopened_with_contact");
+      } else if (prev.status === "open" && contact && prev.contact_id !== contact.id && prev.followups_sent === 0 && !prev.last_contacted_at) {
+        // The verified address changed (e.g. business.yaml corrected) before anything was sent: point the case at it.
+        await ctx.store.upsert("cases", [{ ...prev, contact_id: contact.id, updated_at: now }]);
+        c.inc("cases_contact_replaced");
       }
       continue;
     }

@@ -67,14 +67,24 @@ export async function enrich(ctx: RunContext): Promise<StageCounter> {
     await attempt("listing facts", () => listingFacts(ctx, c, site, mine));
 
     // --- zoning ----------------------------------------------------------
-    if (!(await currentEvidence(ctx, site.id, "zoning_district"))) {
+    // Planning contact: an address published by the zoning layer (recorded on the evidence) wins; otherwise
+    // business.yaml is the deployer-verified authority. Re-sync every run so a corrected address replaces
+    // one cached on the site while the zoning evidence is still fresh.
+    const zoningEv = await currentEvidence(ctx, site.id, "zoning_district");
+    const layerPlanning = (zoningEv?.value as { planning_email?: string | null } | undefined)?.planning_email ?? null;
+    const wantPlanning = layerPlanning ?? planningEmailFor(ctx, site.jurisdiction);
+    if (wantPlanning && site.planning_email !== wantPlanning) {
+      site = await touchSite(ctx, site, { planning_email: wantPlanning });
+      c.inc("planning_email_resynced");
+    }
+    if (!zoningEv) {
       await attempt("zoning layer", async () => {
         const z = await ctx.providers.zoning.lookup(point, site.jurisdiction, hints);
         if (z) {
           await writeEvidence(ctx, {
             site_id: site.id,
             fact: "zoning_district",
-            value: { district: z.district, jurisdiction: z.jurisdiction, dealer_use: z.dealer_use ?? "unknown", queried: hints.geometry ? "parcel polygon" : "parcel centroid" },
+            value: { district: z.district, jurisdiction: z.jurisdiction, dealer_use: z.dealer_use ?? "unknown", planning_email: z.planning_email ?? null, queried: hints.geometry ? "parcel polygon" : "parcel centroid" },
             source_url: z.source_url,
             method: "layer",
           });
@@ -94,7 +104,7 @@ export async function enrich(ctx: RunContext): Promise<StageCounter> {
           }
         } else {
           const planning = planningEmailFor(ctx, site.jurisdiction);
-          if (planning && !site.planning_email) site = await touchSite(ctx, site, { planning_email: planning });
+          if (planning && site.planning_email !== planning) site = await touchSite(ctx, site, { planning_email: planning });
           c.inc("zoning_no_layer");
         }
       });

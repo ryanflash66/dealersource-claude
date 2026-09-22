@@ -68,7 +68,7 @@ describe("adapters against recorded HTTP fixtures", () => {
     // Recorded Greenville OpenData layer 21 answer at the 2100 Dickinson Ave parcel centroid (field ZONE).
     const z = new ArcgisZoning(adapterCtx("arcgis"));
     const ch = await z.lookup({ lat: 35.600786, lon: -77.39281 }, "City of Greenville");
-    expect(ch).toMatchObject({ district: "CH", jurisdiction: "Greenville", dealer_use: "permitted", planning_email: "planning@greenvillenc.gov" });
+    expect(ch).toMatchObject({ district: "CH", jurisdiction: "Greenville", dealer_use: "permitted", planning_email: null });
     expect(ch!.citation).toMatch(/9-4-78/);
     expect(ch!.source_url).toContain("OpenData/MapServer/21");
     expect(await z.lookup({ lat: 35.600786, lon: -77.39281 }, "Bethel")).toBeNull(); // no layer configured: pending + planning case
@@ -163,7 +163,10 @@ describe("adapters against recorded HTTP fixtures", () => {
 
   it("gmail refuses planning addresses whose jurisdiction entry is not verified", async () => {
     const ctx = adapterCtx("gmail", { GMAIL_CLIENT_ID: "a", GMAIL_CLIENT_SECRET: "b", GMAIL_REFRESH_TOKEN: "c", GMAIL_SENDER_ADDRESS: "dealer@example.test" });
-    await expect(new GmailMail(ctx).send({ to: "planning@greenvillenc.gov", subject: "x", body: "y", token: "T", replyTo: null })).rejects.toThrow(/not verified/);
+    // The shipped business.yaml is fully verified (2026-09-22); flip one entry back to exercise the guard.
+    const gv = ctx.config.business.jurisdictions.Greenville!;
+    ctx.config.business.jurisdictions.Greenville = { ...gv, verified: false };
+    await expect(new GmailMail(ctx).send({ to: gv.planning_email, subject: "x", body: "y", token: "T", replyTo: null })).rejects.toThrow(/not verified/);
   });
 
   it("a request with no recorded fixture fails loudly instead of silently succeeding", async () => {

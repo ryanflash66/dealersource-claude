@@ -66,7 +66,8 @@ export class ArcgisZoning implements ZoningProvider {
         dealer_use: entry ? entry.status : "unknown",
         citation: entry ? `${table!.ordinance}: ${entry.section}` : null,
         use_table_url: table?.use_table_url ?? null,
-        planning_email: jur?.planning_email ?? null,
+        // Official layers publish no contact; business.yaml (verified by the deployer) is resolved in enrich.
+        planning_email: null,
         source_url: hit.source_url,
       };
     }

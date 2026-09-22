@@ -3,7 +3,7 @@ import { join, resolve } from "node:path";
 import { rmSync, readFileSync, writeFileSync } from "node:fs";
 import { ArcgisZoning } from "../../src/providers/zoning.js";
 import { CountyGisParcels } from "../../src/providers/parcels.js";
-import { ROOT, adapterCtx, config, readJson, runOffline, tmp, writeFixtureSet } from "../helpers.js";
+import { ROOT, adapterCtx, cleanEnv, config, readJson, runOffline, tmp, writeFixtureSet } from "../helpers.js";
 
 // 2100 Dickinson Ave, Greenville. Census geocode (street right-of-way) vs NC OneMap parcel centroid.
 const GEOCODE = { lat: 35.600682, lon: -77.392251 };
@@ -37,7 +37,7 @@ describe("official zoning layers (recorded 2026-09-18)", () => {
     const z = new ArcgisZoning(ctx);
     expect(await z.lookup(GEOCODE, "GREENVILLE")).toBeNull();
     const hit = await z.lookup(CENTROID, "GREENVILLE");
-    expect(hit).toMatchObject({ district: "CH", jurisdiction: "Greenville", dealer_use: "permitted", planning_email: "planning@greenvillenc.gov" });
+    expect(hit).toMatchObject({ district: "CH", jurisdiction: "Greenville", dealer_use: "permitted", planning_email: null });
     expect(hit!.citation).toMatch(/9-4-78/);
     expect(ctx.http.requests.every((r) => r.url.startsWith(`${GV21}/query?`))).toBe(true);
     expect(ctx.http.requests[1]!.url).toContain("geometry=-77.39281%2C35.600786");
@@ -160,9 +160,35 @@ describe("source-level leasing contact", () => {
     expect(r3.messages.map((m) => [m.case_type, m.to])).toEqual([["rent", "leasing@broker-silent.test"]]);
   });
 
-  it("sources.yaml carries the Ron Harrell entry with a blank contact_email for the PM to fill", () => {
+  it("sources.yaml carries the Ron Harrell entry with the contact_email published on the broker's site", () => {
     const s = config().sources.find((x) => x.id === "ron-harrell-commercial");
     expect(s).toBeDefined();
-    expect(s!.contact_email).toBeNull();
+    expect(s!.contact_email).toBe("info@ronharrellandassociates.com");
+  });
+});
+
+describe("planning contact re-sync from business.yaml", () => {
+  it("a corrected planning address replaces the cached one on the site and on the open case before anything is sent", async () => {
+    const dir = tmp();
+    const fx = writeFixtureSet(join(dir, "fx"), [{ listing_id: "L1", address: "9 Ask St, Greenville, NC 27834", parcel_id: "P1", dealer_use: "unknown", planning_email: null }]); // the layer publishes no contact
+    const out = join(dir, "out");
+    const withPlanning = (email: string) => {
+      const business = JSON.parse(JSON.stringify(config().business));
+      business.jurisdictions.Greenville.planning_email = email;
+      return { business };
+    };
+    const paused = { ...cleanEnv(), DEALERSOURCE_PAUSE_SENDING: "1" };
+
+    const r1 = await runOffline({ fixturesDir: fx, outDir: out, runDate: "2026-09-16", env: paused, configOverrides: withPlanning("first@greenvillenc.test") });
+    expect(r1.run.errors).toEqual([]);
+    expect(r1.report!.sites[0]!.open_cases).toEqual([expect.objectContaining({ case_type: "zoning", status: "open", recipient: "first@greenvillenc.test" })]);
+
+    // The deployer corrects the address: the site and its unsent case follow the config, no new case is opened.
+    const r2 = await runOffline({ fixturesDir: fx, outDir: out, runDate: "2026-09-17", env: paused, configOverrides: withPlanning("second@greenvillenc.test") });
+    expect(r2.run.errors).toEqual([]);
+    expect(r2.run.counts["enrich.planning_email_resynced"]).toBe(1);
+    expect(r2.run.counts["verify.cases_contact_replaced"]).toBe(1);
+    expect(r2.report!.sites[0]!.open_cases).toEqual([expect.objectContaining({ case_type: "zoning", status: "open", recipient: "second@greenvillenc.test" })]);
+    rmSync(out, { recursive: true, force: true });
   });
 });

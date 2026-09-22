@@ -80,31 +80,41 @@ mail:
 # may be contacted (spec section 6); `source_url` records where the address was
 # published and the deployer sets `verified: true` after re-checking it.
 jurisdictions:
+  # Verified 2026-09-22 against each government's own website (the addresses
+  # the solution shipped with were placeholders; none of them existed).
   Greenville:
     county: Pitt
-    planning_email: planning@greenvillenc.gov
-    source_url: https://www.greenvillenc.gov/government/planning-development-services
-    verified: false
+    # Dion Hodge, Planner / Zoning Enforcement Officer. The Planning page names
+    # him as the contact for zoning certification and compliance letters.
+    planning_email: dhodge@greenvillenc.gov
+    source_url: https://www.greenvillenc.gov/522/Planning
+    verified: true
   Winterville:
     county: Pitt
-    planning_email: planning@wintervillenc.com
-    source_url: https://www.wintervillenc.com/departments/planning
-    verified: false
+    # Stephen Penn, Planning and Economic Development Director; the only
+    # planning address the town publishes.
+    planning_email: stephen.penn@wintervillenc.com
+    source_url: https://www.wintervillenc.com/planning
+    verified: true
   Ayden:
     county: Pitt
-    planning_email: planning@aydennc.gov
-    source_url: https://www.aydennc.gov/departments/planning
-    verified: false
+    # Shared Town Planner inbox published on the Planning & Zoning page.
+    planning_email: townplanner@ayden.com
+    source_url: https://www.ayden.com/departments/planning/
+    verified: true
   Washington:
     county: Beaufort
-    planning_email: planning@washingtonnc.gov
-    source_url: https://www.washingtonnc.gov/planning-development
-    verified: false
+    # Jeff Huss, Zoning / Code Enforcement Officer and Flood Plain Administrator.
+    planning_email: jhuss@washingtonnc.gov
+    source_url: https://www.washingtonnc.gov/departments/planning___zoning/development_services_directory/index.php
+    verified: true
   Pitt County:
     county: Pitt
-    planning_email: planning@pittcountync.gov
-    source_url: https://www.pittcountync.gov/197/Planning-Development
-    verified: false
+    # Jonas Hill, Planning & Development Director; the department page offers
+    # only a web form, the directory publishes this address.
+    planning_email: jonas.hill@pittcountync.gov
+    source_url: https://www.pittcountync.gov/directory.aspx?did=25
+    verified: true
 
 schedule:
   scheduler: claude-routine      # claude-routine | github-actions | pg_cron (docs/scheduling.md)

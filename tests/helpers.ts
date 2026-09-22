@@ -75,7 +75,7 @@ export interface MiniListing {
   lon?: number;
   dealer_use?: "permitted" | "conditional" | "prohibited" | "unknown";
   citation?: string | null;
-  planning_email?: string;
+  planning_email?: string | null; // null: the layer publishes no contact
   flood_zone?: string;
   aadt?: number;
   minutes?: number;
@@ -118,7 +118,7 @@ export function writeFixtureSet(dir: string, listings: MiniListing[], replies: M
     zoning[l.parcel_id] = {
       district: "CG",
       jurisdiction: "City of Greenville",
-      planning_email: l.planning_email ?? "planning@greenvillenc.gov",
+      planning_email: l.planning_email === undefined ? "planning@greenvillenc.gov" : l.planning_email,
       use_table_url: "https://udo.greenvillenc.test/use-table",
       dealer_use: l.dealer_use ?? "permitted",
       citation: l.citation === undefined ? (l.dealer_use === "unknown" || l.dealer_use === "conditional" ? null : "Greenville Code sec. 9-4-78 Table 1") : l.citation,

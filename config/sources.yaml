@@ -126,7 +126,7 @@ sources:
     robots_txt: allowed
     terms_status: allowed
     enabled: true
-    contact_email: ""            # leasing contact published on the site's contact page; PM to fill in
+    contact_email: "info@ronharrellandassociates.com"            # published in the site footer (mailto), verified 2026-09-22
     cadence: daily
     notes: >-
       Ron Harrell & Associates, Greenville NC commercial broker. Static WordPress
