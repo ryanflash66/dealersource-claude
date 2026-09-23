@@ -62,6 +62,8 @@ export const businessSchema = z.object({
     sender: z.enum(["owner", "operator"]),
     sender_name: z.string().default("Dealer Principal"),
     sender_org: z.string().default("Licensed NC used motor vehicle dealer"),
+    /** One leasing email per contact covering all its properties (planning stays one per parcel). */
+    combine_leasing: z.boolean().default(true),
     followup_days: z.number().int().positive(),
     max_followups: z.number().int().nonnegative(),
     bounce_pause_pct: z.number().nonnegative(),
@@ -189,9 +191,17 @@ const templateGroup = z.object({
   sections: z.record(z.string(), z.string()),
   outro: z.string(),
 });
+/** One leasing email covering every property a contact lists (business.yaml mail.combine_leasing). */
+const bundleTemplate = z.object({
+  subject: z.string(),
+  intro: z.string(),
+  followup_intro: z.string(),
+  questions_heading: z.string(),
+  answer_hint: z.string(),
+});
 export const mailTemplatesSchema = z.object({
   sender_signature: z.string(),
-  leasing: templateGroup,
+  leasing: templateGroup.extend({ bundle: bundleTemplate.optional() }),
   planning: templateGroup,
 });
 export type MailTemplates = z.infer<typeof mailTemplatesSchema>;

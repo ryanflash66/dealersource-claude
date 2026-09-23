@@ -15,6 +15,60 @@ export interface TemplateSlots {
   sender_email: string;
 }
 
+export interface BundleItem {
+  address: string;
+  listing_url: string;
+  types: CaseType[];
+}
+
+const PRIORITY: Record<CaseType, number> = { rent: 0, zoning: 1, space: 2 };
+
+/**
+ * One leasing email for several properties from the same contact: the properties numbered
+ * "1. <address>", then the approved question sections once ("For each property:"), asking for
+ * an answer per number so the reply can be split back to each property.
+ */
+export function renderLeasingBundle(
+  templates: MailTemplates,
+  items: BundleItem[],
+  slots: TemplateSlots,
+  followup: boolean,
+): { subject: string; body: string; template_id: string } {
+  const group = templates.leasing;
+  const bundle = group.bundle;
+  if (!bundle) throw new Error("mail-templates.yaml: leasing.bundle is missing (needed when business.yaml mail.combine_leasing is true)");
+  const s = { ...(slots as unknown as Record<string, string>), count: String(items.length) };
+  const types = [...new Set(items.flatMap((i) => i.types))].sort((a, b) => PRIORITY[a] - PRIORITY[b]);
+  const sections = types
+    .flatMap((t) => SECTION_FOR[t])
+    .map((id) => group.sections[id])
+    .filter((x): x is string => typeof x === "string")
+    .map((x) => fill(x, s).trimEnd());
+  const urls = [...new Set(items.map((i) => i.listing_url).filter(Boolean))];
+  // One shared listings page: show it once; different pages: show each next to its property.
+  const perProperty = urls.length > 1;
+  const body = [
+    fill(followup ? bundle.followup_intro : bundle.intro, s).trimEnd(),
+    "",
+    ...items.map((it, i) => `${i + 1}. ${it.address}${perProperty && it.listing_url ? ` (${it.listing_url})` : ""}`),
+    ...(urls.length === 1 ? ["", `Listings: ${urls[0]}`] : []),
+    "",
+    fill(bundle.questions_heading, s).trimEnd(),
+    ...sections,
+    "",
+    fill(bundle.answer_hint, s).trimEnd(),
+    "",
+    fill(group.outro, s).trimEnd(),
+    "",
+    fill(templates.sender_signature, s).trimEnd(),
+  ].join("\n");
+  return {
+    subject: fill(bundle.subject, s),
+    body,
+    template_id: `leasing-${followup ? "followup" : "initial"}-bundle-${types.slice().sort().join("+")}`,
+  };
+}
+
 /** Case type -> approved section id in mail-templates.yaml. */
 export const SECTION_FOR: Record<CaseType, string[]> = {
   rent: ["rent_quote"],

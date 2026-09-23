@@ -308,3 +308,21 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
     Greenville is not in its sitemap and the configured URL served the generic landing
     content that day, so little or nothing is expected from it. The flag stays as the
     switch for the next JavaScript-heavy broker site.
+
+27. **One leasing email per contact, split replies per property** (2026-09-22, PM decision).
+    A broker listing several of our candidate properties used to get one email per property
+    at the same moment. Now, with `mail.combine_leasing: true`, all of a leasing contact's
+    properties go in one email (first contacts and follow-ups separately): the properties
+    numbered "1. <address>", the approved questions once ("For each property:"), and a
+    request to answer per number. Planning questions stay one email per parcel, because
+    planners answer per parcel. Each property still gets its own message record (same
+    email, same thread token), so follow-up windows, the dashboard and `messages.json` stay
+    per site; `verify.emails_sent` counts physical emails. A reply is split back per property
+    by the number used ("1:", "#2", "Property 3") or the street named; a block is classified
+    and applied only to its property. A bounce or a stop request covers all of them. A reply
+    that cannot be split at all ("both are $900") goes to a person; a property the reply does
+    not mention stays open and the next follow-up asks again.
+    Fixed at the same time: replies were classified including the quoted original, which
+    contains our own questions and the line 'Reply "stop" if you would prefer not to hear from
+    me', so an ordinary reply that quoted us could have been read as a stop request. Quoted
+    text ("On ... wrote:", "> " lines, Outlook headers) is now removed before classifying.

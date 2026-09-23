@@ -39,6 +39,26 @@ leasing:
   outro: |
     I am not asking for any hold on the space; a written reply is all I need for now.
     Reply "stop" if you would prefer not to hear from me again.
+  # One email per leasing contact covering all of its properties (business.yaml mail.combine_leasing).
+  # The properties are listed "1. <address>" between the intro and the questions; replies are split
+  # back to each property by those numbers or by street name.
+  bundle:
+    subject: "Inquiry about {{count}} of your listings [DS-{{token}}]"
+    intro: |
+      Hello {{contact_name}},
+
+      I work with {{sender_org}}, a licensed used-car dealer in North Carolina, and we are
+      looking for a small lot with an enclosed office in Eastern North Carolina. I saw your
+      listings for the {{count}} properties below and have a few quick questions about each:
+    followup_intro: |
+      Hello {{contact_name}},
+
+      Following up on my note from {{previous_date}} about the {{count}} properties below. If
+      any of them are still available, I would appreciate answers to the questions below:
+    questions_heading: "For each property:"
+    answer_hint: |
+      A short answer per property number is perfect, for example:
+      "1: $850 a month, office yes, room for 6 cars".
 
 planning:
   subject: "Permitted use inquiry - {{address}} (parcel {{parcel_id}}) [DS-{{token}}]"

@@ -4,7 +4,8 @@ import type { CaseRow, CaseType, ContactRole, ContactRow, EvidenceRow, MessageRo
 import type { InboundMail, KnownThread } from "../providers/types.js";
 import { GmailQuotaError } from "../providers/mail.js";
 import { evaluateGates, requirements } from "./gates.js";
-import { renderEmail } from "./templates.js";
+import { renderEmail, renderLeasingBundle } from "./templates.js";
+import { splitReplyByProperty, stripQuotedReply, type PropertyRef } from "./replies.js";
 import { StageCounter, allEvidence, currentEvidence, errMsg, writeEvidence, type RunContext } from "./context.js";
 
 /**
@@ -209,6 +210,13 @@ interface Group {
   cases: CaseRow[];
 }
 
+interface Eligible {
+  g: Group;
+  isFollowup: boolean;
+  followups: number;
+  lastContact: string | null;
+}
+
 async function sendOutbound(ctx: RunContext, c: StageCounter): Promise<void> {
   const now = ctx.clock.iso();
   const b = ctx.config.business;
@@ -227,6 +235,7 @@ async function sendOutbound(ctx: RunContext, c: StageCounter): Promise<void> {
     g.cases.push(k);
   }
 
+  const eligible: Eligible[] = [];
   for (const g of groups.values()) {
     if (g.contact.do_not_contact || g.contact.bounced) {
       c.inc("groups_skipped_contact_blocked");
@@ -246,79 +255,147 @@ async function sendOutbound(ctx: RunContext, c: StageCounter): Promise<void> {
       c.inc("groups_escalated_max_followups");
       continue;
     }
-    const types = [...new Set(g.cases.map((k) => k.type))].sort(byPriority);
-    const primary = types[0]!;
-    const token = dsToken(g.site.id, g.contact.id);
-    const zoningDistrict = ((await currentEvidence(ctx, g.site.id, "zoning_district"))?.value as { district?: string } | undefined)?.district ?? "unknown";
-    const listing = (await ctx.store.get("listings", g.cases[0]!.listing_id))?.url ?? "";
-    const rendered = renderEmail(ctx.config.mailTemplates, g.contact.role, types, {
-      address: g.site.canonical_address,
+    eligible.push({ g, isFollowup, followups, lastContact });
+  }
+
+  // One email per leasing contact covering all of its properties (first contacts and follow-ups
+  // separately); planning questions stay one email per parcel.
+  const units: Eligible[][] = [];
+  const bundles = new Map<string, Eligible[]>();
+  for (const e of eligible) {
+    if (b.mail.combine_leasing && e.g.contact.role === "leasing") {
+      const key = `${e.g.contact.id}|${e.isFollowup ? "followup" : "initial"}`;
+      const unit = bundles.get(key);
+      if (unit) unit.push(e);
+      else {
+        const fresh = [e];
+        bundles.set(key, fresh);
+        units.push(fresh);
+      }
+    } else units.push([e]);
+  }
+  for (const unit of units) await sendUnit(ctx, c, unit, now);
+}
+
+/** Sends one email for one (contact, site) group, or one combined email for several sites of one leasing contact. */
+async function sendUnit(ctx: RunContext, c: StageCounter, unit: Eligible[], now: string): Promise<void> {
+  const b = ctx.config.business;
+  const contact = unit[0]!.g.contact;
+  const todo: Array<Eligible & { attempt: number; msgId: string; types: CaseType[]; listingUrl: string }> = [];
+  for (const e of unit) {
+    const attempt = e.isFollowup ? e.followups + 1 : 0;
+    const msgId = stableId("msg", e.g.site.id, contact.id, String(attempt), ctx.runDate);
+    const types = [...new Set(e.g.cases.map((k) => k.type))].sort(byPriority);
+    const listingUrl = (await ctx.store.get("listings", e.g.cases[0]!.listing_id))?.url ?? "";
+    todo.push({ ...e, attempt, msgId, types, listingUrl });
+  }
+  const isFollowup = todo[0]!.isFollowup;
+  const previous = todo.map((t) => t.lastContact).filter((x): x is string => !!x).sort().at(-1) ?? "";
+  const baseSlots = {
+    contact_name: contact.name ?? (contact.role === "planning" ? "Planning staff" : "there"),
+    previous_date: previous ? previous.slice(0, 10) : "",
+    sender_name: b.mail.sender_name,
+    sender_org: b.mail.sender_org,
+    sender_email: ctx.providers.mail.sender_address,
+  };
+
+  let token: string;
+  let rendered: { subject: string; body: string; template_id: string };
+  if (todo.length === 1) {
+    const t = todo[0]!;
+    token = dsToken(t.g.site.id, contact.id);
+    const zoningDistrict = ((await currentEvidence(ctx, t.g.site.id, "zoning_district"))?.value as { district?: string } | undefined)?.district ?? "unknown";
+    rendered = renderEmail(ctx.config.mailTemplates, contact.role, t.types, {
+      ...baseSlots,
+      address: t.g.site.canonical_address,
       token,
-      contact_name: g.contact.name ?? (g.contact.role === "planning" ? "Planning staff" : "there"),
-      area: g.site.jurisdiction ?? "Eastern North Carolina",
-      listing_url: listing,
-      parcel_id: g.site.parcel_id,
+      area: t.g.site.jurisdiction ?? "Eastern North Carolina",
+      listing_url: t.listingUrl,
+      parcel_id: t.g.site.parcel_id,
       district: zoningDistrict,
-      previous_date: lastContact ? lastContact.slice(0, 10) : "",
-      sender_name: b.mail.sender_name,
-      sender_org: b.mail.sender_org,
-      sender_email: ctx.providers.mail.sender_address,
     }, isFollowup);
+  } else {
+    token = dsToken(`bundle:${todo.map((t) => t.g.site.id).sort().join(",")}`, contact.id);
+    rendered = renderLeasingBundle(
+      ctx.config.mailTemplates,
+      todo.map((t) => ({ address: t.g.site.canonical_address, listing_url: t.listingUrl, types: t.types })),
+      { ...baseSlots, address: "", token, area: "Eastern North Carolina", listing_url: "", parcel_id: "", district: "" },
+      isFollowup,
+    );
+  }
 
-    if (ctx.run.sending_paused) {
-      c.inc("groups_paused");
-      ctx.outboxPreview?.push({ to: g.contact.email, subject: rendered.subject, body: rendered.body, site_id: g.site.id, address: g.site.canonical_address, case_types: types, follow_up: isFollowup, template_id: rendered.template_id });
-      continue;
-    }
-
-    const attempt = isFollowup ? followups + 1 : 0;
-    const msgId = stableId("msg", g.site.id, g.contact.id, String(attempt), ctx.runDate);
-    if (await ctx.store.get("messages", msgId)) {
-      c.inc("messages_already_sent_today");
-      continue;
-    }
-    const row: MessageRow = {
-      id: msgId,
-      case_ids: g.cases.map((k) => k.id),
-      case_type: primary,
-      site_id: g.site.id,
-      listing_id: g.cases[0]!.listing_id,
-      contact_id: g.contact.id,
-      to: g.contact.email,
-      direction: "outbound",
+  if (ctx.run.sending_paused) {
+    c.inc("groups_paused", todo.length);
+    ctx.outboxPreview?.push({
+      to: contact.email,
       subject: rendered.subject,
       body: rendered.body,
-      sent_at: now,
-      thread_token: token,
-      provider_message_id: null,
+      site_id: todo[0]!.g.site.id,
+      address: todo.map((t) => t.g.site.canonical_address).join("; "),
+      case_types: [...new Set(todo.flatMap((t) => t.types))].sort(byPriority),
+      follow_up: isFollowup,
       template_id: rendered.template_id,
-      attempt,
-      classification: null,
-      status: "sent",
-      run_id: ctx.run.id,
-    };
-    try {
-      const res = await ctx.providers.mail.send({ to: g.contact.email, subject: rendered.subject, body: rendered.body, token, replyTo: ctx.providers.mail.sender_address || null });
-      row.provider_message_id = res.provider_message_id;
-    } catch (e) {
-      if (e instanceof GmailQuotaError) {
-        ctx.run.sending_paused = true;
-        ctx.run.pause_reason = `mail provider quota error: ${e.message}`;
-        c.inc("sending_paused");
-        continue;
-      }
-      row.status = "refused";
-      await ctx.store.upsert("messages", [row]);
-      c.warn(`send to ${g.contact.email} failed: ${errMsg(e)}`, { site: g.site.id });
-      continue;
+    });
+    return;
+  }
+
+  const fresh: typeof todo = [];
+  for (const t of todo) {
+    if (await ctx.store.get("messages", t.msgId)) c.inc("messages_already_sent_today");
+    else fresh.push(t);
+  }
+  if (!fresh.length) return;
+  if (fresh.length !== todo.length) {
+    // Part of a combined email already went out today: send the rest on the next run, never twice.
+    c.inc("bundles_deferred_partial");
+    return;
+  }
+
+  const rows: MessageRow[] = fresh.map((t) => ({
+    id: t.msgId,
+    case_ids: t.g.cases.map((k) => k.id),
+    case_type: t.types[0]!,
+    site_id: t.g.site.id,
+    listing_id: t.g.cases[0]!.listing_id,
+    contact_id: contact.id,
+    to: contact.email,
+    direction: "outbound",
+    subject: rendered.subject,
+    body: rendered.body,
+    sent_at: now,
+    thread_token: token,
+    provider_message_id: null,
+    template_id: rendered.template_id,
+    attempt: t.attempt,
+    classification: null,
+    status: "sent",
+    run_id: ctx.run.id,
+  }));
+  try {
+    const res = await ctx.providers.mail.send({ to: contact.email, subject: rendered.subject, body: rendered.body, token, replyTo: ctx.providers.mail.sender_address || null });
+    for (const r of rows) r.provider_message_id = res.provider_message_id;
+  } catch (e) {
+    if (e instanceof GmailQuotaError) {
+      ctx.run.sending_paused = true;
+      ctx.run.pause_reason = `mail provider quota error: ${e.message}`;
+      c.inc("sending_paused");
+      return;
     }
-    await ctx.store.upsert("messages", [row]);
-    ctx.sentThisRun.push(row.id);
-    for (const k of g.cases) {
+    for (const r of rows) r.status = "refused";
+    await ctx.store.upsert("messages", rows);
+    c.warn(`send to ${contact.email} failed: ${errMsg(e)}`, { site: fresh[0]!.g.site.id });
+    return;
+  }
+  // One record per property, all pointing at the same email, so follow-ups, the dashboard and
+  // messages.json stay per site.
+  await ctx.store.upsert("messages", rows);
+  for (const r of rows) ctx.sentThisRun.push(r.id);
+  for (const t of fresh) {
+    for (const k of t.g.cases) {
       await ctx.store.upsert("cases", [{
         ...k,
         status: "awaiting_reply",
-        followups_sent: isFollowup ? k.followups_sent + 1 : k.followups_sent,
+        followups_sent: t.isFollowup ? k.followups_sent + 1 : k.followups_sent,
         last_contacted_at: now,
         next_action: `await reply; follow up after ${b.mail.followup_days} days`,
         next_action_at: addDays(now, b.mail.followup_days),
@@ -327,6 +404,8 @@ async function sendOutbound(ctx: RunContext, c: StageCounter): Promise<void> {
     }
     c.inc("messages_sent");
   }
+  c.inc("emails_sent");
+  if (fresh.length > 1) c.inc("combined_emails_sent");
 }
 
 const PRIORITY: Record<CaseType, number> = { rent: 0, zoning: 1, space: 2 };
@@ -365,6 +444,11 @@ async function ingestReplies(ctx: RunContext, c: StageCounter): Promise<void> {
       ctx.run.warnings.push(`unmatched inbound mail from ${mail.from}: ${mail.subject}`);
       continue;
     }
+    const sameThread = outbound.filter((m) => m.thread_token === parent.thread_token);
+    if (new Set(sameThread.map((m) => m.site_id)).size > 1) {
+      await ingestBundleReply(ctx, c, mail, sameThread, now);
+      continue;
+    }
     const siteCases = (await ctx.store.list("cases", { site_id: parent.site_id })).filter((k) => k.contact_id === parent.contact_id && k.status !== "closed");
     const targetTypes: CaseType[] = mail.case_type ? [mail.case_type] : siteCases.map((k) => k.type);
     const contact = await ctx.store.get("contacts", parent.contact_id);
@@ -376,7 +460,8 @@ async function ingestReplies(ctx: RunContext, c: StageCounter): Promise<void> {
       for (const k of siteCases) await ctx.store.upsert("cases", [{ ...k, status: "escalated", owner: "human", next_action: "address bounced; find another contact", updated_at: now }]);
       c.inc("inbound_bounces");
     } else {
-      classification = await ctx.providers.llm.classifyReply(mail.body, targetTypes[0] ?? "rent");
+      // Classify only the sender's new text: the quoted original contains our own questions and the word "stop".
+      classification = await ctx.providers.llm.classifyReply(stripQuotedReply(mail.body), targetTypes[0] ?? "rent");
       if (classification.intent === "stop") {
         if (contact) await ctx.store.upsert("contacts", [{ ...contact, do_not_contact: true }]);
         for (const k of siteCases) await ctx.store.upsert("cases", [{ ...k, status: "escalated", owner: "human", next_action: "contact asked to stop; do-not-contact set", updated_at: now }]);
@@ -421,6 +506,125 @@ async function ingestReplies(ctx: RunContext, c: StageCounter): Promise<void> {
     await ctx.store.upsert("messages", [row]);
     c.inc("inbound_ingested");
   }
+}
+
+/**
+ * A reply to a combined email (one email, several properties). The reply is split per property
+ * by the number each property carried in our email or by street name; each block is classified
+ * and applied to that property's cases. A bounce or a stop request applies to all of them. A
+ * reply that cannot be split at all goes to a human; a property the reply does not mention
+ * stays open, so the next follow-up asks again.
+ */
+async function ingestBundleReply(ctx: RunContext, c: StageCounter, mail: InboundMail, sameThread: MessageRow[], now: string): Promise<void> {
+  const latest = new Map<string, MessageRow>();
+  for (const m of sameThread) {
+    const prev = latest.get(m.site_id);
+    if (!prev || new Date(m.sent_at).getTime() > new Date(prev.sent_at).getTime()) latest.set(m.site_id, m);
+  }
+  const parents = [...latest.values()];
+  const rowId = (siteId: string) => `in_${sha256(`${mail.provider_message_id}|${siteId}`).slice(0, 16)}`;
+  if (await ctx.store.get("messages", rowId(parents[0]!.site_id))) {
+    c.inc("inbound_already_ingested");
+    return;
+  }
+  const contactId = parents[0]!.contact_id;
+  const contact = await ctx.store.get("contacts", contactId);
+  // Our own email numbered the properties "N. <address>"; map those numbers back to sites.
+  const numbered = [...parents[0]!.body.matchAll(/^(\d{1,2})\. (.+)$/gm)].map((m) => ({ n: Number(m[1]), address: m[2]!.replace(/\s\(https?:\/\/[^)]*\)$/, "").trim() }));
+  const props: Array<{ msg: MessageRow; site: SiteRow | undefined; ref: PropertyRef }> = [];
+  for (const msg of parents) {
+    const site = await ctx.store.get("sites", msg.site_id);
+    const address = site?.canonical_address ?? "";
+    props.push({ msg, site, ref: { key: msg.site_id, n: numbered.find((x) => x.address === address)?.n ?? null, address } });
+  }
+  const openCases = async (siteId: string) =>
+    (await ctx.store.list("cases", { site_id: siteId })).filter((k) => k.contact_id === contactId && k.status !== "closed" && k.status !== "resolved");
+  const record = async (p: (typeof props)[number], caseIds: string[], classification: MessageRow["classification"], status: MessageRow["status"]) => {
+    await ctx.store.upsert("messages", [{
+      id: rowId(p.msg.site_id),
+      case_ids: caseIds,
+      case_type: p.msg.case_type,
+      site_id: p.msg.site_id,
+      listing_id: p.msg.listing_id,
+      contact_id: contactId,
+      to: ctx.providers.mail.sender_address,
+      direction: "inbound",
+      subject: mail.subject,
+      body: mail.body,
+      sent_at: mail.received_at,
+      thread_token: p.msg.thread_token,
+      provider_message_id: mail.provider_message_id,
+      template_id: null,
+      attempt: p.msg.attempt,
+      classification,
+      status,
+      run_id: ctx.run.id,
+    }]);
+  };
+
+  if (mail.is_bounce) {
+    if (contact) await ctx.store.upsert("contacts", [{ ...contact, bounced: true }]);
+    for (const p of props) {
+      await ctx.store.upsert("messages", [{ ...p.msg, status: "bounced" }]);
+      const cases = await openCases(p.msg.site_id);
+      for (const k of cases) await ctx.store.upsert("cases", [{ ...k, status: "escalated", owner: "human", next_action: "address bounced; find another contact", updated_at: now }]);
+      await record(p, cases.map((k) => k.id), null, "bounced");
+    }
+    c.inc("inbound_bounces");
+    c.inc("inbound_ingested");
+    return;
+  }
+
+  const text = stripQuotedReply(mail.body);
+  const overall = await ctx.providers.llm.classifyReply(text, "rent");
+  if (overall.intent === "stop") {
+    if (contact) await ctx.store.upsert("contacts", [{ ...contact, do_not_contact: true }]);
+    for (const p of props) {
+      const cases = await openCases(p.msg.site_id);
+      for (const k of cases) await ctx.store.upsert("cases", [{ ...k, status: "escalated", owner: "human", next_action: "contact asked to stop; do-not-contact set", updated_at: now }]);
+      await record(p, cases.map((k) => k.id), overall, "received");
+    }
+    c.inc("inbound_stop_requests");
+    c.inc("inbound_ingested");
+    return;
+  }
+
+  const blocks = splitReplyByProperty(text, props.map((p) => p.ref));
+  for (const p of props) {
+    const cases = await openCases(p.msg.site_id);
+    const block = blocks.get(p.msg.site_id);
+    if (!blocks.size) {
+      // Nothing could be tied to a property ("all of them are $900", free text): a person reads it.
+      for (const k of cases) {
+        await ctx.store.upsert("cases", [{ ...k, status: "escalated", owner: "human", next_action: "reply to the combined inquiry could not be split by property; read it in Gmail and record the answers", updated_at: now }]);
+      }
+      await record(p, cases.map((k) => k.id), overall, "received");
+      continue;
+    }
+    if (!block) {
+      c.inc("bundle_reply_property_unanswered");
+      await record(p, [], null, "received");
+      continue;
+    }
+    const cls = await ctx.providers.llm.classifyReply(block, cases[0]?.type ?? "rent");
+    const targetTypes: CaseType[] = mail.case_type ? [mail.case_type] : cases.map((k) => k.type);
+    if (cls.intent === "unavailable") {
+      for (const k of cases) await ctx.store.upsert("cases", [{ ...k, status: "closed", resolution: "space no longer available", updated_at: now }]);
+      c.inc("inbound_unavailable");
+    } else {
+      for (const k of cases) {
+        if (!targetTypes.includes(k.type)) continue;
+        const ev = await evidenceFromReply(ctx, k, mail, rowId(p.msg.site_id), cls);
+        if (ev) {
+          await ctx.store.upsert("cases", [{ ...k, status: "resolved", resolved_at: mail.received_at, resolution: cls.summary, evidence_id: ev.id, next_action: "none", updated_at: now }]);
+          c.inc("cases_resolved_by_reply");
+        } else c.inc("replies_without_answer");
+      }
+    }
+    await record(p, cases.filter((k) => targetTypes.includes(k.type)).map((k) => k.id), cls, "received");
+  }
+  if (!blocks.size) c.inc("bundle_replies_unsplit");
+  c.inc("inbound_ingested");
 }
 
 async function evidenceFromReply(

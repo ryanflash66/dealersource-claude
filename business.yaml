@@ -101,6 +101,7 @@ mail:
   sender: owner                  # owner | operator (which mailbox the OAuth token belongs to)
   sender_name: "Ryan Balungeli"       # signs every email; writes on behalf of the dealership (owner of the GMAIL_SENDER_ADDRESS mailbox)
   sender_org: "Serenity Auto Gallery"   # dealership trade name (SAG); the templates say the sender works with it
+  combine_leasing: true          # one email per broker/landlord covering all their properties (PM 2026-09-22); planning stays one per parcel
   followup_days: 5               # never contact the same address about the same site twice within this window
   max_followups: 2               # after this many follow-ups, escalate to the dashboard
   bounce_pause_pct: 5            # auto-pause sending if 24h bounce rate exceeds this
