@@ -291,3 +291,20 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
       and any error text is scrubbed of it before it reaches a log or the report.
     - nodemailer and imapflow are imported lazily, so offline and fixture runs never load them
       and cannot open a socket; offline without injected transports the adapter refuses.
+
+26. **Playwright for JavaScript-rendered sources, per source, not as the default** (2026-09-22,
+    PM decision). Some listing sites build their pages in the browser, so the plain fetch
+    crawler sees an empty shell. A local headless Chromium through Playwright (Apache-2.0)
+    renders them for $0 with nothing hosted and no Docker. It is opt-in per source
+    (`render: js` in `config/sources.yaml`); `fetch` stays the default and every other
+    source is unchanged. Politeness is the same as fetch: the same User-Agent, robots.txt
+    checked (cached per origin) for the page and for every document/XHR/fetch request the
+    page makes, a 5 s minimum between page loads on one origin, and images, fonts and media
+    never downloaded. The browser starts lazily and is closed at the end of discovery.
+    Offline runs are wired to the fixture crawler, so the contract evaluation can never
+    launch a browser. `render` lives only in config (read at discovery time), so no
+    database migration. First source: Rofo, re-checked the same day (robots.txt allows all;
+    no automated-access clause in its terms). Rofo has since pivoted to location briefs:
+    Greenville is not in its sitemap and the configured URL served the generic landing
+    content that day, so little or nothing is expected from it. The flag stays as the
+    switch for the next JavaScript-heavy broker site.

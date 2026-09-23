@@ -560,6 +560,7 @@ const PROV: Record<string, { kind: string; name: string; sub: string; fallback: 
   overpass: { kind: "Competitors", name: "OpenStreetMap Overpass", sub: "shop=car within the configured radius", fallback: "Google Places (paid)" },
   places: { kind: "Competitors", name: "Google Places", sub: "paid", fallback: "Overpass" },
   fetch: { kind: "Listings", name: "Plain fetch", sub: "Node fetch, robots.txt honoured, nothing to host; allowlist in sources.yaml", fallback: "AnyCrawl (self-hosted)" },
+  playwright: { kind: "Listings", name: "Playwright (local Chromium)", sub: "only sources marked render: js; robots.txt honoured, same user agent", fallback: "Plain fetch" },
   anycrawl: { kind: "Listings", name: "AnyCrawl (self-hosted)", sub: "robots.txt honoured; allowlist in sources.yaml", fallback: "Plain fetch" },
   anycrawl_cloud: { kind: "Listings", name: "AnyCrawl cloud", sub: "paid", fallback: "AnyCrawl (self-hosted)" },
   reddit: { kind: "Social", name: "Reddit Data API", sub: "official OAuth API, free tier", fallback: "None" },

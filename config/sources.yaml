@@ -154,13 +154,21 @@ sources:
     kind: crawl
     url: https://www.rofo.com/commercial-real-estate/NC/greenville
     robots_txt: allowed
-    terms_status: unclear
-    enabled: false
+    terms_status: allowed
+    enabled: true
+    render: js                   # JavaScript-rendered: local headless browser (playwright)
     cadence: daily
     notes: >-
-      Aggregator. robots.txt allows all; Terms of Use (2026-09-18) contain no clause
-      on automated access. Listings are JavaScript-rendered, so the plain fetch
-      crawler sees no content. Candidate only if a headless crawler is hosted later.
+      Aggregator, JavaScript-rendered. Re-checked 2026-09-22: robots.txt is
+      "User-agent: * / Allow: /"; the Terms of Use (www.rofo.com/terms/) have no
+      clause on automated access, only "do not misuse the site ... or interfere
+      with its operation" and an intellectual-property clause (content "may not be
+      copied or used without permission"); we extract facts (address, rent) and keep
+      the page privately as evidence, one render a day. Enabled on that basis
+      (PM instruction 2026-09-22). Coverage caveat found the same day: Rofo has
+      pivoted to "location recommendation" briefs; Greenville is not in its sitemap
+      and this URL serves the generic landing content, and its nearest NC markets
+      (Rocky Mount, New Bern, Jacksonville) list 0 buildings.
 
   # --- Recorded as EXCLUDED so the PM can see what is left out and why -----
   - id: loopnet

@@ -3,6 +3,7 @@ import { normalizeAddressKey } from "../core/address.js";
 import type { ListingExtraction, ListingRow, RawDocumentRow, SourceRow } from "../core/types.js";
 import type { SourceConfig } from "../config/schema.js";
 import { htmlToText } from "../providers/llm.js";
+import type { CrawlProvider } from "../providers/types.js";
 import { StageCounter, errMsg, type RunContext } from "./context.js";
 
 /**
@@ -148,6 +149,23 @@ function safeOrigin(url: string): string {
 async function discoverOnline(ctx: RunContext, c: StageCounter): Promise<void> {
   const now = ctx.clock.iso();
   const ua = String(ctx.config.providers.options[ctx.config.providers.crawler]?.user_agent ?? "dealersource/0.1");
+  try {
+    await discoverSources(ctx, c, ua, now);
+  } finally {
+    // A render: js source may have started a browser; never leave it running past discovery.
+    await ctx.providers.jsCrawler?.close?.();
+    await ctx.providers.crawler.close?.();
+  }
+  // Discovery failed entirely only when every eligible source failed and nothing was fetched.
+  if ((c.counts.sources_fetched ?? 0) === 0 && (c.counts.warnings ?? 0) > 0) c.error("every enabled source failed to fetch; nothing discovered");
+}
+
+/** Sources marked `render: js` in sources.yaml use the headless-browser crawler; all others the default crawler. */
+export function crawlerFor(ctx: Pick<RunContext, "config" | "providers">, sourceId: string): CrawlProvider {
+  return ctx.config.sources.find((s) => s.id === sourceId)?.render === "js" ? ctx.providers.jsCrawler : ctx.providers.crawler;
+}
+
+async function discoverSources(ctx: RunContext, c: StageCounter, ua: string, now: string): Promise<void> {
   for (const source of await ctx.store.list("sources")) {
     const reason = refusalReason(source);
     if (reason || source.fixture_only) {
@@ -160,7 +178,11 @@ async function discoverOnline(ctx: RunContext, c: StageCounter): Promise<void> {
     try {
       if (source.kind === "manual") await ingestManual(ctx, c, source);
       else if (source.kind === "reddit") await ingestReddit(ctx, c, source);
-      else await ingestPage(ctx, c, source, ua);
+      else {
+        const crawler = crawlerFor(ctx, source.id);
+        if (crawler !== ctx.providers.crawler) c.inc("sources_rendered_js");
+        await ingestPage(ctx, c, source, ua, crawler);
+      }
       source.last_status = "ok";
       source.last_error = null;
       c.inc("sources_fetched");
@@ -172,17 +194,15 @@ async function discoverOnline(ctx: RunContext, c: StageCounter): Promise<void> {
     source.last_run_at = now;
     await ctx.store.upsert("sources", [source]);
   }
-  // Discovery failed entirely only when every eligible source failed and nothing was fetched.
-  if ((c.counts.sources_fetched ?? 0) === 0 && (c.counts.warnings ?? 0) > 0) c.error("every enabled source failed to fetch; nothing discovered");
 }
 
-async function ingestPage(ctx: RunContext, c: StageCounter, source: SourceRow, ua: string): Promise<void> {
+async function ingestPage(ctx: RunContext, c: StageCounter, source: SourceRow, ua: string, crawler: CrawlProvider): Promise<void> {
   if (source.robots_txt === "unknown") {
-    const robots = await ctx.providers.crawler.checkRobots(source.url, ua);
+    const robots = await crawler.checkRobots(source.url, ua);
     if (robots.checked) source.robots_txt = robots.allowed ? "allowed" : "disallowed";
     if (!robots.allowed) throw new Error(`robots.txt disallows ${source.url} (${robots.source_url})`);
   }
-  const page = await ctx.providers.crawler.fetchPage(source.url);
+  const page = await crawler.fetchPage(source.url);
   if (page.status >= 400) throw new Error(`HTTP ${page.status}`);
   const doc: RawDocumentRow = {
     id: stableId("doc", source.id, page.url, sha256(page.body)),

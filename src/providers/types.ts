@@ -182,6 +182,8 @@ export interface CrawlProvider {
   readonly name: string;
   fetchPage(url: string): Promise<CrawlResult>;
   checkRobots(url: string, userAgent: string): Promise<RobotsResult>;
+  /** Release long-lived resources (a browser); called once at the end of discovery. */
+  close?(): Promise<void>;
 }
 
 // ---------------------------------------------------------------- social
@@ -293,6 +295,8 @@ export interface ProviderMap {
   imagery: ImageryProvider;
   poi: PoiProvider;
   crawler: CrawlProvider;
+  /** Crawler for sources marked `render: js` (local headless browser online; fixture crawler offline). */
+  jsCrawler: CrawlProvider;
   social: SocialProvider;
   mail: MailProvider;
   llm: LlmProvider;

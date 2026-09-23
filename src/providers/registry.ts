@@ -14,7 +14,7 @@ import { NcdotAadt } from "./traffic.js";
 import { FemaNfhlFlood } from "./flood.js";
 import { GoogleStreetViewImagery, MapillaryImagery } from "./imagery.js";
 import { GooglePlacesPoi, OverpassPoi } from "./competitors.js";
-import { AnyCrawlCloud, AnyCrawlSelfHosted, FetchCrawl } from "./crawl.js";
+import { AnyCrawlCloud, AnyCrawlSelfHosted, FetchCrawl, PlaywrightCrawl } from "./crawl.js";
 import { RedditSocial } from "./social.js";
 import { GmailMail } from "./mail.js";
 import { ClaudeAgentLlm, ClaudeApiLlm, RulesLlm } from "./llm.js";
@@ -65,6 +65,7 @@ export const ADAPTERS: AdapterSpec[] = [
   { id: "overpass", layer: "poi", paid: false, envVars: [], create: (c) => new OverpassPoi(c) },
   { id: "places", layer: "poi", paid: true, envVars: ["GOOGLE_MAPS_API_KEY"], create: (c) => new GooglePlacesPoi(c) },
   { id: "fetch", layer: "crawler", paid: false, envVars: [], create: (c) => new FetchCrawl(c) },
+  { id: "playwright", layer: "crawler", paid: false, envVars: [], create: (c) => new PlaywrightCrawl(c) },
   { id: "anycrawl", layer: "crawler", paid: false, envVars: ["ANYCRAWL_URL"], create: (c) => new AnyCrawlSelfHosted(c) },
   { id: "anycrawl_cloud", layer: "crawler", paid: true, envVars: ["ANYCRAWL_API_KEY"], create: (c) => new AnyCrawlCloud(c) },
   { id: "reddit", layer: "social", paid: false, envVars: ["REDDIT_CLIENT_ID", "REDDIT_CLIENT_SECRET"], create: (c) => new RedditSocial(c) },
@@ -202,6 +203,32 @@ export function buildProviders(opts: BuildOptions): BuiltProviders {
         opts.hosts.add(new URL(url).host);
         opts.ledger.record({ adapter: `${layer}:${id}`, cost_class: "paid", url, at: opts.clock.iso() });
       },
+    });
+  }
+
+  // Sources marked `render: js` go through a local headless browser; everything else stays on providers.crawler.
+  // Offline this is the fixture crawler, so an offline run can never launch a browser.
+  if (opts.offline) {
+    providers.jsCrawler = new FixtureCrawl("playwright");
+  } else if (providers.crawler instanceof PlaywrightCrawl) {
+    providers.jsCrawler = providers.crawler;
+  } else {
+    const spec = findAdapter("crawler", "playwright")!;
+    const options = config.providers.options.playwright ?? {};
+    const base = opts.httpFactory
+      ? opts.httpFactory(spec)
+      : new FetchHttpClient(optString(options, "user_agent", "dealersource/0.1"), Number(config.providers.options.fetch?.min_interval_ms ?? 0));
+    providers.jsCrawler = new PlaywrightCrawl({
+      http: new HostTrackingHttpClient(base, opts.hosts),
+      options,
+      env,
+      config,
+      clock: opts.clock,
+      logger: opts.logger.child({ adapter: "crawler:playwright" }),
+      offline: false,
+      fixturesDir: opts.fixturesDir,
+      outDir: opts.outDir,
+      onExternalHost: (host) => opts.hosts.add(host),
     });
   }
 

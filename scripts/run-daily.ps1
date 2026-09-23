@@ -21,6 +21,10 @@ try {
     npm ci --silent 2>&1 | ForEach-Object { Log "npm: $_" }
     if ($LASTEXITCODE -ne 0) { throw "npm ci failed with exit $LASTEXITCODE" }
   }
+  # Local headless Chromium for sources marked render: js (Playwright). Installed once if missing;
+  # a failure only affects those sources, so it is logged and the run continues.
+  node scripts/ensure-browser.mjs 2>&1 | ForEach-Object { Log "browser: $_" }
+  if ($LASTEXITCODE -ne 0) { Log "WARNING: headless browser unavailable; render: js sources will fail this run" }
   $envFile = Join-Path $repo ".env"
   if (-not (Test-Path $envFile)) { throw ".env not found at $envFile" }
   $loaded = @()

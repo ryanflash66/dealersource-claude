@@ -102,7 +102,7 @@ export const providersSchema = z.object({
   drivetime: z.enum(["ors", "valhalla", "google"]),
   imagery: z.enum(["mapillary", "streetview"]),
   poi: z.enum(["overpass", "places"]),
-  crawler: z.enum(["fetch", "anycrawl", "anycrawl_cloud"]),
+  crawler: z.enum(["fetch", "playwright", "anycrawl", "anycrawl_cloud"]),
   tiles: z.enum(["protomaps", "mapbox"]),
   zoning: z.enum(["arcgis"]).default("arcgis"),
   traffic: z.enum(["ncdot"]).default("ncdot"),
@@ -144,6 +144,8 @@ export const sourceSchema = z.object({
   enabled: z.boolean(),
   cadence: z.string().default("daily"),
   fixture_only: z.boolean().default(false),
+  /** `js`: the page builds its listings with JavaScript, so it is rendered by the local headless browser (playwright); `html`: the default crawler. */
+  render: z.enum(["html", "js"]).default("html"),
   /** Published leasing contact for the whole source (broker sites rarely put one on each listing). */
   contact_email: z
     .string()

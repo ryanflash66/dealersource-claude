@@ -17,6 +17,7 @@ golden integration test asserts `run.json.paid_calls == []` and `report.json.ext
 | imagery | `mapillary` | free token | fair-use |
 | poi | `overpass` | free public instances | 1 request / 2 s enforced by the adapter; main instance then kumi, 60 s timeout, one retry each; self-host with `OVERPASS_URL` for scheduled loads |
 | crawler | `fetch` | free, plain Node fetch | nothing to host; polite per-host interval, robots.txt honoured. `anycrawl` (self-hosted) is the free alternative |
+| crawler (render: js sources) | `playwright` | free, local headless Chromium (Apache-2.0) | nothing hosted, no Docker; ~100 MB one-time browser download; only sources marked `render: js` |
 | social | `reddit` | free tier, OAuth app | 100 QPM; Developer Terms apply |
 | mail | `gmail` | free | Gmail SMTP + IMAP with an app password; personal-account sending limits far exceed this pipeline's volume; a limit reply auto-pauses outreach |
 | llm | `rules` | free | deterministic |

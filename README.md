@@ -88,7 +88,7 @@ sources.yaml ──discover──> raw_documents + listings
 | `config/sources.yaml` | the source allowlist with researched `terms_status` / `robots_txt` |
 | `config/use-tables.yaml` | zoning use tables with the cited ordinance section per district |
 | `config/mail-templates.yaml` | approved outreach text |
-| `src/providers/` | one interface per data layer, free + paid adapters (crawler: `fetch` default, `anycrawl`, `anycrawl_cloud`; parcels: `nc_onemap` default = NC OneMap polygon layer `FeatureServer/1`, `county` = Pitt `PittOpenData/CadastralPitt` layer 0, `regrid`; zoning: `arcgis` = Greenville `OpenData/MapServer/21` and Pitt County `ZoningPitt` layer 0, queried at the parcel, other towns go to a planning case; traffic: `ncdot` = NCDOT 2024 AADT release on ArcGIS Online, 2022 service as fallback, latest non-blank year, station on the site's street preferred; poi: `overpass` = ordered instance list, 60 s, one retry per instance), fixture-backed fakes |
+| `src/providers/` | one interface per data layer, free + paid adapters (crawler: `fetch` default, `playwright` = local headless Chromium for sources marked `render: js`, `anycrawl`, `anycrawl_cloud`; parcels: `nc_onemap` default = NC OneMap polygon layer `FeatureServer/1`, `county` = Pitt `PittOpenData/CadastralPitt` layer 0, `regrid`; zoning: `arcgis` = Greenville `OpenData/MapServer/21` and Pitt County `ZoningPitt` layer 0, queried at the parcel, other towns go to a planning case; traffic: `ncdot` = NCDOT 2024 AADT release on ArcGIS Online, 2022 service as fallback, latest non-blank year, station on the site's street preferred; poi: `overpass` = ordered instance list, 60 s, one retry per instance), fixture-backed fakes |
 | `src/pipeline/` | the six idempotent stages, gates, scoring, templates |
 | `src/store/` | JSON-file store (offline default) and Supabase/PostgREST store |
 | `fixtures/golden-v1/` | the sample fixture set (copied from the parent repo) |
@@ -161,10 +161,16 @@ Edit one line in `providers.yaml`, e.g. `geocoder: nominatim` (and set `NOMINATI
 self-hosted instance; the public Nominatim server is refused). No code changes. `report.json.providers`
 reflects the selection even offline.
 
-Crawler: `crawler: fetch  # fetch | anycrawl | anycrawl_cloud`. The default `fetch` is plain Node
+Crawler: `crawler: fetch  # fetch | playwright | anycrawl | anycrawl_cloud`. The default `fetch` is plain Node
 `fetch` with nothing to host: follows redirects, 15 s timeout, polite User-Agent naming this project,
 robots.txt checked per page and disallowed paths refused, no JavaScript execution; the fetched HTML is
-stored in `raw_documents` and its readable text and links feed the listing extractor. `anycrawl`
+stored in `raw_documents` and its readable text and links feed the listing extractor. A source marked
+`render: js` in `config/sources.yaml` is rendered instead by `playwright`: local headless Chromium
+(Apache-2.0, $0, nothing hosted, no Docker) with the same User-Agent, robots.txt checked for the page and
+for every document/XHR/fetch request the page makes, images/fonts/media never loaded, and a 5 s minimum
+between page loads per origin. The browser starts only when such a source is fetched and closes at the
+end of discovery; offline runs use the fixture crawler and never launch it. The daily runner installs
+the Chromium headless shell once if it is missing (`scripts/ensure-browser.mjs`). `anycrawl`
 (self-hosted, `ANYCRAWL_URL`) and `anycrawl_cloud` (paid) return the same document shape. Paid adapters (`google`, `regrid`, `streetview`, `places`,
 `anycrawl_cloud`, `claude_api`, `mapbox`) additionally require `paid_enabled: true` and the matching
 key; otherwise startup fails with `PaidProviderDisabledError` and no call can happen.

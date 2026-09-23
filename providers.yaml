@@ -13,7 +13,7 @@ parcels: nc_onemap      # nc_onemap | county | regrid (paid)
 drivetime: ors          # ors | valhalla | google (paid)
 imagery: mapillary      # mapillary | streetview (paid)
 poi: overpass           # overpass | places (paid)
-crawler: fetch          # fetch | anycrawl | anycrawl_cloud (paid). fetch = plain Node fetch, nothing to host
+crawler: fetch          # fetch | playwright | anycrawl | anycrawl_cloud (paid). fetch = plain Node fetch, nothing to host; sources marked render: js always use playwright
 tiles: protomaps        # protomaps (self-hosted PMTiles) | mapbox (paid)
 
 # --- Additional layers (always free / official-source) ----------------------
@@ -89,6 +89,12 @@ options:
     user_agent: "dealersource/0.1 (+https://github.com/ryanflash66/dealersource)"   # polite UA naming the parent repo
     min_interval_ms: 1500                                                                # per host
     timeout_ms: 15000
+  playwright:                          # local headless Chromium (Apache-2.0, $0) for sources with render: js
+    # user_agent: inherited from fetch, so both crawlers identify themselves the same way
+    min_interval_ms: 5000              # per origin, between page loads
+    timeout_ms: 45000                  # navigation
+    settle_ms: 10000                   # wait for network idle, then
+    render_wait_ms: 1500               # a short extra settle for client-side rendering
   anycrawl:
     base_url_env: ANYCRAWL_URL
     default_base_url: http://localhost:8080

@@ -56,7 +56,9 @@ reply from Gmail pauses outreach automatically.
 
 Edit `providers.yaml`; each key is one line. Free defaults need these variables when used
 for real: `ORS_API_KEY` (drivetime), `MAPILLARY_ACCESS_TOKEN` (imagery),
-`REDDIT_CLIENT_ID/SECRET/USER_AGENT`. The default crawler `fetch` needs nothing; `ANYCRAWL_URL`
+`REDDIT_CLIENT_ID/SECRET/USER_AGENT`. The default crawler `fetch` needs nothing. Sources marked
+`render: js` need Playwright's Chromium once per machine (`npx playwright install chromium --only-shell`;
+the Windows runner does this itself); `ANYCRAWL_URL`
 only if you select `crawler: anycrawl`. Optional self-hosted URLs:
 `NOMINATIM_URL`, `VALHALLA_URL`, `OVERPASS_URL`. Paid adapters: see `docs/costs.md`.
 

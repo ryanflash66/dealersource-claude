@@ -1,6 +1,9 @@
 import { htmlToText } from "./llm.js";
-import { optString } from "./options.js";
+import { optNumber, optString } from "./options.js";
 import type { AdapterContext, CrawlProvider, CrawlResult, RobotsResult } from "./types.js";
+
+/** The polite User-Agent every crawler adapter sends unless providers.yaml overrides it. */
+export const DEFAULT_USER_AGENT = "dealersource/0.1 (+https://github.com/ryanflash66/dealersource)";
 
 /** Minimal robots.txt evaluation for a user agent (longest-match, Allow wins ties). */
 export function robotsAllows(robotsTxt: string, path: string, userAgent: string): boolean {
@@ -97,7 +100,7 @@ export class FetchCrawl implements CrawlProvider {
   constructor(private readonly ctx: AdapterContext) {}
 
   userAgent(): string {
-    return optString(this.ctx.options, "user_agent", "dealersource/0.1 (+https://github.com/ryanflash66/dealersource)");
+    return optString(this.ctx.options, "user_agent", DEFAULT_USER_AGENT);
   }
 
   async fetchPage(url: string): Promise<CrawlResult> {
@@ -181,5 +184,148 @@ export class AnyCrawlCloud extends AnyCrawlSelfHosted {
   }
   protected override authHeaders(): Record<string, string> {
     return { Authorization: `Bearer ${this.ctx.env.ANYCRAWL_API_KEY ?? ""}` };
+  }
+}
+
+// ------------------------------------------------------------ playwright
+
+/** Structural slices of Playwright's Browser / BrowserContext / Page / Route (tests supply fakes). */
+export interface PwResponse {
+  status(): number;
+  headers(): Record<string, string>;
+}
+export interface PwRequest {
+  url(): string;
+  resourceType(): string;
+}
+export interface PwRoute {
+  request(): PwRequest;
+  abort(): Promise<void>;
+  continue(): Promise<void>;
+}
+export interface PwPage {
+  route(pattern: string, handler: (route: PwRoute) => Promise<void>): Promise<void>;
+  goto(url: string, options: { waitUntil: "domcontentloaded"; timeout: number }): Promise<PwResponse | null>;
+  waitForLoadState(state: "networkidle", options: { timeout: number }): Promise<void>;
+  waitForTimeout(ms: number): Promise<void>;
+  content(): Promise<string>;
+  url(): string;
+}
+export interface PwContext {
+  newPage(): Promise<PwPage>;
+  close(): Promise<void>;
+}
+export interface PwBrowser {
+  newContext(options: { userAgent: string; javaScriptEnabled: boolean; serviceWorkers: "block" }): Promise<PwContext>;
+  close(): Promise<void>;
+}
+
+/** Resource types a listing page never needs; skipping them keeps each render light on the site. */
+const SKIPPED_RESOURCES = new Set(["image", "media", "font", "beacon", "ping", "websocket", "eventsource", "manifest"]);
+/** Requests that fetch site content: each is held to robots.txt exactly like a plain fetch. */
+const ROBOTS_CHECKED_RESOURCES = new Set(["document", "xhr", "fetch"]);
+
+/**
+ * Local headless Chromium through Playwright (Apache-2.0; nothing hosted, $0)
+ * for sources marked `render: js` in config/sources.yaml. Same rules as the
+ * plain fetch crawler: the same User-Agent, robots.txt checked (and cached per
+ * origin) before the page and before every document/XHR/fetch request the page
+ * makes, and a polite minimum interval between page loads on one origin. Images,
+ * fonts and media are never downloaded. The browser starts lazily on the first
+ * render: js page and is closed at the end of discovery. Offline it refuses to
+ * launch; offline runs are wired to the fixture crawler and never reach this class.
+ */
+export class PlaywrightCrawl implements CrawlProvider {
+  readonly name = "playwright";
+  private readonly robots: FetchCrawl;
+  private browser: PwBrowser | null = null;
+  private readonly lastLoad = new Map<string, number>(); // origin -> epoch ms of the last page load
+
+  constructor(
+    private readonly ctx: AdapterContext,
+    private readonly launcher?: () => Promise<PwBrowser>,
+  ) {
+    // robots.txt via the plain HTTP client, same parser and cache rules as FetchCrawl.
+    this.robots = new FetchCrawl({ ...ctx, options: { ...ctx.options, user_agent: this.userAgent() } });
+  }
+
+  /** The fetch crawler's User-Agent unless this adapter sets its own. */
+  userAgent(): string {
+    const own = this.ctx.options.user_agent;
+    if (typeof own === "string" && own.trim()) return own;
+    const fetchUa = this.ctx.config.providers.options.fetch?.user_agent;
+    return typeof fetchUa === "string" && fetchUa.trim() ? fetchUa : DEFAULT_USER_AGENT;
+  }
+
+  checkRobots(url: string, userAgent: string): Promise<RobotsResult> {
+    return this.robots.checkRobots(url, userAgent);
+  }
+
+  get launched(): boolean {
+    return this.browser !== null;
+  }
+
+  async fetchPage(url: string): Promise<CrawlResult> {
+    if (this.ctx.offline && !this.launcher) throw new Error(`offline: browser launch refused (${url})`);
+    const ua = this.userAgent();
+    const top = await this.checkRobots(url, ua);
+    if (!top.allowed) throw new RobotsDisallowedError(url, top.source_url);
+    await this.politeWait(new URL(url).origin);
+
+    const browser = await this.launch();
+    const context = await browser.newContext({ userAgent: ua, javaScriptEnabled: true, serviceWorkers: "block" });
+    try {
+      const page = await context.newPage();
+      const refused: string[] = [];
+      await page.route("**/*", async (route) => {
+        const req = route.request();
+        const type = req.resourceType();
+        if (SKIPPED_RESOURCES.has(type)) return route.abort();
+        if (ROBOTS_CHECKED_RESOURCES.has(type)) {
+          const r = await this.checkRobots(req.url(), ua).catch(() => ({ allowed: false }) as RobotsResult);
+          if (!r.allowed) {
+            refused.push(req.url());
+            return route.abort();
+          }
+        }
+        return route.continue();
+      });
+      this.ctx.onExternalHost?.(new URL(url).host);
+      const res = await page.goto(url, { waitUntil: "domcontentloaded", timeout: optNumber(this.ctx.options, "timeout_ms", 45_000) });
+      await page.waitForLoadState("networkidle", { timeout: optNumber(this.ctx.options, "settle_ms", 10_000) }).catch(() => undefined);
+      const extra = optNumber(this.ctx.options, "render_wait_ms", 1_500);
+      if (extra > 0) await page.waitForTimeout(extra);
+      const html = await page.content();
+      if (refused.length) this.ctx.logger.info("robots.txt refused sub-requests during render", { url, refused: refused.length });
+      const headers = res?.headers() ?? {};
+      return toDocument(page.url() || url, res?.status() ?? 200, headers["content-type"] ?? "text/html", html, this.ctx.clock.iso());
+    } finally {
+      await context.close().catch(() => undefined);
+    }
+  }
+
+  async close(): Promise<void> {
+    const b = this.browser;
+    this.browser = null;
+    if (b) await b.close().catch(() => undefined);
+  }
+
+  private async launch(): Promise<PwBrowser> {
+    if (this.browser) return this.browser;
+    if (this.launcher) {
+      this.browser = await this.launcher();
+    } else {
+      const { chromium } = await import("playwright");
+      this.browser = (await chromium.launch({ headless: true })) as unknown as PwBrowser;
+    }
+    return this.browser;
+  }
+
+  private async politeWait(origin: string): Promise<void> {
+    const min = optNumber(this.ctx.options, "min_interval_ms", 5_000);
+    const last = this.lastLoad.get(origin);
+    const wait = last === undefined ? 0 : last + min - Date.now();
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    this.lastLoad.set(origin, Date.now());
   }
 }
