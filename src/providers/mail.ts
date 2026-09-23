@@ -1,6 +1,6 @@
 import type { CaseType } from "../core/types.js";
 import { optString } from "./options.js";
-import type { AdapterContext, InboundMail, KnownThread, MailProvider, OutboundMail, SendResult } from "./types.js";
+import type { AdapterContext, InboundMail, KnownThread, MailProvider, OutboundMail, SendResult, MailPreflight } from "./types.js";
 
 export const TOKEN_RE = /\[DS-([A-Z0-9]{6})\]/;
 
@@ -51,6 +51,13 @@ export class GmailMail implements MailProvider {
     if (!res.ok) throw new Error(`Gmail token refresh failed: ${res.status}`);
     this.accessToken = res.json<{ access_token: string }>().access_token;
     return this.accessToken;
+  }
+
+  async preflight(): Promise<MailPreflight> {
+    const tok = await this.token(); // throws on a bad client/secret/refresh token; the token itself is never logged
+    const res = await this.ctx.http.request({ method: "GET", url: `${this.base()}/users/me/profile`, headers: { Authorization: `Bearer ${tok}` } });
+    if (!res.ok) return { access_token_obtained: true, mailbox: null, note: `profile not readable (HTTP ${res.status}); the reply poller needs a gmail read scope` };
+    return { access_token_obtained: true, mailbox: res.json<{ emailAddress?: string }>().emailAddress ?? null };
   }
 
   private assertRecipientAllowed(to: string): void {

@@ -3,7 +3,7 @@ import { dsToken, sha256, stableId } from "../core/ids.js";
 import type { CaseRow, CaseType, ContactRole, ContactRow, EvidenceRow, MessageRow, SiteRow } from "../core/types.js";
 import type { InboundMail, KnownThread } from "../providers/types.js";
 import { GmailQuotaError } from "../providers/mail.js";
-import { evaluateGates } from "./gates.js";
+import { evaluateGates, requirements } from "./gates.js";
 import { renderEmail } from "./templates.js";
 import { StageCounter, allEvidence, currentEvidence, errMsg, writeEvidence, type RunContext } from "./context.js";
 
@@ -28,6 +28,7 @@ export async function verify(ctx: RunContext): Promise<StageCounter> {
     }
   }
   await closeCasesForExcludedSites(ctx, c);
+  await mailPreflight(ctx, c);
   await checkPause(ctx, c);
   await sendOutbound(ctx, c);
   await ingestReplies(ctx, c);
@@ -45,7 +46,10 @@ async function openCases(ctx: RunContext, c: StageCounter, site: SiteRow): Promi
     rent: await allEvidence(ctx, site.id, "rent_monthly"),
     flood: await allEvidence(ctx, site.id, "flood_zone"),
   });
-  const anyFail = Object.values(gates).some((g) => g.status === "fail");
+  const gateFail = Object.values(gates).some((g) => g.status === "fail");
+  // Known failure of a statutory place-of-business check: the site can never be licensed, so no outreach.
+  const statutoryFail = requirements(ctx.config.business, site).some((r) => r.statutory && r.outcome === "not_met");
+  const anyFail = gateFail || statutoryFail;
   const existing = new Map((await ctx.store.list("cases", { site_id: site.id })).map((k) => [k.type, k]));
   const primaryListing = site.listing_ids[0] ?? "";
 
@@ -55,7 +59,8 @@ async function openCases(ctx: RunContext, c: StageCounter, site: SiteRow): Promi
     if (gates.zoning.status === "pending") want.push({ type: "zoning", role: "planning", email: site.planning_email, derivedFrom: planningSource(ctx, site) });
     const office = await currentEvidence(ctx, site.id, "office");
     const cap = await currentEvidence(ctx, site.id, "vehicle_display");
-    const needOffice = ctx.config.business.site.office_required && !office;
+    const b = ctx.config.business;
+    const needOffice = (b.site.office_required || b.dealer.place_of_business_checks.enclosed_office) && !office;
     if (needOffice || !cap) want.push({ type: "space", role: "leasing", email: site.contact_email, derivedFrom: listingUrl(ctx, site) });
   }
 
@@ -103,7 +108,7 @@ async function openCases(ctx: RunContext, c: StageCounter, site: SiteRow): Promi
     if (k.status === "resolved" || k.status === "closed") continue;
     const stillNeeded = want.some((w) => w.type === k.type);
     if (anyFail || !stillNeeded) {
-      await ctx.store.upsert("cases", [{ ...k, status: "closed", next_action: anyFail ? "site failed a gate; no outreach" : "fact verified elsewhere", updated_at: now }]);
+      await ctx.store.upsert("cases", [{ ...k, status: "closed", next_action: gateFail ? "site failed a gate; no outreach" : statutoryFail ? "site fails an NC established-salesroom requirement; no outreach" : "fact verified elsewhere", updated_at: now }]);
       c.inc("cases_closed");
     }
   }
@@ -148,6 +153,33 @@ async function closeCasesForExcludedSites(ctx: RunContext, c: StageCounter): Pro
 }
 
 // ------------------------------------------------------------- sending
+/** Online only: prove the mail credentials work (token + mailbox) without sending anything. */
+async function mailPreflight(ctx: RunContext, c: StageCounter): Promise<void> {
+  const mail = ctx.providers.mail;
+  if (ctx.offline || typeof mail.preflight !== "function") return;
+  try {
+    const p = await mail.preflight();
+    const expected = mail.sender_address.trim().toLowerCase();
+    const matches = p.mailbox ? p.mailbox.toLowerCase() === expected : null;
+    c.inc("mail_preflight_ok");
+    ctx.logger.info("mail preflight ok", { provider: mail.name, access_token: "obtained", mailbox: p.mailbox, sender_address: mail.sender_address, mailbox_matches_sender: matches, note: p.note ?? null });
+    if (matches === false) {
+      // The token belongs to a different mailbox than GMAIL_SENDER_ADDRESS: mail would go out from the wrong account.
+      ctx.run.sending_paused = true;
+      ctx.run.pause_reason = `mail token belongs to ${p.mailbox}, not GMAIL_SENDER_ADDRESS ${mail.sender_address}`;
+      c.warn(ctx.run.pause_reason);
+    } else if (p.note) c.warn(`mail preflight: ${p.note}`);
+  } catch (e) {
+    const msg = errMsg(e);
+    if (/unavailable, set /.test(msg)) {
+      c.inc("mail_preflight_skipped_no_credentials");
+      return; // already reported as a provider note at startup
+    }
+    c.inc("mail_preflight_failed");
+    c.warn(`mail preflight failed: ${msg}`);
+  }
+}
+
 async function checkPause(ctx: RunContext, c: StageCounter): Promise<void> {
   if (ctx.config.business.mail.paused) {
     ctx.run.sending_paused = true;
@@ -210,11 +242,6 @@ async function sendOutbound(ctx: RunContext, c: StageCounter): Promise<void> {
       c.inc("groups_escalated_max_followups");
       continue;
     }
-    if (ctx.run.sending_paused) {
-      c.inc("groups_paused");
-      continue;
-    }
-
     const types = [...new Set(g.cases.map((k) => k.type))].sort(byPriority);
     const primary = types[0]!;
     const token = dsToken(g.site.id, g.contact.id);
@@ -233,6 +260,12 @@ async function sendOutbound(ctx: RunContext, c: StageCounter): Promise<void> {
       sender_org: b.mail.sender_org,
       sender_email: ctx.providers.mail.sender_address,
     }, isFollowup);
+
+    if (ctx.run.sending_paused) {
+      c.inc("groups_paused");
+      ctx.outboxPreview?.push({ to: g.contact.email, subject: rendered.subject, body: rendered.body, site_id: g.site.id, address: g.site.canonical_address, case_types: types, follow_up: isFollowup, template_id: rendered.template_id });
+      continue;
+    }
 
     const attempt = isFollowup ? followups + 1 : 0;
     const msgId = stableId("msg", g.site.id, g.contact.id, String(attempt), ctx.runDate);

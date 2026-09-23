@@ -233,6 +233,19 @@ export interface MailProvider {
   send(mail: OutboundMail): Promise<SendResult>;
   /** Inbound mail received in (since, until], matched against known threads. */
   fetchInbound(opts: { since: ISODate; until: ISODate; threads: KnownThread[] }): Promise<InboundMail[]>;
+  /**
+   * Read-only credential check run every online run, paused or not: obtain an
+   * access token and report which mailbox it belongs to. Never sends. Providers
+   * without credentials (fixtures) omit it.
+   */
+  preflight?(): Promise<MailPreflight>;
+}
+
+export interface MailPreflight {
+  access_token_obtained: boolean;
+  /** Mailbox the token belongs to, or null when the granted scopes cannot read the profile. */
+  mailbox: string | null;
+  note?: string;
 }
 
 // ------------------------------------------------------------------- llm

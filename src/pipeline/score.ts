@@ -58,7 +58,10 @@ export async function score(ctx: RunContext): Promise<StageCounter> {
     if (distanceUnknown) flags.push("drive time unknown: gated but not ranked until the distance is known");
 
     const gatesPass = Object.values(gates).every((g) => g.status === "pass");
-    const viable = gatesPass && !(site.shared_lot && b.site.shared_lot === "exclude");
+    // A known failure of an NC established-salesroom requirement makes the site unlicensable; unknown stays pending.
+    const statutoryFail = reqs.some((r) => r.statutory && r.outcome === "not_met");
+    if (statutoryFail) flags.push("excluded: fails an NC established-salesroom requirement");
+    const viable = gatesPass && !statutoryFail && !(site.shared_lot && b.site.shared_lot === "exclude");
     const shortlisted = viable && !distanceUnknown && reqs.every((r) => r.outcome !== "not_met");
 
     const parcel = await ctx.store.get("parcels", site.parcel_id);

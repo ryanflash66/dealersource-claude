@@ -239,3 +239,32 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
 22. **Scheduler alternatives** (GitHub Actions, pg_cron) are documented in
     `docs/scheduling.md`; the GitHub Actions workflow is included but `workflow_dispatch`-only
     so nothing runs on push except CI tests.
+
+23. **NC place-of-business minimums: the law sets an office, not a car count** (verified
+    2026-09-22). G.S. 20-286(6) requires an established salesroom with "at least 96 square
+    feet of floor space in a permanent enclosed building" and a sign with block letters at
+    least three inches tall naming the business; rule 19A NCAC 03D .0216 adds that the
+    building must be separate from any residence, with its own entrance. Neither the
+    statute (20-286, 20-288, 20-292), the rules (.0216, .0217) nor the Highway Patrol's
+    current checklist (ISU-415, Rev. 02/26) sets a minimum number of display vehicles,
+    posted hours, or a retail phone line. So there are two different kinds of number:
+    - **Statutory** (`dealer.place_of_business_checks`): the office check is a viability
+      condition. A site known to have no office is excluded (`viable: false`, no outreach);
+      unknown stays pending and the 96 sq ft question rides in the space email.
+      `display_area_min_vehicles` is `null` because no legal minimum exists; if one is ever
+      set above zero, `vehicle_display_statutory` becomes a viability check the same way.
+    - **Operator preference** (`site.min_vehicle_display: 2`, `site.office_required`): the
+      owner's own floor for a useful lot, including shared lots. It affects the shortlist,
+      not viability, as before.
+    The sign is not evaluable from a listing (any tenant can put one up) and stays a
+    checklist item for the owner. Shared lots carry a flag citing .0216 ("vehicles displayed
+    are separate and apart from vehicles of any other dealer"). Office size is asked but not
+    parsed: a listing or reply confirming an office counts as met, and the Highway Patrol's
+    site inspection is the final check.
+
+24. **Mail preflight and outbox preview.** Every online run exchanges the Gmail refresh
+    token for an access token and reads the mailbox profile, sending nothing, so broken
+    credentials show up while sending is still paused. If the token belongs to a mailbox
+    other than `GMAIL_SENDER_ADDRESS`, sending pauses with that reason. While paused, the
+    exact messages that would have gone out (same render, same recipients) are written to
+    `out/<date>/outbox-preview.md` and `.json`, git-ignored, never part of the contract.

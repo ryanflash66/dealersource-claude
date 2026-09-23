@@ -23,12 +23,43 @@ flood:
 
 dealer:
   license_status: held           # owner already holds an NC dealer license
-  # NC DMV established-place-of-business requirements encoded as checks on the
-  # site record, not as a licensing workflow (src/pipeline/requirements.ts).
+  # NC "established salesroom" minimums for a used motor vehicle dealer, encoded
+  # as checks on the site record (requirements() in src/pipeline/gates.ts).
+  # Verified 2026-09-22 against the statute, the dealer rules, and the current
+  # checklist from the NC State Highway Patrol Investigative Services Unit
+  # (Dealer Section), which now licenses dealers in place of the old DMV
+  # License & Theft Bureau (its ncdot.gov pages return 404).
+  #   G.S. 20-286   https://www.ncleg.gov/EnactedLegislation/Statutes/HTML/BySection/Chapter_20/GS_20-286.html
+  #   19A NCAC 03D .0216/.0217  http://reports.oah.state.nc.us/ncac/title%2019a%20-%20transportation/chapter%2003%20-%20division%20of%20motor%20vehicles/subchapter%20d/subchapter%20d%20rules.pdf
+  #   ISU-415 (Rev. 02/26)  https://ncshp.gov/sites/default/files/2026-02/ISU-415%20Minimum%20Dealer%20License%20Requirements.pdf
+  # A check marked statutory excludes a site when known to fail (viable: false);
+  # unknown stays pending and the question goes in the space email. No legal
+  # minimum exists for display vehicles, posted hours or a retail phone line.
+  # See docs/decisions.md 23.
   place_of_business_checks:
-    enclosed_office: true        # permanent enclosed building/office
-    display_area_min_vehicles: 2 # space to display vehicles
-    sign_required: true          # permanent sign visible from the street
+    # G.S. 20-286(6)a: "Contains at least 96 square feet of floor space in a
+    # permanent enclosed building." Excludes "a tent, a temporary stand, or other
+    # temporary quarters"; rule .0216: "not considered permanent if it has wheels".
+    # source_url: GS_20-286 above; verified_on: 2026-09-22
+    enclosed_office: true
+    office_min_sq_ft: 96
+    # 19A NCAC 03D .0216 (rule): building "separate and apart from any living
+    # quarters, residence or other business and having a separate entrance".
+    # The statute allows sharing the building with other businesses; it does not
+    # address residences, so the rule's residence exclusion stands.
+    # source_url: .0216 above; verified_on: 2026-09-22
+    non_residential: true
+    # No minimum number of display vehicles in G.S. 20-286, 20-288, 20-292,
+    # 19A NCAC 03D .0216/.0217, or ISU-415/ISU-400 (Rev. 02/26). null = no legal
+    # minimum; the operator's own floor is site.min_vehicle_display (2).
+    # verified_on: 2026-09-22
+    display_area_min_vehicles: null
+    # G.S. 20-286(6)b: "a sign having block letters not less than three inches in
+    # height on contrasting background, clearly and distinctly designating the
+    # trade name of the business", on or immediately adjacent to the salesroom.
+    # No street-visibility requirement. source_url: GS_20-286 above; verified_on: 2026-09-22
+    sign_required: true
+    sign_min_letter_inches: 3
 
 score:
   # Weights are relative and normalised at runtime. Order = spec priority.
@@ -80,40 +111,60 @@ mail:
 # may be contacted (spec section 6); `source_url` records where the address was
 # published and the deployer sets `verified: true` after re-checking it.
 jurisdictions:
-  # Verified 2026-09-22 against each government's own website (the addresses
-  # the solution shipped with were placeholders; none of them existed).
+  # Audit 2026-09-22 (step 0a): each planning_email was checked verbatim on the
+  # official page named in its `audit` comment. Rule: the address must appear on
+  # source_url or on a page linked directly from it as the planning/zoning
+  # contact; a departmental planning address is preferred over a named person
+  # when both are published; if the address disappears or the page moves,
+  # set verified: false and do not guess a replacement.
   Greenville:
     county: Pitt
-    # Dion Hodge, Planner / Zoning Enforcement Officer. The Planning page names
-    # him as the contact for zoning certification and compliance letters.
+    # Dion Hodge, Planner / Zoning Enforcement Officer.
+    # audit 2026-09-22: source_url (no redirect) says "For zoning certification/compliance
+    #   letters, please contact Dion Hodge" and links to his directory entry, where
+    #   mailto:dhodge@greenvillenc.gov appears:
+    #   https://www.greenvillenc.gov/Directory.aspx?EID=312 (served as /m/directory/employee?eid=312).
+    #   No departmental planning/zoning inbox is published (department directory did=51
+    #   lists only businessdevelopment@ and BuildingPermits@). Site returns 403 to plain
+    #   HTTP clients; checked in a browser.
     planning_email: dhodge@greenvillenc.gov
     source_url: https://www.greenvillenc.gov/522/Planning
     verified: true
   Winterville:
     county: Pitt
-    # Stephen Penn, Planning and Economic Development Director; the only
-    # planning address the town publishes.
+    # Stephen Penn, Planning and Economic Development Director.
+    # audit 2026-09-22: mailto:stephen.penn@wintervillenc.com verbatim on source_url
+    #   (no redirect). No departmental planning inbox published (town directory has
+    #   inspections@ only).
     planning_email: stephen.penn@wintervillenc.com
     source_url: https://www.wintervillenc.com/planning
     verified: true
   Ayden:
     county: Pitt
-    # Shared Town Planner inbox published on the Planning & Zoning page.
+    # Town Planner (departmental inbox).
+    # audit 2026-09-22: mailto:townplanner@ayden.com verbatim on source_url (no redirect).
     planning_email: townplanner@ayden.com
     source_url: https://www.ayden.com/departments/planning/
     verified: true
   Washington:
     county: Beaufort
-    # Jeff Huss, Zoning / Code Enforcement Officer and Flood Plain Administrator.
+    # Jeff Huss, Zoning / Code Enforcement Officer, Flood Plain Administrator.
+    # audit 2026-09-22: jhuss@washingtonnc.gov verbatim on source_url (no redirect),
+    #   Planning & Zoning section of the Development Services staff directory. No
+    #   departmental planning inbox published (custserv@ is city-wide customer service).
     planning_email: jhuss@washingtonnc.gov
     source_url: https://www.washingtonnc.gov/departments/planning___zoning/development_services_directory/index.php
     verified: true
   Pitt County:
     county: Pitt
-    # Jonas Hill, Planning & Development Director; the department page offers
-    # only a web form, the directory publishes this address.
+    # Jonas Hill, Planning & Development Director.
+    # audit 2026-09-22: mailto:jonas.hill@pittcountync.gov verbatim on the department's
+    #   staff directory page. The previous source_url (/directory.aspx?did=25) now
+    #   302-redirects to this same department page on the same site; source_url updated
+    #   to the final URL. The only departmental contact is a web form
+    #   (/formcenter/Contact-Forms-8/Email-Contact-the-Departments-50), not an address.
     planning_email: jonas.hill@pittcountync.gov
-    source_url: https://www.pittcountync.gov/directory.aspx?did=25
+    source_url: https://www.pittcountync.gov/m/directory/department?did=25
     verified: true
 
 schedule:

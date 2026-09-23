@@ -90,21 +90,53 @@ export function requirements(
   b: BusinessConfig,
   site: { shared_lot: boolean; has_office: boolean | null; vehicle_capacity: number | null },
 ): RequirementResult[] {
+  const pob = b.dealer.place_of_business_checks;
   const out: RequirementResult[] = [];
+
+  // Office. Statutory when place_of_business_checks.enclosed_office is set (G.S. 20-286(6)a:
+  // a permanent enclosed building of at least office_min_sq_ft); otherwise an operator preference.
+  const officeStatutory = pob.enclosed_office;
+  const officeNeeded = officeStatutory || b.site.office_required;
+  const size = pob.office_min_sq_ft ? ` of at least ${pob.office_min_sq_ft} sq ft` : "";
+  const cite = officeStatutory ? " (G.S. 20-286(6)a)" : "";
   out.push({
     name: "enclosed_office",
-    outcome: site.has_office === null ? "unknown" : site.has_office ? "met" : b.site.office_required ? "not_met" : "met",
-    detail: site.has_office === null ? "office not confirmed" : site.has_office ? "enclosed office on site" : "no office",
+    statutory: officeStatutory,
+    outcome: site.has_office === null ? "unknown" : site.has_office ? "met" : officeNeeded ? "not_met" : "met",
+    detail:
+      site.has_office === null
+        ? `office not confirmed: need a permanent enclosed office${size}${cite}`
+        : site.has_office
+          ? "enclosed office on site"
+          : officeStatutory
+            ? `no office: an NC dealer needs a permanent enclosed office${size}${cite}`
+            : "no office",
   });
+
+  // Display. The legal minimum (null in NC) is a separate statutory check from the operator floor.
+  const legalMin = pob.display_area_min_vehicles;
+  if (legalMin !== null && legalMin > 0) {
+    out.push({
+      name: "vehicle_display_statutory",
+      statutory: true,
+      outcome: site.vehicle_capacity === null ? "unknown" : site.vehicle_capacity >= legalMin ? "met" : "not_met",
+      detail: site.vehicle_capacity === null ? `display capacity unknown (legal minimum ${legalMin})` : `${site.vehicle_capacity} vehicles (legal minimum ${legalMin})`,
+    });
+  }
   out.push({
     name: "vehicle_display",
+    statutory: false,
     outcome: site.vehicle_capacity === null ? "unknown" : site.vehicle_capacity >= b.site.min_vehicle_display ? "met" : "not_met",
-    detail: site.vehicle_capacity === null ? "display capacity unknown" : `${site.vehicle_capacity} vehicles (min ${b.site.min_vehicle_display})`,
+    detail: site.vehicle_capacity === null ? "display capacity unknown" : `${site.vehicle_capacity} vehicles (operator minimum ${b.site.min_vehicle_display})`,
   });
+
   out.push({
     name: "shared_lot_policy",
+    statutory: false,
     outcome: !site.shared_lot ? "met" : b.site.shared_lot === "exclude" ? "not_met" : "met",
-    detail: !site.shared_lot ? "standalone lot" : `shared lot (policy: ${b.site.shared_lot})`,
+    detail: !site.shared_lot
+      ? "standalone lot"
+      : `shared lot (policy: ${b.site.shared_lot}); 19A NCAC 03D .0216 requires displayed vehicles kept separate and apart from any other dealer's`,
   });
   return out;
 }

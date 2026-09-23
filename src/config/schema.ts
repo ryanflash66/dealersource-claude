@@ -30,8 +30,12 @@ export const businessSchema = z.object({
     license_status: z.enum(["held", "pending", "none"]),
     place_of_business_checks: z.object({
       enclosed_office: z.boolean(),
-      display_area_min_vehicles: z.number().int().nonnegative(),
+      office_min_sq_ft: z.number().nonnegative().nullable().default(null),
+      non_residential: z.boolean().default(false),
+      /** Legal minimum display vehicles; null = none in NC law (operator floor is site.min_vehicle_display). */
+      display_area_min_vehicles: z.number().int().nonnegative().nullable(),
       sign_required: z.boolean(),
+      sign_min_letter_inches: z.number().positive().nullable().default(null),
     }),
   }),
   score: z.object({

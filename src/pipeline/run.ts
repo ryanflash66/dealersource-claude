@@ -16,7 +16,7 @@ import { resolve } from "./resolve.js";
 import { enrich } from "./enrich.js";
 import { verify } from "./verify.js";
 import { score } from "./score.js";
-import { report, writeRunJson, type ContractMessage, type ContractReport, type ContractRun } from "./report.js";
+import { report, writeOutboxPreview, writeRunJson, type ContractMessage, type ContractReport, type ContractRun } from "./report.js";
 
 export const STAGES: Stage[] = ["discover", "resolve", "enrich", "verify", "score", "report"];
 
@@ -120,6 +120,7 @@ export async function runPipeline(opts: RunOptions): Promise<RunResult> {
       cutoffIso,
       homeBase: null,
       sentThisRun: [],
+      outboxPreview: [],
     };
     ctx.homeBase = await geocodeHomeBase(ctx);
 
@@ -159,6 +160,7 @@ export async function runPipeline(opts: RunOptions): Promise<RunResult> {
     await store.upsert("runs", [run]);
     await store.flush();
     const runJson = writeRunJson(ctx, run.finished_at);
+    writeOutboxPreview(ctx);
     if (offline && hosts.size) throw new OfflineNetworkViolation(`offline run contacted hosts: ${[...hosts].join(", ")}`);
     return { run: runJson, report: contractReport, messages, config, ctx };
   } finally {

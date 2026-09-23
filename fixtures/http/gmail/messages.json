@@ -127,6 +127,20 @@
           }
         }
       }
+    },
+    {
+      "match": {
+        "method": "GET",
+        "url_pattern": "gmail\\.googleapis\\.com/gmail/v1/users/me/profile"
+      },
+      "response": {
+        "json": {
+          "emailAddress": "dealer@example.test",
+          "messagesTotal": 12,
+          "threadsTotal": 9,
+          "historyId": "1001"
+        }
+      }
     }
   ]
 }

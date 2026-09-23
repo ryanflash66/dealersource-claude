@@ -254,9 +254,11 @@ export interface GateResult {
 }
 
 export interface RequirementResult {
-  name: "enclosed_office" | "vehicle_display" | "shared_lot_policy";
+  name: "enclosed_office" | "vehicle_display" | "vehicle_display_statutory" | "shared_lot_policy";
   outcome: "met" | "not_met" | "unknown";
   detail: string;
+  /** Required by NC dealer law: a known not_met excludes the site (viable: false). */
+  statutory: boolean;
 }
 
 export interface FactorScore {

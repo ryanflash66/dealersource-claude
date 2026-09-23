@@ -126,7 +126,10 @@ sources:
     robots_txt: allowed
     terms_status: allowed
     enabled: true
-    contact_email: "info@ronharrellandassociates.com"            # published in the site footer (mailto), verified 2026-09-22
+    # audit 2026-09-22: mailto:info@ronharrellandassociates.com verbatim on `url` below
+    # (page footer, "Email:" line; no redirect) and on the site home page. The only
+    # address the broker publishes.
+    contact_email: "info@ronharrellandassociates.com"
     cadence: daily
     notes: >-
       Ron Harrell & Associates, Greenville NC commercial broker. Static WordPress

@@ -28,6 +28,19 @@ export interface RunContext {
   homeBase: LatLon | null;
   /** Outbound messages sent in THIS run (for messages.json). */
   sentThisRun: string[];
+  /** Mail that would have gone out this run had sending not been paused (outbox-preview.*). */
+  outboxPreview?: OutboxPreviewItem[];
+}
+
+export interface OutboxPreviewItem {
+  to: string;
+  subject: string;
+  body: string;
+  site_id: string;
+  address: string;
+  case_types: string[];
+  follow_up: boolean;
+  template_id: string;
 }
 
 export function ttlDays(ctx: RunContext, fact: Fact): number {

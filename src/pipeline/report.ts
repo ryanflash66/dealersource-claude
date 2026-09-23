@@ -274,6 +274,33 @@ function pending() {
   return { status: "pending" as const, evidence_ids: [], detail: "not evaluated", warning: null };
 }
 
+/**
+ * When sending is paused, the exact mail that would have gone out (same render,
+ * same recipient) goes to outbox-preview.json and a readable outbox-preview.md
+ * next to run.json. Not part of the offline contract; out/ is git-ignored.
+ */
+export function writeOutboxPreview(ctx: RunContext): void {
+  const items = ctx.outboxPreview ?? [];
+  if (!ctx.run.sending_paused || !items.length) return;
+  mkdirSync(ctx.outDir, { recursive: true });
+  const perRecipient: Record<string, number> = {};
+  for (const i of items) perRecipient[i.to] = (perRecipient[i.to] ?? 0) + 1;
+  writeFileSync(resolve(ctx.outDir, "outbox-preview.json"), JSON.stringify({ run_id: ctx.run.id, run_date: ctx.runDate, pause_reason: ctx.run.pause_reason, count: items.length, per_recipient: perRecipient, messages: items }, null, 2));
+  const md = [
+    `# Outbox preview, ${ctx.runDate}`,
+    "",
+    `Sending is paused (${ctx.run.pause_reason}). Nothing below was sent. These ${items.length} messages would go out on a run with the pause lifted.`,
+    "",
+    "| Recipient | Messages |",
+    "|---|---|",
+    ...Object.entries(perRecipient).sort((a, b) => b[1] - a[1]).map(([to, n]) => `| ${to} | ${n} |`),
+    "",
+    ...items.flatMap((i, n) => [`## ${n + 1}. ${i.address}`, "", `To: ${i.to}`, `Subject: ${i.subject}`, `Cases: ${i.case_types.join(", ")}${i.follow_up ? " (follow-up)" : ""}`, "", "```text", i.body.trimEnd(), "```", ""]),
+  ].join("\n");
+  writeFileSync(resolve(ctx.outDir, "outbox-preview.md"), md);
+  ctx.logger.info("outbox preview written", { count: items.length, per_recipient: perRecipient, path: resolve(ctx.outDir, "outbox-preview.md") });
+}
+
 export function writeRunJson(ctx: RunContext, finishedAt: string): ContractRun {
   const counts: Record<string, number> = {};
   for (const [stage, s] of Object.entries(ctx.run.stages)) {
