@@ -155,7 +155,7 @@ sources:
     url: https://www.rofo.com/commercial-real-estate/NC/greenville
     robots_txt: allowed
     terms_status: allowed
-    enabled: true
+    enabled: false               # switched off by the PM 2026-09-22: no Greenville market, 0 listings on the first render
     render: js                   # JavaScript-rendered: local headless browser (playwright)
     cadence: daily
     notes: >-

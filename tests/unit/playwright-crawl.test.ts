@@ -163,7 +163,7 @@ describe("crawler routing", () => {
   it("sources.yaml: only Rofo renders with JavaScript; the refused aggregators stay refused", () => {
     const sources = config().sources;
     expect(sources.filter((s) => s.render === "js").map((s) => s.id)).toEqual(["rofo-greenville"]);
-    expect(sources.find((s) => s.id === "rofo-greenville")).toMatchObject({ enabled: true, robots_txt: "allowed", terms_status: "allowed", render: "js" });
+    expect(sources.find((s) => s.id === "rofo-greenville")).toMatchObject({ enabled: false, robots_txt: "allowed", terms_status: "allowed", render: "js" }); // off by PM 2026-09-22: no Greenville market
     for (const id of ["zoomprospector-pitt-county", "loopnet", "crexi"]) {
       const s = sources.find((x) => x.id === id)!;
       expect(refusalReason(s), id).not.toBeNull();
