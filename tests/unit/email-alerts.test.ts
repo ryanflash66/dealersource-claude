@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Readable } from "node:stream";
+import { deflateSync } from "node:zlib";
 import { makeClock } from "../../src/core/clock.js";
 import { silentLogger } from "../../src/core/logger.js";
 import type { ListingExtraction, RunRow } from "../../src/core/types.js";
@@ -92,6 +93,12 @@ describe("alert email parsing", () => {
     expect(canonicalListingUrl(`https://x.awstrack.me/L0/${encodeURIComponent(target)}/1/0100abc`, CREXI)).toBe(target);
     expect(canonicalListingUrl(`https://t.test/c?u=${Buffer.from(target).toString("base64url")}`, CREXI)).toBe(target);
     expect(canonicalListingUrl(`https://t.test/c?r=${encodeURIComponent(`https://mid.test/?to=${encodeURIComponent(target)}`)}`, CREXI)).toBe(target);
+    // Crexi's mailer: /c/<base64url(zlib(query))>, the target in `l` (shape seen in a real alert 2026-09-23).
+    const payload = `EmailMessageId=1&h=abc&l=${encodeURIComponent("https://www.crexi.com/lease/properties/1258790/north-carolina-6612-fleetwood-drive?utm_source=x")}&v=1`;
+    expect(canonicalListingUrl(`https://email.search.crexi.com/c/${deflateSync(payload).toString("base64url")}`, CREXI)).toBe(
+      "https://www.crexi.com/lease/properties/1258790/north-carolina-6612-fleetwood-drive",
+    );
+    expect(canonicalListingUrl("https://email.search.crexi.com/c/eJnotdeflatedatallxxxxxxx", CREXI)).toBeNull();
     expect(canonicalListingUrl("https://links.crexi.com/ls/click?upn=opaque123", CREXI)).toBeNull();
     expect(canonicalListingUrl("https://www.crexi.com/properties/555", null)).toBeNull();
   });
@@ -108,6 +115,10 @@ describe("alert extraction", () => {
     expect((await extract("505 W Arlington Blvd, Greenville, NC 27834 Rent: $12.00 SF/YR")).rent_monthly).toBeNull();
     expect((await extract("505 W Arlington Blvd, Greenville, NC 27834 $1.10/SF/MO")).rent_monthly).toBeNull();
     expect(yearlyTotalPerMonth("$15.50/yr")).toBeNull();
+  });
+
+  it("does not pull a number from the line above into the address (Crexi cards put a unit number there)", async () => {
+    expect((await extract("22\n1185 North Memorial Drive, Greenville, NC 27834")).address_text).toBe("1185 North Memorial Drive, Greenville, NC 27834");
   });
 
   it("drops the rent when a card states two different monthly prices", async () => {

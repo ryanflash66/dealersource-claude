@@ -40,8 +40,9 @@ export function parseMoneyPerMonth(text: string): number | null {
   return found[0]!;
 }
 
+// The house number and street share a line: a number on the line above (a unit or photo count) is not part of the address.
 export const ADDRESS_RE =
-  /\b(\d{1,6}[A-Za-z]?\s+(?:[NSEW]\.?\s+|North\s+|South\s+|East\s+|West\s+)?[A-Za-z0-9.'\- ]{2,40}?\s(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Hwy|Highway|Ln|Lane|Pkwy|Parkway|Ct|Court|Cir|Circle|Pl|Place|Way)\.?(?:\s+[NSEW]\.?)?)\s*,?\s*([A-Za-z .'-]{2,30}?)\s*,?\s*(?:NC|North Carolina)\s*,?\s*(2[78]\d{3})?\b/;
+  /\b(\d{1,6}[A-Za-z]?[ \t]+(?:[NSEW]\.?\s+|North\s+|South\s+|East\s+|West\s+)?[A-Za-z0-9.'\- ]{2,40}?\s(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Hwy|Highway|Ln|Lane|Pkwy|Parkway|Ct|Court|Cir|Circle|Pl|Place|Way)\.?(?:\s+[NSEW]\.?)?)\s*,?\s*([A-Za-z .'-]{2,30}?)\s*,?\s*(?:NC|North Carolina)\s*,?\s*(2[78]\d{3})?\b/;
 
 /** Deterministic, dependency-free extraction and classification. Free default. */
 export class RulesLlm implements LlmProvider {

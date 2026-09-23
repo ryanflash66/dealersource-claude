@@ -1,3 +1,4 @@
+import { inflateSync } from "node:zlib";
 import { normalizeAddressKey } from "../core/address.js";
 import type { ListingExtraction } from "../core/types.js";
 import { ADDRESS_RE, htmlToText, moneyPerMonthAll } from "../providers/llm.js";
@@ -72,6 +73,17 @@ function embeddedUrls(v: string): string[] {
   if (/^aHR0c[A-Za-z0-9+/_=-]+$/.test(v)) {
     const b = Buffer.from(v.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8");
     if (/^https?:\/\/\S+$/i.test(b)) out.push(b);
+  }
+  // zlib-compressed, base64url payload ("eJ..."), as Crexi's mailer uses: /c/<token> inflates
+  // to a query string whose `l` is the target. Decoded locally; the link is never requested.
+  if (/^e[AFJN][A-Za-z0-9_-]{16,}$/.test(v)) {
+    try {
+      const s = inflateSync(Buffer.from(v, "base64url"), { maxOutputLength: 64 * 1024 }).toString("utf8");
+      out.push(...[...new URLSearchParams(s).values()].filter((x) => /^https?:\/\//i.test(x)));
+      for (const m of s.matchAll(/https?:\/\/[^\s"'<>\\]+/gi)) out.push(m[0]);
+    } catch {
+      // not a deflate payload
+    }
   }
   return out;
 }
