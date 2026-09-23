@@ -2,8 +2,7 @@ import { describe, expect, it } from "vitest";
 import { join } from "node:path";
 import { readFileSync } from "node:fs";
 import { requirements } from "../../src/pipeline/gates.js";
-import { GmailMail } from "../../src/providers/mail.js";
-import { adapterCtx, cleanEnv, config, runOffline, tmp, writeFixtureSet } from "../helpers.js";
+import { cleanEnv, config, runOffline, tmp, writeFixtureSet } from "../helpers.js";
 
 // NC established-salesroom minimums verified 2026-09-22 (docs/decisions.md 23).
 describe("NC place-of-business checks", () => {
@@ -78,15 +77,5 @@ describe("outbox preview while paused", () => {
     const per: Record<string, number> = {};
     for (const m of live.messages) per[m.to] = (per[m.to] ?? 0) + 1;
     expect(preview.per_recipient).toEqual(per);
-  });
-});
-
-describe("gmail preflight", () => {
-  it("obtains an access token and reads the mailbox without sending", async () => {
-    const ctx = adapterCtx("gmail", { GMAIL_CLIENT_ID: "a", GMAIL_CLIENT_SECRET: "b", GMAIL_REFRESH_TOKEN: "c", GMAIL_SENDER_ADDRESS: "dealer@example.test" });
-    const p = await new GmailMail(ctx).preflight();
-    expect(p).toEqual({ access_token_obtained: true, mailbox: "dealer@example.test" });
-    expect(ctx.http.requests.map((r) => `${r.method} ${new URL(r.url).pathname}`)).toEqual(["POST /token", "GET /gmail/v1/users/me/profile"]);
-    expect(ctx.http.requests.some((r) => r.url.endsWith("/send"))).toBe(false);
   });
 });

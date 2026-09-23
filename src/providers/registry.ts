@@ -72,7 +72,7 @@ export const ADAPTERS: AdapterSpec[] = [
     id: "gmail",
     layer: "mail",
     paid: false,
-    envVars: ["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN", "GMAIL_SENDER_ADDRESS"],
+    envVars: ["GMAIL_SENDER_ADDRESS", "GMAIL_APP_PASSWORD"],
     create: (c) => new GmailMail(c),
   },
   { id: "rules", layer: "llm", paid: false, envVars: [], create: (c) => new RulesLlm(c) },
@@ -195,6 +195,7 @@ export function buildProviders(opts: BuildOptions): BuiltProviders {
       offline: opts.offline,
       fixturesDir: opts.fixturesDir,
       outDir: opts.outDir,
+      onExternalHost: opts.offline ? undefined : (host) => opts.hosts.add(host),
     };
     (providers as Record<string, unknown>)[layer] = spec.create(ctx, {
       onPaidCall: (url) => {

@@ -563,7 +563,7 @@ const PROV: Record<string, { kind: string; name: string; sub: string; fallback: 
   anycrawl: { kind: "Listings", name: "AnyCrawl (self-hosted)", sub: "robots.txt honoured; allowlist in sources.yaml", fallback: "Plain fetch" },
   anycrawl_cloud: { kind: "Listings", name: "AnyCrawl cloud", sub: "paid", fallback: "AnyCrawl (self-hosted)" },
   reddit: { kind: "Social", name: "Reddit Data API", sub: "official OAuth API, free tier", fallback: "None" },
-  gmail: { kind: "Email", name: "Gmail API", sub: "OAuth, owner or operator mailbox", fallback: "None" },
+  gmail: { kind: "Email", name: "Gmail SMTP + IMAP", sub: "App password, owner or operator mailbox", fallback: "None" },
   rules: { kind: "Extraction", name: "Deterministic rules", sub: "regex extraction and reply classification", fallback: "Claude via scheduled agent" },
   claude_agent: { kind: "Extraction", name: "Claude via scheduled agent", sub: "rules plus a review queue for the routine", fallback: "Deterministic rules" },
   claude_api: { kind: "Extraction", name: "Claude API", sub: "paid", fallback: "Deterministic rules" },

@@ -127,7 +127,7 @@ to its fixture-backed fake and the run records it under `fixture_layers`.
 |---|---|
 | Home base: the address drive times are measured from, where the owner commutes from (never committed) | `DEALERSOURCE_HOME_BASE="<street address>, <city>, NC <zip>"` |
 | Storage (Supabase) | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (pipeline), `SUPABASE_ANON_KEY` (dashboard) |
-| Email (Gmail API, OAuth) | `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_SENDER_ADDRESS`; pick the mailbox with `business.yaml mail.sender: owner|operator` |
+| Email (Gmail SMTP + IMAP, app password) | `GMAIL_SENDER_ADDRESS`, `GMAIL_APP_PASSWORD`; pick the mailbox with `business.yaml mail.sender: owner|operator` |
 | Reddit official API | `REDDIT_CLIENT_ID`, `REDDIT_CLIENT_SECRET`, `REDDIT_USER_AGENT` |
 | Free providers needing a key/URL | `ORS_API_KEY`, `MAPILLARY_ACCESS_TOKEN`, `NOMINATIM_URL`, `VALHALLA_URL`, `OVERPASS_URL` (one URL or a comma-separated list tried in order), `PMTILES_URL`; `ANYCRAWL_URL` only if you switch `crawler` from the default `fetch` to self-hosted `anycrawl` |
 | Paid providers (off by default) | `GOOGLE_MAPS_API_KEY`, `REGRID_API_KEY`, `ANTHROPIC_API_KEY`, `ANYCRAWL_API_KEY`, `MAPBOX_TOKEN` |
@@ -140,9 +140,12 @@ Steps:
    (see the header of `docker-compose.yml` for the service-role JWT). Details: `supabase/README.md`.
    Existing projects: apply the newest migration too (`20260918000000` adds `sources.contact_email`
    and `sites.enrich_warnings`).
-2. **Mail**: create a Gmail API OAuth client, authorise the owner's (or operator's) mailbox once,
-   store the refresh token. Then set `verified: true` on each `business.yaml` jurisdiction after
-   re-checking its `source_url`: the Gmail adapter refuses planning addresses that are not verified.
+2. **Mail**: on the owner's (or operator's) Google account, turn on 2-Step Verification and create
+   an app password (myaccount.google.com/apppasswords); set `GMAIL_SENDER_ADDRESS` and
+   `GMAIL_APP_PASSWORD`. Mail goes out over SMTP (smtp.gmail.com:465) and replies are read over
+   IMAP (imap.gmail.com:993); no Google Cloud project or OAuth client is involved. Then set
+   `verified: true` on each `business.yaml` jurisdiction after re-checking its `source_url`:
+   the Gmail adapter refuses planning addresses that are not verified.
 3. **Pipeline**: `npm run pipeline -- --out out/$(date +%F)` (online; `--fixtures` may still be
    passed as a fallback for layers whose variables are unset). Schedule it as a Claude Code routine
    using `agent/routine.md` (setup in `docs/scheduling.md`; GitHub Actions and pg_cron alternatives

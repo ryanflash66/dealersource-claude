@@ -1,63 +1,174 @@
+import type { SendMailOptions } from "nodemailer";
 import type { CaseType } from "../core/types.js";
-import { optString } from "./options.js";
-import type { AdapterContext, InboundMail, KnownThread, MailProvider, OutboundMail, SendResult, MailPreflight } from "./types.js";
+import { optNumber, optString } from "./options.js";
+import type { AdapterContext, InboundMail, KnownThread, MailPreflight, MailProvider, OutboundMail, SendResult } from "./types.js";
 
 export const TOKEN_RE = /\[DS-([A-Z0-9]{6})\]/;
 
-interface GmailMessage {
-  id: string;
-  threadId: string;
-  internalDate?: string;
-  payload?: {
-    headers?: Array<{ name: string; value: string }>;
-    mimeType?: string;
-    body?: { data?: string };
-    parts?: Array<{ mimeType: string; body?: { data?: string }; parts?: GmailMessage["payload"] extends infer P ? (P extends { parts?: infer Q } ? Q : never) : never }>;
-  };
+/** The part of a nodemailer Transporter this adapter uses. */
+export interface SmtpClient {
+  verify(): Promise<unknown>;
+  sendMail(mail: SendMailOptions): Promise<{ messageId?: string }>;
+  close?(): void;
+}
+
+export interface ImapAddress {
+  name?: string;
+  address?: string;
+}
+export interface ImapStructure {
+  part?: string;
+  type: string;
+  parameters?: Record<string, string>;
+  disposition?: string;
+  childNodes?: ImapStructure[];
+}
+export interface ImapMessage {
+  uid: number;
+  internalDate?: Date | string;
+  envelope?: { subject?: string; messageId?: string; date?: Date | string; from?: ImapAddress[] };
+  bodyStructure?: ImapStructure;
+}
+export interface ImapSearch {
+  since?: Date;
+  subject?: string;
+  from?: string;
+  or?: ImapSearch[];
+}
+
+/** The part of imapflow's ImapFlow this adapter uses (structural, so tests can supply a recorded mailbox). */
+export interface ImapClient {
+  connect(): Promise<void>;
+  logout(): Promise<void>;
+  list(): Promise<Array<{ path: string; specialUse?: string }>>;
+  getMailboxLock(path: string): Promise<{ release(): void }>;
+  search(query: ImapSearch, options: { uid: true }): Promise<number[] | false | undefined>;
+  fetchAll(range: number[], query: { uid: true; envelope: true; internalDate: true; bodyStructure: true }, options: { uid: true }): Promise<ImapMessage[]>;
+  download(uid: string, part: string | undefined, options: { uid: true }): Promise<{ meta?: { charset?: string }; content?: AsyncIterable<Buffer | string> }>;
+}
+
+/** Injected in tests; production builds real nodemailer / imapflow clients. */
+export interface GmailTransports {
+  smtp?: () => Promise<SmtpClient>;
+  imap?: () => Promise<ImapClient>;
+}
+
+/** Google shows app passwords as four groups of four; spaces and wrapping quotes are not part of it. */
+export function cleanAppPassword(v: string | undefined): string {
+  return (v ?? "").trim().replace(/^(["'])(.*)\1$/, "$2").replace(/\s+/g, "");
 }
 
 /**
- * Gmail API via OAuth refresh token. The mailbox is the one selected by
- * business.yaml mail.sender (owner or operator); Reply-To is the same mailbox.
- * Refuses to send to planning addresses whose jurisdiction entry is not
+ * Gmail over SMTP (smtp.gmail.com:465, TLS) and IMAP (imap.gmail.com:993, TLS)
+ * with an app password on the mailbox selected by business.yaml mail.sender.
+ * Reply-To is the same mailbox, and replies are routed by the [DS-XXXXXX] subject
+ * token. Refuses to send to planning addresses whose jurisdiction entry is not
  * `verified: true` (spec section 6: official-page-derived addresses only).
+ * The app password is only ever handed to the SMTP/IMAP login and is redacted
+ * from any error text this adapter returns.
  */
 export class GmailMail implements MailProvider {
   readonly name = "gmail";
   readonly sender_address: string;
-  private accessToken: string | null = null;
+  private readonly password: string;
+  private readonly missing: string[];
+  private smtpClient: SmtpClient | null = null;
 
-  constructor(private readonly ctx: AdapterContext) {
-    this.sender_address = ctx.env.GMAIL_SENDER_ADDRESS ?? "";
+  constructor(
+    private readonly ctx: AdapterContext,
+    private readonly transports: GmailTransports = {},
+  ) {
+    this.sender_address = (ctx.env.GMAIL_SENDER_ADDRESS ?? "").trim();
+    this.password = cleanAppPassword(ctx.env.GMAIL_APP_PASSWORD);
+    this.missing = [...(this.sender_address ? [] : ["GMAIL_SENDER_ADDRESS"]), ...(this.password ? [] : ["GMAIL_APP_PASSWORD"])];
   }
 
-  private base(): string {
-    return optString(this.ctx.options, "base_url", "https://gmail.googleapis.com/gmail/v1").replace(/\/+$/, "");
+  private get smtpHost(): string {
+    return optString(this.ctx.options, "smtp_host", "smtp.gmail.com");
+  }
+  private get smtpPort(): number {
+    return optNumber(this.ctx.options, "smtp_port", 465);
+  }
+  private get imapHost(): string {
+    return optString(this.ctx.options, "imap_host", "imap.gmail.com");
+  }
+  private get imapPort(): number {
+    return optNumber(this.ctx.options, "imap_port", 993);
   }
 
-  private async token(): Promise<string> {
-    if (this.accessToken) return this.accessToken;
-    const res = await this.ctx.http.request({
-      method: "POST",
-      url: optString(this.ctx.options, "token_url", "https://oauth2.googleapis.com/token"),
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: this.ctx.env.GMAIL_CLIENT_ID ?? "",
-        client_secret: this.ctx.env.GMAIL_CLIENT_SECRET ?? "",
-        refresh_token: this.ctx.env.GMAIL_REFRESH_TOKEN ?? "",
-        grant_type: "refresh_token",
-      }).toString(),
-    });
-    if (!res.ok) throw new Error(`Gmail token refresh failed: ${res.status}`);
-    this.accessToken = res.json<{ access_token: string }>().access_token;
-    return this.accessToken;
+  private requireCredentials(host: string): void {
+    if (this.missing.length) throw new Error(`mail:gmail unavailable, set ${this.missing.join(", ")} (${host})`);
   }
 
+  /** Error text with the app password removed, whatever the library put in it. */
+  private safe(e: unknown): string {
+    const msg = e instanceof Error ? e.message : String(e);
+    return this.password ? msg.split(this.password).join("[redacted]") : msg;
+  }
+
+  private async smtp(): Promise<SmtpClient> {
+    this.requireCredentials(this.smtpHost);
+    if (this.smtpClient) return this.smtpClient;
+    if (this.transports.smtp) {
+      this.smtpClient = await this.transports.smtp();
+    } else {
+      if (this.ctx.offline) throw new Error(`offline: network refused (${this.smtpHost})`);
+      const nodemailer = (await import("nodemailer")).default;
+      this.smtpClient = nodemailer.createTransport({
+        host: this.smtpHost,
+        port: this.smtpPort,
+        secure: true,
+        auth: { user: this.sender_address, pass: this.password },
+        logger: false,
+        debug: false,
+        connectionTimeout: 20_000,
+        greetingTimeout: 20_000,
+        socketTimeout: 60_000,
+      }) as unknown as SmtpClient;
+      this.ctx.onExternalHost?.(this.smtpHost);
+    }
+    return this.smtpClient;
+  }
+
+  private async imap(): Promise<ImapClient> {
+    this.requireCredentials(this.imapHost);
+    if (this.transports.imap) return this.transports.imap();
+    if (this.ctx.offline) throw new Error(`offline: network refused (${this.imapHost})`);
+    const { ImapFlow } = await import("imapflow");
+    this.ctx.onExternalHost?.(this.imapHost);
+    return new ImapFlow({
+      host: this.imapHost,
+      port: this.imapPort,
+      secure: true,
+      auth: { user: this.sender_address, pass: this.password },
+      logger: false,
+      connectionTimeout: 30_000,
+      greetingTimeout: 20_000,
+      socketTimeout: 120_000,
+    }) as unknown as ImapClient;
+  }
+
+  /** Log in to SMTP and IMAP without sending or reading anything. */
   async preflight(): Promise<MailPreflight> {
-    const tok = await this.token(); // throws on a bad client/secret/refresh token; the token itself is never logged
-    const res = await this.ctx.http.request({ method: "GET", url: `${this.base()}/users/me/profile`, headers: { Authorization: `Bearer ${tok}` } });
-    if (!res.ok) return { access_token_obtained: true, mailbox: null, note: `profile not readable (HTTP ${res.status}); the reply poller needs a gmail read scope` };
-    return { access_token_obtained: true, mailbox: res.json<{ emailAddress?: string }>().emailAddress ?? null };
+    this.requireCredentials(this.smtpHost);
+    const out: MailPreflight = { smtp_login: false, imap_login: false, mailbox: this.sender_address, notes: [] };
+    try {
+      await (await this.smtp()).verify();
+      out.smtp_login = true;
+    } catch (e) {
+      out.notes.push(`SMTP ${this.smtpHost}:${this.smtpPort} login failed: ${this.safe(e)}`);
+    }
+    let client: ImapClient | null = null;
+    try {
+      client = await this.imap();
+      await client.connect();
+      out.imap_login = true;
+    } catch (e) {
+      out.notes.push(`IMAP ${this.imapHost}:${this.imapPort} login failed: ${this.safe(e)}`);
+    } finally {
+      if (client && out.imap_login) await client.logout().catch(() => undefined);
+    }
+    return out;
   }
 
   private assertRecipientAllowed(to: string): void {
@@ -71,86 +182,145 @@ export class GmailMail implements MailProvider {
 
   async send(mail: OutboundMail): Promise<SendResult> {
     this.assertRecipientAllowed(mail.to);
-    const raw = [
-      `From: ${this.sender_address}`,
-      `To: ${mail.to}`,
-      `Reply-To: ${mail.replyTo ?? this.sender_address}`,
-      `Subject: ${mail.subject}`,
-      "MIME-Version: 1.0",
-      'Content-Type: text/plain; charset="UTF-8"',
-      "",
-      mail.body,
-    ].join("\r\n");
-    const res = await this.ctx.http.request({
-      method: "POST",
-      url: `${this.base()}/users/me/messages/send`,
-      headers: { Authorization: `Bearer ${await this.token()}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ raw: Buffer.from(raw, "utf8").toString("base64url") }),
-    });
-    if (res.status === 429 || res.status === 403) throw new GmailQuotaError(`Gmail quota/permission error ${res.status}`);
-    if (!res.ok) throw new Error(`Gmail send failed: ${res.status} ${res.body.slice(0, 200)}`);
-    const j = res.json<{ id: string; threadId: string }>();
-    return { provider_message_id: j.id, thread_id: j.threadId };
+    const smtp = await this.smtp();
+    try {
+      const info = await smtp.sendMail({
+        from: this.sender_address,
+        to: mail.to,
+        replyTo: mail.replyTo ?? this.sender_address,
+        subject: mail.subject,
+        text: mail.body,
+      });
+      return { provider_message_id: info.messageId ?? `smtp-${mail.token}`, thread_id: mail.token };
+    } catch (e) {
+      if (isSendingLimit(e)) throw new GmailQuotaError(`Gmail sending limit: ${this.safe(e)}`);
+      throw new Error(`Gmail SMTP send failed: ${this.safe(e)}`);
+    }
   }
 
   async fetchInbound(opts: { since: string; until: string; threads: KnownThread[] }): Promise<InboundMail[]> {
-    const tok = await this.token();
-    const afterEpoch = Math.floor(new Date(opts.since).getTime() / 1000);
-    const q = `subject:"[DS-" after:${afterEpoch} -from:me`;
-    const list = await this.ctx.http.request({
-      url: `${this.base()}/users/me/messages?${new URLSearchParams({ q, maxResults: "100" })}`,
-      headers: { Authorization: `Bearer ${tok}` },
-    });
-    if (!list.ok) throw new Error(`Gmail list failed: ${list.status}`);
-    const ids = list.json<{ messages?: Array<{ id: string }> }>().messages ?? [];
-    const until = new Date(opts.until).getTime();
+    const client = await this.imap();
+    try {
+      await client.connect();
+    } catch (e) {
+      throw new Error(`Gmail IMAP login failed: ${this.safe(e)}`);
+    }
+    try {
+      const box = await this.pickMailbox(client);
+      const lock = await client.getMailboxLock(box);
+      try {
+        return await this.readInbound(client, box, opts);
+      } finally {
+        lock.release();
+      }
+    } finally {
+      await client.logout().catch(() => undefined);
+    }
+  }
+
+  /** All Mail (so archived replies are still seen), falling back to INBOX. */
+  private async pickMailbox(client: ImapClient): Promise<string> {
+    const configured = optString(this.ctx.options, "mailbox", "");
+    if (configured) return configured;
+    const boxes = await client.list();
+    return boxes.find((b) => b.specialUse === "\\All")?.path ?? "INBOX";
+  }
+
+  private async readInbound(client: ImapClient, box: string, opts: { since: string; until: string; threads: KnownThread[] }): Promise<InboundMail[]> {
+    const since = new Date(opts.since);
+    const sinceMs = since.getTime();
+    const untilMs = new Date(opts.until).getTime();
+    // IMAP SINCE is day-granular; exact bounds are applied below.
+    const uids = (await client.search({ since, or: [{ subject: "[DS-" }, { from: "mailer-daemon" }, { from: "postmaster" }] }, { uid: true })) || [];
+    if (!uids.length) return [];
+    const max = optNumber(this.ctx.options, "max_messages", 200);
+    const msgs = await client.fetchAll(uids.slice(-max), { uid: true, envelope: true, internalDate: true, bodyStructure: true }, { uid: true });
+    const me = this.sender_address.toLowerCase();
     const out: InboundMail[] = [];
-    for (const { id } of ids) {
-      const res = await this.ctx.http.request({
-        url: `${this.base()}/users/me/messages/${id}?format=full`,
-        headers: { Authorization: `Bearer ${tok}` },
-      });
-      if (!res.ok) continue;
-      const m = res.json<GmailMessage>();
-      const header = (n: string) => m.payload?.headers?.find((h) => h.name.toLowerCase() === n.toLowerCase())?.value ?? "";
-      const receivedAt = m.internalDate ? new Date(Number(m.internalDate)).toISOString() : new Date(header("Date")).toISOString();
-      if (new Date(receivedAt).getTime() > until) continue;
-      const subject = header("Subject");
-      const token = TOKEN_RE.exec(subject)?.[1] ?? null;
-      const thread = token ? opts.threads.find((t) => t.token === token) : undefined;
-      const from = header("From");
+    for (const m of msgs) {
+      const env = m.envelope ?? {};
+      const from = env.from?.[0]?.address ?? "";
+      if (from.toLowerCase() === me) continue; // our own sent copies live in All Mail too
+      const receivedAt = toIso(m.internalDate ?? env.date);
+      if (!receivedAt) continue;
+      const t = new Date(receivedAt).getTime();
+      if (t < sinceMs || t > untilMs) continue;
+      const subject = env.subject ?? "";
+      const is_bounce = /mailer-daemon|postmaster/i.test(`${env.from?.[0]?.name ?? ""} ${from}`) || /undeliverable|delivery status notification/i.test(subject);
+      const body = await this.plainText(client, m);
+      let token = TOKEN_RE.exec(subject)?.[1] ?? null;
+      // A real Gmail bounce carries our subject only inside the returned original message.
+      if (!token && is_bounce) token = TOKEN_RE.exec(body)?.[1] ?? TOKEN_RE.exec(await this.source(client, m.uid))?.[1] ?? null;
+      if (!token && !is_bounce) continue;
+      const thread = token ? opts.threads.find((x) => x.token === token) : undefined;
       out.push({
-        provider_message_id: m.id,
-        from: /<([^>]+)>/.exec(from)?.[1] ?? from,
+        provider_message_id: env.messageId ?? `imap:${box}:${m.uid}`,
+        from,
         subject,
-        body: extractPlainText(m),
+        body,
         received_at: receivedAt,
         token,
         listing_id: thread?.listing_ids[0] ?? null,
         case_type: null,
-        is_bounce: /mailer-daemon|postmaster/i.test(from) || /undeliverable|delivery status notification/i.test(subject),
+        is_bounce,
       });
     }
     return out;
+  }
+
+  private async plainText(client: ImapClient, m: ImapMessage): Promise<string> {
+    const part = findPlainPart(m.bodyStructure);
+    if (part === null) return "";
+    const d = await client.download(String(m.uid), part, { uid: true });
+    return readAll(d.content, 256 * 1024);
+  }
+
+  private async source(client: ImapClient, uid: number): Promise<string> {
+    const d = await client.download(String(uid), undefined, { uid: true });
+    return readAll(d.content, 512 * 1024);
   }
 }
 
 export class GmailQuotaError extends Error {}
 
-function extractPlainText(m: GmailMessage): string {
-  const decode = (d?: string) => (d ? Buffer.from(d, "base64url").toString("utf8") : "");
-  const p = m.payload;
-  if (!p) return "";
-  if (p.body?.data) return decode(p.body.data);
-  const walk = (parts: any[] | undefined): string => {
-    for (const part of parts ?? []) {
-      if (part.mimeType === "text/plain" && part.body?.data) return decode(part.body.data);
-      const nested = walk(part.parts);
-      if (nested) return nested;
+/** Gmail SMTP throttling / daily-limit replies (421, 452, 454, 5.4.5, "limit exceeded"). */
+function isSendingLimit(e: unknown): boolean {
+  const x = e as { responseCode?: number; response?: string; message?: string };
+  if (x?.responseCode === 421 || x?.responseCode === 452 || x?.responseCode === 454) return true;
+  return /5\.4\.5|limit exceeded|too many messages/i.test(`${x?.response ?? ""} ${x?.message ?? ""}`);
+}
+
+/** First inline text/plain part; "1" for a single-part message. */
+function findPlainPart(s: ImapStructure | undefined): string | null {
+  if (!s) return null;
+  const walk = (n: ImapStructure): string | null => {
+    if (n.type?.toLowerCase() === "text/plain" && n.disposition?.toLowerCase() !== "attachment") return n.part ?? "1";
+    for (const c of n.childNodes ?? []) {
+      const hit = walk(c);
+      if (hit) return hit;
     }
-    return "";
+    return null;
   };
-  return walk(p.parts as any[]);
+  return walk(s);
+}
+
+async function readAll(content: AsyncIterable<Buffer | string> | undefined, cap: number): Promise<string> {
+  if (!content) return "";
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const c of content) {
+    const b = typeof c === "string" ? Buffer.from(c, "utf8") : c;
+    chunks.push(b);
+    size += b.length;
+    if (size >= cap) break;
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+function toIso(d: Date | string | undefined): string | null {
+  if (!d) return null;
+  const t = new Date(d).getTime();
+  return Number.isFinite(t) ? new Date(t).toISOString() : null;
 }
 
 export type { CaseType };

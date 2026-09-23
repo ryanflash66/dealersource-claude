@@ -18,6 +18,8 @@ export interface AdapterContext {
   fixturesDir: string | null;
   /** Where run outputs go (review queues, etc.). */
   outDir: string | null;
+  /** Adapters that talk to the network outside HttpClient (SMTP, IMAP) report their hosts here for run.json external_calls. */
+  onExternalHost?: (host: string) => void;
 }
 
 /** Optional hints: fixture adapters key by parcel id; polygon layers prefer the parcel geometry. */
@@ -234,18 +236,20 @@ export interface MailProvider {
   /** Inbound mail received in (since, until], matched against known threads. */
   fetchInbound(opts: { since: ISODate; until: ISODate; threads: KnownThread[] }): Promise<InboundMail[]>;
   /**
-   * Read-only credential check run every online run, paused or not: obtain an
-   * access token and report which mailbox it belongs to. Never sends. Providers
-   * without credentials (fixtures) omit it.
+   * Credential check run every online run, paused or not: log in to the send and
+   * receive servers and log out. Never sends or reads mail. Providers without
+   * credentials (fixtures) omit it.
    */
   preflight?(): Promise<MailPreflight>;
 }
 
 export interface MailPreflight {
-  access_token_obtained: boolean;
-  /** Mailbox the token belongs to, or null when the granted scopes cannot read the profile. */
+  smtp_login: boolean;
+  imap_login: boolean;
+  /** The mailbox logged in to. */
   mailbox: string | null;
-  note?: string;
+  /** Failure details, secrets redacted. */
+  notes: string[];
 }
 
 // ------------------------------------------------------------------- llm

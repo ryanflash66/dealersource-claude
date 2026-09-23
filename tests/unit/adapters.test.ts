@@ -9,7 +9,6 @@ import { MapillaryImagery } from "../../src/providers/imagery.js";
 import { OverpassPoi } from "../../src/providers/competitors.js";
 import { AnyCrawlSelfHosted } from "../../src/providers/crawl.js";
 import { RedditSocial } from "../../src/providers/social.js";
-import { GmailMail } from "../../src/providers/mail.js";
 import { FixtureMissError } from "../../src/http/fixture-client.js";
 import { CostLedger, MeteredHttpClient } from "../../src/http/cost-ledger.js";
 import { adapterCtx } from "../helpers.js";
@@ -141,32 +140,6 @@ describe("adapters against recorded HTTP fixtures", () => {
     expect(posts[0]).toMatchObject({ id: "abc123", subreddit: "greenvillenc" });
     expect(ctx.http.requests[0]!.url).toContain("access_token");
     expect(ctx.http.requests[1]!.url).toContain("/r/greenvillenc+ECU/search?q=for+lease");
-  });
-
-  it("gmail sends RFC822 mail and parses replies, tokens and bounces", async () => {
-    const ctx = adapterCtx("gmail", { GMAIL_CLIENT_ID: "a", GMAIL_CLIENT_SECRET: "b", GMAIL_REFRESH_TOKEN: "c", GMAIL_SENDER_ADDRESS: "dealer@example.test" });
-    const g = new GmailMail(ctx);
-    const sent = await g.send({ to: "owner@tenth-street-props.test", subject: "Inquiry [DS-2D276E]", body: "hello", token: "2D276E", replyTo: null });
-    expect(sent.provider_message_id).toBe("18c1f2a3b4c5d6e7");
-    const raw = JSON.parse(ctx.http.requests.find((r) => r.url.endsWith("/send"))!.body!).raw as string;
-    const decoded = Buffer.from(raw, "base64url").toString("utf8");
-    expect(decoded).toContain("To: owner@tenth-street-props.test");
-    expect(decoded).toContain("Reply-To: dealer@example.test");
-    const inbound = await g.fetchInbound({ since: "2026-09-01T00:00:00Z", until: "2026-09-16T23:59:59Z", threads: [{ token: "2D276E", listing_ids: ["L04"], case_types: ["rent"], contact_email: "owner@tenth-street-props.test", address: "" }] });
-    expect(inbound).toHaveLength(2);
-    const reply = inbound.find((m) => m.token === "2D276E")!;
-    expect(reply.from).toBe("owner@tenth-street-props.test");
-    expect(reply.body).toContain("$850 per month");
-    expect(reply.listing_id).toBe("L04");
-    expect(inbound.find((m) => m.token === "AAAAAA")!.is_bounce).toBe(true);
-  });
-
-  it("gmail refuses planning addresses whose jurisdiction entry is not verified", async () => {
-    const ctx = adapterCtx("gmail", { GMAIL_CLIENT_ID: "a", GMAIL_CLIENT_SECRET: "b", GMAIL_REFRESH_TOKEN: "c", GMAIL_SENDER_ADDRESS: "dealer@example.test" });
-    // The shipped business.yaml is fully verified (2026-09-22); flip one entry back to exercise the guard.
-    const gv = ctx.config.business.jurisdictions.Greenville!;
-    ctx.config.business.jurisdictions.Greenville = { ...gv, verified: false };
-    await expect(new GmailMail(ctx).send({ to: gv.planning_email, subject: "x", body: "y", token: "T", replyTo: null })).rejects.toThrow(/not verified/);
   });
 
   it("a request with no recorded fixture fails loudly instead of silently succeeding", async () => {

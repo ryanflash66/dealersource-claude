@@ -1,0 +1,113 @@
+{
+  "_note": "Gmail IMAP mailbox in the shape imapflow returns (list, search -> uids, fetchAll with envelope/internalDate/bodyStructure, download of a decoded part or the raw source). Served by the FakeImap test double; no network. Sender mailbox: dealer@example.test.",
+  "mailboxes": [
+    { "path": "INBOX", "specialUse": "\\Inbox" },
+    { "path": "[Gmail]/All Mail", "specialUse": "\\All" },
+    { "path": "[Gmail]/Sent Mail", "specialUse": "\\Sent" }
+  ],
+  "messages": [
+    {
+      "uid": 101,
+      "internalDate": "2026-09-16T18:02:00.000Z",
+      "envelope": {
+        "messageId": "<CAH-reply-1@mail.tenth-street-props.test>",
+        "subject": "Re: Inquiry about 3100 E 10th St [DS-2D276E]",
+        "date": "2026-09-16T18:02:00.000Z",
+        "from": [{ "name": "Tenth Street Owner", "address": "owner@tenth-street-props.test" }]
+      },
+      "bodyStructure": {
+        "type": "multipart/alternative",
+        "childNodes": [
+          { "part": "1", "type": "text/plain", "parameters": { "charset": "UTF-8" } },
+          { "part": "2", "type": "text/html", "parameters": { "charset": "UTF-8" } }
+        ]
+      },
+      "parts": {
+        "1": "Thanks for reaching out. Base rent is $850 per month, tenant pays utilities. The office and fenced lot are included.",
+        "2": "<p>Thanks for reaching out. Base rent is $850 per month.</p>"
+      }
+    },
+    {
+      "uid": 102,
+      "internalDate": "2026-09-16T18:03:20.000Z",
+      "envelope": {
+        "messageId": "<bounce-1@mx.google.com>",
+        "subject": "Delivery Status Notification (Failure) [DS-AAAAAA]",
+        "date": "2026-09-16T18:03:20.000Z",
+        "from": [{ "name": "Mail Delivery Subsystem", "address": "mailer-daemon@googlemail.com" }]
+      },
+      "bodyStructure": { "type": "text/plain", "parameters": { "charset": "UTF-8" } },
+      "parts": { "1": "Address not found." }
+    },
+    {
+      "uid": 103,
+      "internalDate": "2026-09-16T19:10:00.000Z",
+      "envelope": {
+        "messageId": "<bounce-2@mx.google.com>",
+        "subject": "Delivery Status Notification (Failure)",
+        "date": "2026-09-16T19:10:00.000Z",
+        "from": [{ "name": "Mail Delivery Subsystem", "address": "mailer-daemon@googlemail.com" }]
+      },
+      "bodyStructure": {
+        "type": "multipart/report",
+        "childNodes": [
+          { "part": "1", "type": "text/plain", "parameters": { "charset": "UTF-8" } },
+          { "part": "2", "type": "message/delivery-status" },
+          { "part": "3", "type": "text/rfc822-headers" }
+        ]
+      },
+      "parts": {
+        "1": "Address not found\n\nYour message wasn't delivered to leasing@gone-broker.test because the address couldn't be found, or is unable to receive mail."
+      },
+      "source": "From: Mail Delivery Subsystem <mailer-daemon@googlemail.com>\r\nSubject: Delivery Status Notification (Failure)\r\nContent-Type: multipart/report; report-type=delivery-status; boundary=\"b1\"\r\n\r\n--b1\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\nAddress not found\r\n--b1\r\nContent-Type: text/rfc822-headers\r\n\r\nFrom: dealer@example.test\r\nTo: leasing@gone-broker.test\r\nSubject: Inquiry about 2 Silent St, Greenville, NC 27834 [DS-BBBBBB]\r\n--b1--\r\n"
+    },
+    {
+      "uid": 104,
+      "internalDate": "2026-09-16T12:00:00.000Z",
+      "envelope": {
+        "messageId": "<sent-1@example.test>",
+        "subject": "Inquiry about 3100 E 10th St [DS-2D276E]",
+        "date": "2026-09-16T12:00:00.000Z",
+        "from": [{ "name": "", "address": "dealer@example.test" }]
+      },
+      "bodyStructure": { "type": "text/plain" },
+      "parts": { "1": "Our own outbound copy, stored in All Mail." }
+    },
+    {
+      "uid": 105,
+      "internalDate": "2026-09-17T13:00:00.000Z",
+      "envelope": {
+        "messageId": "<CAH-reply-2@mail.tenth-street-props.test>",
+        "subject": "Re: Inquiry about 3100 E 10th St [DS-2D276E]",
+        "date": "2026-09-17T13:00:00.000Z",
+        "from": [{ "name": "Tenth Street Owner", "address": "owner@tenth-street-props.test" }]
+      },
+      "bodyStructure": { "type": "text/plain" },
+      "parts": { "1": "One more thing: the lot is gravel. (Received after the run cutoff.)" }
+    },
+    {
+      "uid": 106,
+      "internalDate": "2026-08-20T15:00:00.000Z",
+      "envelope": {
+        "messageId": "<old-1@example.test>",
+        "subject": "Re: Inquiry about 1 Old Rd [DS-OLD111]",
+        "date": "2026-08-20T15:00:00.000Z",
+        "from": [{ "name": "", "address": "old@landlord.test" }]
+      },
+      "bodyStructure": { "type": "text/plain" },
+      "parts": { "1": "Before the lookback window." }
+    },
+    {
+      "uid": 107,
+      "internalDate": "2026-09-16T09:00:00.000Z",
+      "envelope": {
+        "messageId": "<news-1@shop.test>",
+        "subject": "Weekly deals",
+        "date": "2026-09-16T09:00:00.000Z",
+        "from": [{ "name": "Shop", "address": "news@shop.test" }]
+      },
+      "bodyStructure": { "type": "text/plain" },
+      "parts": { "1": "Unrelated mail." }
+    }
+  ]
+}

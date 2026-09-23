@@ -262,9 +262,32 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
     parsed: a listing or reply confirming an office counts as met, and the Highway Patrol's
     site inspection is the final check.
 
-24. **Mail preflight and outbox preview.** Every online run exchanges the Gmail refresh
-    token for an access token and reads the mailbox profile, sending nothing, so broken
-    credentials show up while sending is still paused. If the token belongs to a mailbox
-    other than `GMAIL_SENDER_ADDRESS`, sending pauses with that reason. While paused, the
+24. **Mail preflight and outbox preview.** Every online run logs in to the mail servers
+    first, sending nothing, so broken credentials show up while sending is still paused
+    (since decision 25: SMTP and IMAP logins; either failing pauses sending). While paused, the
     exact messages that would have gone out (same render, same recipients) are written to
     `out/<date>/outbox-preview.md` and `.json`, git-ignored, never part of the contract.
+
+25. **Gmail over SMTP + IMAP with an app password, not the Gmail API** (2026-09-22, PM
+    decision). The owner's personal Gmail sends a handful of messages a day, far under
+    Gmail's limits, so the Gmail API's Google Cloud project, OAuth consent screen and
+    refresh token bought nothing but setup friction. The adapter now sends through
+    `smtp.gmail.com:465` with nodemailer and reads replies from `imap.gmail.com:993` with
+    imapflow (both implicit TLS, both MIT-licensed), logged in as `GMAIL_SENDER_ADDRESS` with
+    `GMAIL_APP_PASSWORD`. `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET` and `GMAIL_REFRESH_TOKEN` are
+    gone. Unchanged: the `MailProvider` interface, `[DS-XXXXXX]` subject routing, Reply-To =
+    sender, bounce detection, the pause switch, the refusal to mail unverified planning
+    addresses, and the offline fixture mailbox. Details:
+    - Replies are read from the `\All` special-use folder (All Mail), so a reply the owner
+      archives is still seen; our own sent copies there are skipped. INBOX is the fallback.
+    - A real Gmail bounce carries our subject only inside the returned headers, so for
+      bounces without a token in the subject the token is taken from the body or source.
+    - A 421/452/454 reply or `5.4.5` / "limit exceeded" maps to `GmailQuotaError`, which
+      pauses sending, as the API's 429/403 did.
+    - The preflight logs in to both servers every online run. SMTP failing means nothing can
+      be sent; IMAP failing means replies, including "stop", would go unseen while follow-ups
+      continue. Either pauses sending for that run.
+    - The app password is only passed to the two logins, both libraries run with logging off,
+      and any error text is scrubbed of it before it reaches a log or the report.
+    - nodemailer and imapflow are imported lazily, so offline and fixture runs never load them
+      and cannot open a socket; offline without injected transports the adapter refuses.

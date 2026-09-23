@@ -29,11 +29,22 @@ and the run is online; otherwise it uses the JSON store under `<out>/state/`.
 
 ## 2. Gmail (verification outreach)
 
-1. Google Cloud console -> enable Gmail API -> OAuth client (Desktop or Web).
-2. Authorise the mailbox chosen by `business.yaml mail.sender` (`owner` = the dealer's mailbox,
-   `operator` = a fallback mailbox) with scope `https://www.googleapis.com/auth/gmail.modify`
-   and keep the refresh token.
-3. Set `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_SENDER_ADDRESS`.
+Transport: Gmail SMTP (`smtp.gmail.com:465`, implicit TLS) to send and Gmail IMAP
+(`imap.gmail.com:993`, implicit TLS) to read replies, both logged in with an app password.
+No Google Cloud project, OAuth client or refresh token. Free; a personal Gmail account allows
+far more per day than this pipeline sends (a handful of contacts a day), and a sending-limit
+reply from Gmail pauses outreach automatically.
+
+1. Pick the mailbox with `business.yaml mail.sender` (`owner` = the dealer's mailbox,
+   `operator` = a fallback mailbox) and sign in to that Google account.
+2. Turn on 2-Step Verification (required for app passwords), then create an app password at
+   https://myaccount.google.com/apppasswords. Google shows it as four groups of four letters;
+   spaces are ignored. If the IMAP login is refused as disabled, enable IMAP under Gmail
+   settings, Forwarding and POP/IMAP.
+3. Set `GMAIL_SENDER_ADDRESS` (that mailbox) and `GMAIL_APP_PASSWORD`. Never commit them and
+   never paste them into chat; the adapter never logs the password and redacts it from errors.
+   Every online run logs in to both servers first and logs `mail preflight` with
+   `smtp_login` and `imap_login`; either failing pauses sending for that run.
 4. For every jurisdiction you expect to email, open the `source_url` in `business.yaml`,
    confirm the planning department's published address, and set `verified: true`. The Gmail
    adapter refuses unverified planning addresses (spec section 6: addresses must derive from

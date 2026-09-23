@@ -153,22 +153,26 @@ async function closeCasesForExcludedSites(ctx: RunContext, c: StageCounter): Pro
 }
 
 // ------------------------------------------------------------- sending
-/** Online only: prove the mail credentials work (token + mailbox) without sending anything. */
-async function mailPreflight(ctx: RunContext, c: StageCounter): Promise<void> {
+/**
+ * Online only: log in to the mail servers (SMTP to send, IMAP to read replies) without sending
+ * or reading anything. Either login failing pauses sending: without SMTP nothing can go out, and
+ * without IMAP replies (including "stop") would go unseen while follow-ups continue.
+ */
+export async function mailPreflight(ctx: RunContext, c: StageCounter): Promise<void> {
   const mail = ctx.providers.mail;
   if (ctx.offline || typeof mail.preflight !== "function") return;
   try {
     const p = await mail.preflight();
-    const expected = mail.sender_address.trim().toLowerCase();
-    const matches = p.mailbox ? p.mailbox.toLowerCase() === expected : null;
-    c.inc("mail_preflight_ok");
-    ctx.logger.info("mail preflight ok", { provider: mail.name, access_token: "obtained", mailbox: p.mailbox, sender_address: mail.sender_address, mailbox_matches_sender: matches, note: p.note ?? null });
-    if (matches === false) {
-      // The token belongs to a different mailbox than GMAIL_SENDER_ADDRESS: mail would go out from the wrong account.
-      ctx.run.sending_paused = true;
-      ctx.run.pause_reason = `mail token belongs to ${p.mailbox}, not GMAIL_SENDER_ADDRESS ${mail.sender_address}`;
-      c.warn(ctx.run.pause_reason);
-    } else if (p.note) c.warn(`mail preflight: ${p.note}`);
+    ctx.logger.info("mail preflight", { provider: mail.name, mailbox: p.mailbox, smtp_login: p.smtp_login ? "ok" : "failed", imap_login: p.imap_login ? "ok" : "failed" });
+    if (p.smtp_login && p.imap_login) {
+      c.inc("mail_preflight_ok");
+      return;
+    }
+    c.inc("mail_preflight_failed");
+    for (const n of p.notes) c.warn(`mail preflight: ${n}`);
+    const failed = [!p.smtp_login && "SMTP", !p.imap_login && "IMAP"].filter(Boolean).join(" and ");
+    ctx.run.sending_paused = true;
+    ctx.run.pause_reason = `mail preflight failed (${failed} login)`;
   } catch (e) {
     const msg = errMsg(e);
     if (/unavailable, set /.test(msg)) {

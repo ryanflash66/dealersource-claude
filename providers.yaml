@@ -21,7 +21,7 @@ zoning: arcgis          # arcgis: municipal/county ArcGIS zoning layers + config
 traffic: ncdot          # ncdot: NCDOT AADT stations
 flood: fema             # fema: FEMA NFHL
 social: reddit          # reddit: official Data API (fixture mailbox/feed when REDDIT_* unset)
-mail: gmail             # gmail: Gmail API via OAuth (fixture mailbox when GMAIL_* unset)
+mail: gmail             # gmail: Gmail SMTP + IMAP with an app password (fixture mailbox when GMAIL_* unset)
 llm: rules              # rules | claude_agent | claude_api (paid)
 
 # Per-adapter options. Secrets are NEVER here; they come from the environment
@@ -102,8 +102,12 @@ options:
     queries: ["for lease", "space for lease", "lot for lease", "closing", "going out of business", "vacant lot", "commercial space"]
     limit_per_query: 25
   gmail:
-    base_url: https://gmail.googleapis.com/gmail/v1
-    token_url: https://oauth2.googleapis.com/token
+    smtp_host: smtp.gmail.com   # implicit TLS
+    smtp_port: 465
+    imap_host: imap.gmail.com   # implicit TLS
+    imap_port: 993
+    max_messages: 200           # newest matching messages read per run
+    # mailbox: "[Gmail]/All Mail"  # default: the \All special-use folder, else INBOX
   rules: {}
   claude_agent:
     review_queue: review-queue.json      # written under --out; the scheduled agent reviews it
