@@ -88,9 +88,15 @@ describe("approved templates", () => {
     expect(m.body).not.toContain("sublease");
     expect(m.body).not.toMatch(/\{\{/);
     expect(m.template_id).toBe("leasing-initial-rent+space");
+    // The sender writes for the dealership; the license belongs to the dealership, not the signer.
+    expect(m.body).toContain("I work with O, a licensed used-car dealer in North Carolina");
+    expect(m.body).not.toMatch(/I am a licensed|I hold a/);
     const f = renderEmail(t, "planning", ["zoning"], { address: "a", token: "T", contact_name: "", area: "", listing_url: "", parcel_id: "P1", district: "CN", previous_date: "2026-09-16", sender_name: "N", sender_org: "O", sender_email: "e" }, true);
     expect(f.body).toContain("Following up on my inquiry from 2026-09-16");
     expect(f.template_id).toBe("planning-followup-zoning");
+    const z = renderEmail(t, "planning", ["zoning"], { address: "a", token: "T", contact_name: "", area: "", listing_url: "", parcel_id: "P1", district: "CN", previous_date: "", sender_name: "N", sender_org: "O", sender_email: "e" }, false);
+    expect(z.body).toContain("I am writing on behalf of O, a licensed North Carolina used motor vehicle");
+    expect(z.body).not.toMatch(/I hold a/);
   });
 });
 

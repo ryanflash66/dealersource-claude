@@ -14,9 +14,9 @@ leasing:
   intro: |
     Hello {{contact_name}},
 
-    I am a licensed used-car dealer in North Carolina looking for a small lot with an
-    enclosed office in the {{area}} area. I saw your listing for {{address}}
-    ({{listing_url}}) and have a few quick questions:
+    I work with {{sender_org}}, a licensed used-car dealer in North Carolina, and we are
+    looking for a small lot with an enclosed office in the {{area}} area. I saw your listing
+    for {{address}} ({{listing_url}}) and have a few quick questions:
   followup_intro: |
     Hello {{contact_name}},
 
@@ -45,9 +45,9 @@ planning:
   intro: |
     Hello,
 
-    I hold a North Carolina used motor vehicle dealer license and am evaluating the
-    parcel at {{address}} (parcel {{parcel_id}}), which your zoning layer shows as
-    district {{district}}. Before I go further with the property owner:
+    I am writing on behalf of {{sender_org}}, a licensed North Carolina used motor vehicle
+    dealer. We are evaluating the parcel at {{address}} (parcel {{parcel_id}}), which your
+    zoning layer shows as district {{district}}. Before we go further with the property owner:
   followup_intro: |
     Hello,
 
