@@ -91,7 +91,7 @@ sources:
     url: https://oauth.reddit.com
     robots_txt: allowed
     terms_status: allowed
-    enabled: true
+    enabled: false               # switched off by the PM 2026-09-22 (no Reddit API app yet); flip to true once REDDIT_* are set
     cadence: daily
     notes: >-
       reddit.com/robots.txt disallows ALL crawling (checked 2026-09-16), so

@@ -22,7 +22,10 @@ describe("source allowlist", () => {
       expect(refusalReason(s!)).toMatch(/prohibited/);
       expect(s!.notes).toBeTruthy();
     }
-    expect(cfg.sources.some((s) => s.kind === "reddit" && refusalReason(s) === null)).toBe(true);
+    // Reddit is allowed by terms and robots (official API only); the PM switched it off 2026-09-22.
+    const reddit = cfg.sources.find((s) => s.kind === "reddit")!;
+    expect(reddit).toMatchObject({ terms_status: "allowed", robots_txt: "allowed" });
+    expect(refusalReason(reddit)).toBe(reddit.enabled ? null : "disabled");
   });
 
   it("a fixture listing from a prohibited source is refused and never becomes a site", async () => {
