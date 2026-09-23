@@ -137,6 +137,45 @@ sources:
       shown). robots.txt disallows only /wp-admin/ (checked 2026-09-18). No terms
       of use published on the site.
 
+  # --- Saved-search alert emails, read from the owner's own mailbox ---------
+  # LoopNet and Crexi forbid crawling (the `loopnet` and `crexi` entries below stay
+  # refused). These sources never contact either site: the owner saves a search there,
+  # the site emails new matches to the owner's Gmail (GMAIL_SENDER_ADDRESS), and the
+  # pipeline reads those emails over IMAP with the outreach app password. robots.txt
+  # governs crawlers, which these sources do not use. Listing links are stored for a
+  # human to open and are never fetched. PM direction 2026-09-22 (docs/decisions.md 28).
+  # Until the Gmail app password is set they are recorded as skipped, not as errors.
+  # alert_from and alert_listing_url are best guesses until the first real alert
+  # arrives; check the sender domain and link shape then.
+  - id: loopnet-alerts
+    kind: email_alert
+    url: imap://imap.gmail.com/%5BGmail%5D/All%20Mail?from=loopnet.com
+    alert_from: [loopnet.com]
+    alert_listing_url: 'loopnet\.com/Listing/'
+    robots_txt: allowed
+    terms_status: allowed
+    enabled: true
+    cadence: daily
+    notes: >-
+      LoopNet saved-search "new listing alert" emails in the owner's Gmail. Setup: free
+      LoopNet account under the owner's Gmail, search For Lease around Greenville NC
+      (retail, land, flex/industrial; max price near $1,000/mo), Save, daily alerts.
+      Nothing is requested from loopnet.com.
+
+  - id: crexi-alerts
+    kind: email_alert
+    url: imap://imap.gmail.com/%5BGmail%5D/All%20Mail?from=crexi.com
+    alert_from: [crexi.com]
+    alert_listing_url: 'crexi\.com/(?:lease/)?properties/\d+'
+    robots_txt: allowed
+    terms_status: allowed
+    enabled: true
+    cadence: daily
+    notes: >-
+      Crexi saved-search alert emails in the owner's Gmail. Setup: free Crexi account under
+      the owner's Gmail, Lease search around Greenville NC, Save search with email alerts on.
+      Nothing is requested from crexi.com.
+
   # --- Recorded as NOT FETCHABLE by a plain crawler ------------------------
   - id: zoomprospector-pitt-county
     kind: crawl

@@ -1,7 +1,7 @@
 import type { SendMailOptions } from "nodemailer";
 import type { CaseType } from "../core/types.js";
 import { optNumber, optString } from "./options.js";
-import type { AdapterContext, InboundMail, KnownThread, MailPreflight, MailProvider, OutboundMail, SendResult } from "./types.js";
+import type { AdapterContext, AlertMail, InboundMail, KnownThread, MailPreflight, MailProvider, OutboundMail, SendResult } from "./types.js";
 
 export const TOKEN_RE = /\[DS-([A-Z0-9]{6})\]/;
 
@@ -199,6 +199,20 @@ export class GmailMail implements MailProvider {
   }
 
   async fetchInbound(opts: { since: string; until: string; threads: KnownThread[] }): Promise<InboundMail[]> {
+    return this.withMailbox((client, box) => this.readInbound(client, box, opts));
+  }
+
+  /**
+   * Saved-search alert emails (LoopNet, Crexi) in the same mailbox, from any of the sender
+   * domains. Only the message is read; nothing it links to is requested.
+   */
+  async fetchAlerts(opts: { since: string; until: string; from: string[] }): Promise<AlertMail[]> {
+    const domains = [...new Set(opts.from.map((d) => d.trim().toLowerCase().replace(/^@/, "")).filter(Boolean))];
+    if (!domains.length) return [];
+    return this.withMailbox((client, box) => this.readAlerts(client, box, { ...opts, domains }));
+  }
+
+  private async withMailbox<T>(read: (client: ImapClient, box: string) => Promise<T>): Promise<T> {
     const client = await this.imap();
     try {
       await client.connect();
@@ -209,13 +223,49 @@ export class GmailMail implements MailProvider {
       const box = await this.pickMailbox(client);
       const lock = await client.getMailboxLock(box);
       try {
-        return await this.readInbound(client, box, opts);
+        return await read(client, box);
       } finally {
         lock.release();
       }
     } finally {
       await client.logout().catch(() => undefined);
     }
+  }
+
+  private async readAlerts(client: ImapClient, box: string, opts: { since: string; until: string; domains: string[] }): Promise<AlertMail[]> {
+    const since = new Date(opts.since);
+    const sinceMs = since.getTime();
+    const untilMs = new Date(opts.until).getTime();
+    // IMAP FROM is a substring match on the header; the exact domain is checked below.
+    const query: ImapSearch = opts.domains.length === 1 ? { since, from: opts.domains[0]! } : { since, or: opts.domains.map((d) => ({ from: d })) };
+    const uids = (await client.search(query, { uid: true })) || [];
+    if (!uids.length) return [];
+    const max = optNumber(this.ctx.options, "max_messages", 200);
+    const msgs = await client.fetchAll(uids.slice(-max), { uid: true, envelope: true, internalDate: true, bodyStructure: true }, { uid: true });
+    const me = this.sender_address.toLowerCase();
+    const out: AlertMail[] = [];
+    for (const m of msgs) {
+      const env = m.envelope ?? {};
+      const from = (env.from?.[0]?.address ?? "").toLowerCase();
+      if (!from || from === me || !opts.domains.some((d) => fromDomain(from, d))) continue;
+      const receivedAt = toIso(m.internalDate ?? env.date);
+      if (!receivedAt) continue;
+      const t = new Date(receivedAt).getTime();
+      if (t < sinceMs || t > untilMs) continue;
+      const htmlPart = findPart(m.bodyStructure, "text/html");
+      const textPart = findPart(m.bodyStructure, "text/plain");
+      const html = htmlPart === null ? "" : await readAll((await client.download(String(m.uid), htmlPart, { uid: true })).content, 1024 * 1024);
+      const text = textPart === null ? "" : await readAll((await client.download(String(m.uid), textPart, { uid: true })).content, 256 * 1024);
+      out.push({
+        provider_message_id: env.messageId ?? `imap:${box}:${m.uid}`,
+        from,
+        subject: env.subject ?? "",
+        received_at: receivedAt,
+        html: html || null,
+        text: text || null,
+      });
+    }
+    return out.sort((a, b) => a.received_at.localeCompare(b.received_at));
   }
 
   /** All Mail (so archived replies are still seen), falling back to INBOX. */
@@ -269,7 +319,7 @@ export class GmailMail implements MailProvider {
   }
 
   private async plainText(client: ImapClient, m: ImapMessage): Promise<string> {
-    const part = findPlainPart(m.bodyStructure);
+    const part = findPart(m.bodyStructure, "text/plain");
     if (part === null) return "";
     const d = await client.download(String(m.uid), part, { uid: true });
     return readAll(d.content, 256 * 1024);
@@ -290,11 +340,17 @@ function isSendingLimit(e: unknown): boolean {
   return /5\.4\.5|limit exceeded|too many messages/i.test(`${x?.response ?? ""} ${x?.message ?? ""}`);
 }
 
-/** First inline text/plain part; "1" for a single-part message. */
-function findPlainPart(s: ImapStructure | undefined): string | null {
+/** An address at the domain or one of its subdomains (alerts@e.loopnet.com is loopnet.com). */
+function fromDomain(address: string, domain: string): boolean {
+  const host = address.slice(address.lastIndexOf("@") + 1);
+  return host === domain || host.endsWith(`.${domain}`);
+}
+
+/** First inline part of the type (text/plain, text/html); "1" for a single-part message. */
+function findPart(s: ImapStructure | undefined, type: string): string | null {
   if (!s) return null;
   const walk = (n: ImapStructure): string | null => {
-    if (n.type?.toLowerCase() === "text/plain" && n.disposition?.toLowerCase() !== "attachment") return n.part ?? "1";
+    if (n.type?.toLowerCase() === type && n.disposition?.toLowerCase() !== "attachment") return n.part ?? "1";
     for (const c of n.childNodes ?? []) {
       const hit = walk(c);
       if (hit) return hit;

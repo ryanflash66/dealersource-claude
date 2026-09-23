@@ -139,7 +139,7 @@ export function contractProviders(p: ProvidersConfig) {
 // ----------------------------------------------------------------- sources
 export const sourceSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/),
-  kind: z.enum(["crawl", "reddit", "rss", "manual"]),
+  kind: z.enum(["crawl", "reddit", "rss", "manual", "email_alert"]),
   url: z.string(),
   robots_txt: z.enum(["allowed", "disallowed", "unknown"]),
   terms_status: z.enum(["allowed", "prohibited", "unclear"]),
@@ -155,9 +155,31 @@ export const sourceSchema = z.object({
     .transform((s) => (s === "" ? null : s))
     .nullable()
     .default(null),
+  /**
+   * kind `email_alert`: sender domains of the saved-search alert emails, read from the
+   * owner's mailbox over IMAP. The listing site itself is never requested.
+   */
+  alert_from: z.array(z.string().trim().toLowerCase().min(3)).default([]),
+  /** kind `email_alert`: regex (case-insensitive) that a listing URL on the alert's site matches, e.g. `loopnet\.com/Listing/`. */
+  alert_listing_url: z.string().nullable().default(null),
   notes: z.string().nullable().default(null),
 });
-export const sourcesSchema = z.object({ sources: z.array(sourceSchema) });
+export const sourcesSchema = z.object({
+  sources: z.array(sourceSchema).superRefine((sources, zctx) => {
+    sources.forEach((s, i) => {
+      if (s.kind === "email_alert" && !s.alert_from.length) {
+        zctx.addIssue({ code: z.ZodIssueCode.custom, path: [i, "alert_from"], message: `${s.id}: an email_alert source needs alert_from (sender domains)` });
+      }
+      if (s.alert_listing_url) {
+        try {
+          new RegExp(s.alert_listing_url, "i");
+        } catch {
+          zctx.addIssue({ code: z.ZodIssueCode.custom, path: [i, "alert_listing_url"], message: `${s.id}: alert_listing_url is not a valid regex` });
+        }
+      }
+    });
+  }),
+});
 export type SourceConfig = z.infer<typeof sourceSchema>;
 
 // -------------------------------------------------------------- use tables

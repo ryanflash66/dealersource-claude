@@ -17,7 +17,7 @@ export interface Polygon {
   coordinates: number[][][];
 }
 
-export type SourceKind = "crawl" | "reddit" | "rss" | "manual";
+export type SourceKind = "crawl" | "reddit" | "rss" | "manual" | "email_alert";
 export type RobotsStatus = "allowed" | "disallowed" | "unknown";
 export type TermsStatus = "allowed" | "prohibited" | "unclear";
 

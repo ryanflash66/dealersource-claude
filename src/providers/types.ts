@@ -231,12 +231,26 @@ export interface KnownThread {
   contact_email: string;
   address: string;
 }
+/** A saved-search alert email (LoopNet, Crexi, ...) the owner subscribed to. */
+export interface AlertMail {
+  provider_message_id: string;
+  from: string;
+  subject: string;
+  received_at: ISODate;
+  html: string | null;
+  text: string | null;
+}
 export interface MailProvider {
   readonly name: string;
   readonly sender_address: string;
   send(mail: OutboundMail): Promise<SendResult>;
   /** Inbound mail received in (since, until], matched against known threads. */
   fetchInbound(opts: { since: ISODate; until: ISODate; threads: KnownThread[] }): Promise<InboundMail[]>;
+  /**
+   * Alert emails received in (since, until] from any of the sender domains, oldest first.
+   * Read-only. Providers that cannot read a real mailbox (fixtures) omit it.
+   */
+  fetchAlerts?(opts: { since: ISODate; until: ISODate; from: string[] }): Promise<AlertMail[]>;
   /**
    * Credential check run every online run, paused or not: log in to the send and
    * receive servers and log out. Never sends or reads mail. Providers without

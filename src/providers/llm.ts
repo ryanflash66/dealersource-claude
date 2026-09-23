@@ -21,11 +21,17 @@ export function htmlToText(html: string): string {
     .trim();
 }
 
-export function parseMoneyPerMonth(text: string): number | null {
+/** Every "$X/mo" (or "per month") figure in the text, in order. */
+export function moneyPerMonthAll(text: string): number[] {
   const re = /\$\s?(\d{1,3}(?:,\d{3})*|\d+)(?:\.\d{2})?\s*(?:\/|per|a|each)?\s*(?:mo\b|month)/gi;
   let m: RegExpExecArray | null;
   const found: number[] = [];
   while ((m = re.exec(text))) found.push(Number(m[1]!.replace(/,/g, "")));
+  return found;
+}
+
+export function parseMoneyPerMonth(text: string): number | null {
+  const found = moneyPerMonthAll(text);
   if (!found.length) {
     const bare = /(?:base rent|rent)(?: is| of|:)?\s*\$\s?(\d{1,3}(?:,\d{3})*|\d+)/i.exec(text);
     if (bare) return Number(bare[1]!.replace(/,/g, ""));
@@ -34,7 +40,7 @@ export function parseMoneyPerMonth(text: string): number | null {
   return found[0]!;
 }
 
-const ADDRESS_RE =
+export const ADDRESS_RE =
   /\b(\d{1,6}[A-Za-z]?\s+(?:[NSEW]\.?\s+|North\s+|South\s+|East\s+|West\s+)?[A-Za-z0-9.'\- ]{2,40}?\s(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Hwy|Highway|Ln|Lane|Pkwy|Parkway|Ct|Court|Cir|Circle|Pl|Place|Way)\.?(?:\s+[NSEW]\.?)?)\s*,?\s*([A-Za-z .'-]{2,30}?)\s*,?\s*(?:NC|North Carolina)\s*,?\s*(2[78]\d{3})?\b/;
 
 /** Deterministic, dependency-free extraction and classification. Free default. */

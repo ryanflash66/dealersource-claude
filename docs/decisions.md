@@ -326,3 +326,37 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
     contains our own questions and the line 'Reply "stop" if you would prefer not to hear from
     me', so an ordinary reply that quoted us could have been read as a stop request. Quoted
     text ("On ... wrote:", "> " lines, Outlook headers) is now removed before classifying.
+
+28. **LoopNet and Crexi through saved-search alert emails, not crawling** (2026-09-22, PM
+    direction). Most commercial listings in the area sit on LoopNet and Crexi, and both
+    forbid crawling, so the `loopnet` and `crexi` crawl sources stay refused. Instead the
+    owner saves a search on each site and turns on email alerts to their Gmail; the new
+    source kind `email_alert` (`loopnet-alerts`, `crexi-alerts`) reads those emails over IMAP
+    with the same app password as outreach. Nothing is requested from either site. Details:
+    - `alert_from` holds the sender domains (subdomains match: `e.loopnet.com` is
+      `loopnet.com`); mail from the owner's own address is skipped. The window is
+      `mail.inbound_lookback_days`, re-read every run; listings are keyed by source and
+      address, so the same property in several alerts is one listing and the newest alert's
+      facts win.
+    - The alert layouts are not published, so cutting an email into listings is structural,
+      not per sender: in HTML, a card is the largest element holding exactly one NC street
+      address and at most one listing link; flat blocks and plain-text alerts are cut at the
+      blank or rule lines between addresses, and the last card stops at the footer. Each card
+      goes through the configured listing extractor, as a crawled page block would.
+    - Links: a direct listing link, or a target embedded in a tracking link (query, path,
+      percent-encoded or base64), is kept without query or fragment. Opaque tracking links
+      are dropped, never followed, since following one is a request to the site. A card
+      without a readable link points to the alert in the owner's Gmail instead.
+    - Rent from a card is conservative because it feeds a hard gate: an explicit "$X/mo",
+      or an explicit yearly total of $1,200 or more divided by 12. "$12/SF/YR" style rates
+      stay unknown and go to the leasing question; a card stating two different monthly
+      prices keeps none. Addresses at the alert's own domains, at costar.com, the owner's own
+      address and no-reply addresses are never taken as a leasing contact. Alerts rarely name
+      the broker's email, so most of these listings will show "no leasing contact" until the
+      owner adds one as a manual lead for the same address.
+    - Every alert is kept as a raw document (never exposed to anon), so the parser can be
+      checked against the first real alerts; `discover.alert_emails_without_listings` and
+      `discover.alert_cards_without_address` count what did not parse.
+    - Without Gmail credentials the sources are recorded as skipped, not as errors.
+    - The database's `sources_kind_check` constraint gains `email_alert` (migration
+      `20260923000100`).

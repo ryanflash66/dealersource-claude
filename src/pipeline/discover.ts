@@ -1,10 +1,15 @@
 import { sha256, stableId } from "../core/ids.js";
 import { normalizeAddressKey } from "../core/address.js";
+import { addDays } from "../core/clock.js";
 import type { ListingExtraction, ListingRow, RawDocumentRow, SourceRow } from "../core/types.js";
 import type { SourceConfig } from "../config/schema.js";
 import { htmlToText } from "../providers/llm.js";
 import type { CrawlProvider } from "../providers/types.js";
+import { alertExtraction, parseAlert } from "./alerts.js";
 import { StageCounter, errMsg, type RunContext } from "./context.js";
+
+/** A source that cannot run this time for a known, non-fault reason (recorded as skipped, not as an error). */
+class SourceSkipped extends Error {}
 
 /**
  * Stage 1: discover. Seeds the sources table from sources.yaml, refuses any
@@ -178,6 +183,7 @@ async function discoverSources(ctx: RunContext, c: StageCounter, ua: string, now
     try {
       if (source.kind === "manual") await ingestManual(ctx, c, source);
       else if (source.kind === "reddit") await ingestReddit(ctx, c, source);
+      else if (source.kind === "email_alert") await ingestAlerts(ctx, c, source);
       else {
         const crawler = crawlerFor(ctx, source.id);
         if (crawler !== ctx.providers.crawler) c.inc("sources_rendered_js");
@@ -187,9 +193,15 @@ async function discoverSources(ctx: RunContext, c: StageCounter, ua: string, now
       source.last_error = null;
       c.inc("sources_fetched");
     } catch (e) {
-      source.last_status = "error";
-      source.last_error = errMsg(e);
-      c.warn(`source ${source.id} failed: ${errMsg(e)}`, { source: source.id });
+      if (e instanceof SourceSkipped) {
+        source.last_status = "skipped";
+        source.last_error = e.message;
+        c.inc("sources_skipped");
+      } else {
+        source.last_status = "error";
+        source.last_error = errMsg(e);
+        c.warn(`source ${source.id} failed: ${errMsg(e)}`, { source: source.id });
+      }
     }
     source.last_run_at = now;
     await ctx.store.upsert("sources", [source]);
@@ -286,6 +298,62 @@ async function ingestManual(ctx: RunContext, c: StageCounter, source: SourceRow)
   }
 }
 
+/**
+ * Saved-search alert emails (LoopNet, Crexi) the owner subscribed to, read from the owner's
+ * mailbox. Each email is kept as a raw document and cut into one listing per card. The
+ * listing site is never requested: links are stored for a human, not fetched.
+ */
+async function ingestAlerts(ctx: RunContext, c: StageCounter, source: SourceRow): Promise<void> {
+  const cfg = ctx.config.sources.find((s) => s.id === source.id);
+  const mail = ctx.providers.mail;
+  if (!mail.fetchAlerts) {
+    throw new SourceSkipped(`mail layer "${mail.name}" has no mailbox to read; set GMAIL_SENDER_ADDRESS and GMAIL_APP_PASSWORD`);
+  }
+  const domains = cfg?.alert_from ?? [];
+  const pattern = cfg?.alert_listing_url ? new RegExp(cfg.alert_listing_url, "i") : null;
+  const owner = mail.sender_address.toLowerCase();
+  const blocked = (email: string) => {
+    const e = email.toLowerCase();
+    const host = e.slice(e.lastIndexOf("@") + 1);
+    return e === owner || /^(?:no-?reply|do-?not-?reply)\b/.test(e) || [...domains, "costar.com"].some((d) => host === d || host.endsWith(`.${d}`));
+  };
+  const since = addDays(ctx.clock.iso(), -ctx.config.business.mail.inbound_lookback_days);
+  const mails = await mail.fetchAlerts({ since, until: ctx.cutoffIso, from: domains });
+  for (const m of mails) {
+    const body = m.html ?? m.text ?? "";
+    // Only the owner can open this; it finds the alert in their Gmail.
+    const mailUrl = `https://mail.google.com/mail/u/0/#search/rfc822msgid%3A${encodeURIComponent(m.provider_message_id.replace(/^<|>$/g, ""))}`;
+    const doc: RawDocumentRow = {
+      id: stableId("doc", source.id, mailUrl, sha256(body)),
+      source_id: source.id,
+      url: mailUrl,
+      fetched_at: m.received_at,
+      content_type: m.html ? "text/html" : "text/plain",
+      body,
+      sha256: sha256(body),
+      run_id: ctx.run.id,
+    };
+    await ctx.store.upsert("raw_documents", [doc]);
+    c.inc("alert_emails");
+    const cards = parseAlert(m, pattern);
+    if (!cards.length) c.inc("alert_emails_without_listings");
+    const seen = new Set<string>();
+    for (const card of cards) {
+      const url = card.url ?? mailUrl;
+      const ex = await ctx.providers.llm.extractListing({ url, source_id: source.id, html: body, block: card.block });
+      if (!ex.address_text) {
+        c.inc("alert_cards_without_address");
+        continue;
+      }
+      const key = normalizeAddressKey(ex.address_text);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      // One listing per address per source, whichever alert mentioned it; the newest alert's facts win.
+      await upsertListing(ctx, c, source, doc, alertExtraction(ex, card.text, blocked), key, { url, idScope: "alert" });
+    }
+  }
+}
+
 async function upsertListing(
   ctx: RunContext,
   c: StageCounter,
@@ -293,16 +361,17 @@ async function upsertListing(
   doc: RawDocumentRow,
   extraction: ListingExtraction,
   blockKey: string,
+  link?: { url: string; idScope: string },
 ): Promise<void> {
   const now = ctx.clock.iso();
   const key = normalizeAddressKey(extraction.address_text!);
-  const id = stableId("lst", source.id, doc.url, key);
+  const id = stableId("lst", source.id, link?.idScope ?? doc.url, key);
   const prev = await ctx.store.get("listings", id);
   const row: ListingRow = {
     id,
     source_id: source.id,
     raw_document_id: doc.id,
-    url: doc.url,
+    url: link?.url ?? doc.url,
     title: extraction.title,
     address_text: extraction.address_text,
     address_key: key,

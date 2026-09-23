@@ -34,4 +34,6 @@ missing, the pipeline logs the layer as fixture-served or unavailable and you re
   are sent, by the pipeline, not by you.
 - Send email, call, negotiate, sign or pay anything yourself.
 - Change `providers.yaml paid_enabled` or any secret.
+- Open or fetch a listing URL from an `email_alert` source (`loopnet-alerts`, `crexi-alerts`).
+  Those sites forbid automated access; review the alert email in `raw_documents` instead.
 - Commit generated output (`out/` is ignored).

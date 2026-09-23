@@ -185,6 +185,17 @@ Sources with `terms_status: unclear` are never fetched. After reading the site's
 `prohibited` or `disallowed` are refused regardless of `enabled` (LoopNet, Crexi, Craigslist and
 Facebook Marketplace are recorded that way, with the reason).
 
+LoopNet and Crexi listings come in through saved-search alert emails instead
+(`loopnet-alerts`, `crexi-alerts`, kind `email_alert`; decision 28). One-time owner setup:
+
+1. Create a free account on each site with the Gmail address in `GMAIL_SENDER_ADDRESS`.
+2. Search for lease around Greenville, NC (retail, land, flex/industrial), cap the price near
+   $1,000/mo, save the search, and turn on daily email alerts.
+3. In Gmail, make sure those alerts never go to Spam (a filter on `from:loopnet.com` /
+   `from:crexi.com` with "Never send it to Spam"); All Mail is read, Spam is not.
+
+The next run reads the alerts over IMAP. Nothing is requested from either site.
+
 ### 4.4 Pause outreach
 
 - Manual kill switch: `business.yaml` -> `mail.paused: true`, or set `DEALERSOURCE_PAUSE_SENDING=1`
