@@ -43,6 +43,8 @@
   --input: var(--grey-300);
   --ring: var(--primary);
   --scrollbar: #eff2f7;
+  --tip-bg: rgb(42 53 71 / 0.95);          /* tooltip, MUI grey-700 at 92% on the template ink */
+  --tour-scrim: rgb(42 53 71 / 0.45);      /* dims the page around the tour target */
 
   /* ---- status ---- */
   --ok: #007B66;
@@ -110,6 +112,8 @@
   --border: #333F55;
   --input: #465670;
   --scrollbar: #465670;
+  --tip-bg: #465670;
+  --tour-scrim: rgb(0 0 0 / 0.6);
 
   --ok: #13DEB9;
   --wait: #FFAE1F;

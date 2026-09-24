@@ -34,6 +34,8 @@ button { font: inherit; color: inherit; }
 .sb-card.ok .t svg { color: var(--ok); } .sb-card.bad .t svg { color: var(--destructive); } .sb-card.wait .t svg { color: var(--wait); }
 .sb-card.bad { background: var(--error-light); }
 .sb-card .s { margin: 6px 0 14px; font-size: 12px; line-height: 1.5; color: var(--muted-foreground); }
+.sb-help { display: flex; align-items: center; gap: 6px; margin-top: 12px; white-space: nowrap; text-align: left; padding: 0; border: 0; background: none; color: var(--primary-text); font-size: 13px; font-weight: 500; cursor: pointer; }
+.sb-help:hover { text-decoration: underline; }
 .sb-backdrop { display: none; }
 
 /* buttons (MUI contained / outlined, textTransform capitalize) */
@@ -49,7 +51,7 @@ button { font: inherit; color: inherit; }
 .icon-btn:hover { background: var(--hover); text-decoration: none; }
 .icon-btn .dot { position: absolute; top: 11px; right: 11px; width: 8px; height: 8px; border-radius: 50%; background: var(--error); box-shadow: 0 0 0 2px var(--paper); }
 .menu-btn { display: none; }
-.tb-view { margin-left: 6px; font-size: 16px; font-weight: 600; color: var(--foreground); white-space: nowrap; }
+.tb-view { min-width: 0; margin-left: 6px; overflow: hidden; font-size: 16px; font-weight: 600; color: var(--foreground); white-space: nowrap; text-overflow: ellipsis; }
 .tb-spacer { flex: 1 1 auto; }
 .tb-right { display: flex; align-items: center; gap: 10px; font-size: 13px; }
 .chip { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 16px; font-size: 13px; font-weight: 500; white-space: nowrap; }
@@ -113,8 +115,7 @@ button { font: inherit; color: inherit; }
 .card:hover { background: var(--hover); }
 .card:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 .card.selected { border-color: var(--primary); background: var(--primary-light); }
-.card.pend { grid-template-areas: "photo title" "photo meta" "photo gate"; cursor: default; }
-.card.pend:hover { background: var(--paper); }
+.card.pend { grid-template-areas: "photo title" "photo meta" "photo gate"; }
 .photo { grid-area: photo; height: 56px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px dashed var(--input); border-radius: var(--radius-sm); background: var(--muted); color: var(--muted-foreground); font-size: 10.5px; line-height: 1.3; text-align: center; }
 .photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .photo.has-img { border-style: solid; }
@@ -332,6 +333,60 @@ button { font: inherit; color: inherit; }
 }
 @media (prefers-reduced-motion: reduce) { .sidebar { transition: none; } }
 
+/* ---- tooltips (tooltip.ts; MUI Tooltip look) -------------------------------- */
+[data-tip]:not(a):not(button):not([role="button"]) { cursor: help; }
+.card [data-tip], .mk [data-tip] { cursor: inherit; }
+.ds-tip { position: fixed; z-index: 1100; max-width: 280px; padding: 6px 10px; border-radius: var(--radius-sm); background: var(--tip-bg); color: #ffffff; font-size: 12px; font-weight: 500; line-height: 1.45; white-space: pre-line; pointer-events: none; box-shadow: var(--shadow-md); }
+.ds-tip[hidden] { display: none; }
+.ds-tip-arrow { position: absolute; width: 8px; height: 8px; margin-left: -4px; background: inherit; transform: rotate(45deg); }
+.ds-tip[data-side="top"] .ds-tip-arrow { bottom: -4px; }
+.ds-tip[data-side="bottom"] .ds-tip-arrow { top: -4px; }
+@media (prefers-reduced-motion: no-preference) { .ds-tip:not([hidden]) { animation: tip-in 120ms var(--ease-out); } }
+@keyframes tip-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---- guided tour (tour.ts) --------------------------------------------------- */
+[data-tour] { scroll-margin-top: calc(var(--header-h) + 16px); scroll-margin-bottom: var(--tour-sheet-h, 16px); }
+.tour { position: fixed; inset: 0; z-index: 1000; pointer-events: none; }
+.tour[hidden] { display: none; }
+.tour-scrim { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.tour-scrim path { fill: var(--tour-scrim); pointer-events: auto; }
+.tour-ring { position: fixed; border: 2px solid var(--primary); border-radius: 10px; pointer-events: none; }
+.tour-ring[hidden] { display: none; }
+.tour-card { position: fixed; width: 340px; max-width: calc(100vw - 24px); padding: 20px; border-radius: var(--radius); background: var(--paper); color: var(--foreground); box-shadow: var(--shadow-lg), 0 0 0 1px var(--border); pointer-events: auto; }
+.tour-card:focus, .tour-card:focus-visible { outline: none; }
+.tour-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.tour-count { font-size: 12px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--primary-text); }
+.tour-x { width: 28px; height: 28px; margin: -6px -8px 0 0; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--muted-foreground); font-size: 20px; line-height: 1; cursor: pointer; }
+.tour-x:hover { background: var(--hover); color: var(--foreground); }
+.tour-title { margin: 0 0 6px; font-size: 17px; font-weight: 600; line-height: 1.35; }
+.tour-body { margin: 0; font-size: 14px; line-height: 1.55; color: var(--muted-foreground); }
+.tour-hint { margin-top: 14px; padding: 10px 12px; border-radius: var(--radius); background: var(--wait-bg); color: var(--wait); font-size: 13px; font-weight: 600; }
+.tour-hint.done { background: var(--ok-bg); color: var(--ok); }
+.tour-progress { height: 3px; margin: 2px 0 12px; overflow: hidden; border-radius: 2px; background: var(--grey-200); }
+.tour-progress i { display: block; height: 100%; border-radius: 2px; background: var(--primary); }
+.tour-foot { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 18px; }
+.tour-btns { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; }
+.tour-btns .btn, .tour-btns .btn-outline { height: 34px; padding: 0 14px; font-size: 13px; }
+.tour-btns .btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+.tour-skip { padding: 0 4px; border: 0; background: none; color: var(--muted-foreground); font-size: 13px; cursor: pointer; }
+.tour-skip:hover { color: var(--foreground); text-decoration: underline; }
+.tour-arrow { position: absolute; display: none; width: 12px; height: 12px; background: var(--paper); transform: rotate(45deg); }
+.tour-card[data-side="right"] .tour-arrow { display: block; left: -6px; top: calc(var(--arrow) - 6px); box-shadow: -1px 1px 0 var(--border); }
+.tour-card[data-side="left"] .tour-arrow { display: block; right: -6px; top: calc(var(--arrow) - 6px); box-shadow: 1px -1px 0 var(--border); }
+.tour-card[data-side="bottom"] .tour-arrow { display: block; top: -6px; left: calc(var(--arrow) - 6px); box-shadow: -1px -1px 0 var(--border); }
+.tour-card[data-side="top"] .tour-arrow { display: block; bottom: -6px; left: calc(var(--arrow) - 6px); box-shadow: 1px 1px 0 var(--border); }
+.tour-card[data-side="sheet"] { left: 12px; right: 12px; width: auto; max-width: none; max-height: 55vh; overflow-y: auto; }
+.tour-card[data-side="sheet"][data-dock="bottom"] { top: auto; bottom: 12px; }
+.tour-card[data-side="sheet"][data-dock="top"] { top: 72px; bottom: auto; }
+@media (prefers-reduced-motion: no-preference) {
+  .tour-card { transition: top 200ms var(--ease-out), left 200ms var(--ease-out); }
+  .tour-ring { transition: top 200ms var(--ease-out), left 200ms var(--ease-out), width 200ms var(--ease-out), height 200ms var(--ease-out); }
+  .tour-ring.pulse { animation: tour-pulse 1.6s var(--ease-out) infinite; }
+  .tour-card.nudge { animation: tour-nudge 360ms var(--ease-out); }
+}
+@keyframes tour-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 55%, transparent); } 70%, 100% { box-shadow: 0 0 0 10px transparent; } }
+@keyframes tour-nudge { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
 /* ---- below md (900px): one column; detail follows the lists ----------------- */
 @media (max-width: 899px) {
   .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -348,6 +403,9 @@ button { font: inherit; color: inherit; }
 @media (max-width: 720px) {
   :root { --gap: 16px; }
   .topbar { padding: 0 8px 0 4px; min-height: 60px; }
+  .icon-btn { width: 40px; height: 40px; }
+  .icon-btn .dot { top: 9px; right: 9px; }
+  .tour-btns .btn, .tour-btns .btn-outline { padding: 0 12px; }
   .tb-view { font-size: 15px; }
   .chip.report, .lastrun { display: none; }
   .chip { height: 28px; padding: 0 10px; font-size: 12px; }

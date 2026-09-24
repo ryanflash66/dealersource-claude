@@ -37,6 +37,10 @@ npm run pipeline -- --offline --fixtures fixtures/golden-v1 --out out/golden --r
 npm run dashboard:dev      # builds from fixture data, serves http://localhost:4173
 ```
 
+The dashboard offers a short guided tour on a first visit (once per browser) and explains most
+numbers, chips and gates on hover. Replay the tour from the `?` button; `?tour=1` forces it,
+`?tour=0` turns it off (handy for screenshots), and `localStorage.removeItem("ds.tour")` resets it.
+
 `npm run pipeline:golden` is a shortcut for the first pipeline command.
 The CLI prints one JSON line (`sites`, `viable`, `messages_sent`, `errors`) and
 exits non-zero on any stage error; an attempted network call in `--offline`

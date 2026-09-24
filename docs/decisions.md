@@ -417,3 +417,31 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
       shows the map too.
     - `tests/unit/dashboard-map.test.ts` fails if the dashboard references a public tile or
       CDN host, or if the archive, glyphs or sprites go missing.
+
+31. **Tooltips and a first-run guided tour** (2026-09-24, PM request). Hand-rolled, no library:
+    `render()` rebuilds the whole page on every click, so a tour library anchored to DOM nodes
+    would lose its target each time, and the dashboard stays dependency-free and offline.
+    - `dashboard/src/tooltip.ts`: one delegated listener set and one bubble on `<body>` show any
+      `data-tip` on hover (350 ms), keyboard focus (`:focus-visible`) or a tap on non-controls;
+      `data-trunc` shows an ellipsized text in full only when it is cut off. It replaced every
+      native `title`. Tips never hold the only copy of a fact: gate details are in the site
+      card, and the score bars carry an `aria-label` summary.
+    - `dashboard/src/tour.ts` draws the tour outside `#app`: an SVG scrim with an even-odd hole
+      over the target (clicks outside the hole are blocked, the page still scrolls), a ring, and a
+      card placed by the pure math in `place.ts` (a bottom or top sheet on phones). Steps and
+      rules are pure data in `tour-steps.ts`: 12 steps over all four views, 5 of them actions
+      (open a site, click a map pin, open Pipeline, Exceptions and Configuration) whose Next
+      stays `aria-disabled` until done. Targets are `data-tour` keys re-resolved after every
+      render; `app.ts` fires `ds:render`, `ds:select` (card or marker) and `ds:view`.
+      Leaving the step's page shows a paused card with "Back to the tour". Missing targets skip
+      an info step or waive an action; no sites skips the site steps.
+    - Waiting ("One answer away") cards became selectable like ranked ones: the live report had
+      no ranked site, so there was nothing to click, and the detail card already covers them.
+    - First run: offered once per browser after the first successful render. `localStorage`
+      key `ds.tour` = `done:1` or `skipped:1`; bumping `TOUR_VERSION` re-offers it. Never
+      auto-offered when storage is unavailable (it would reappear on every load). `?tour=1`
+      forces it, `?tour=0` turns it off. Replay from the header `?` or the sidebar link.
+      Escape closes the menu drawer first, then ends the tour.
+    - `tests/unit/dashboard-tour.test.ts` covers the positioning math, step rules and text,
+      the auto-start table, that every step target exists in `app.ts`, no native `title`
+      tooltips, the three events, and no package imports in `dashboard/src`.

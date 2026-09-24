@@ -9,8 +9,8 @@ dist/
 .dealersource/
 out/
 dashboard/public/data/
-dashboard/public/app.js
-dashboard/public/app.js.map
+dashboard/public/*.js
+dashboard/public/*.js.map
 .vercel/
 coverage/
 dashboard/public/config.js

@@ -7,7 +7,12 @@
  * Exceptions, Configuration) rendered from report.json / messages.json / run.json.
  * Data: Supabase `reports` row when config.js has a URL and anon key, else
  * ./data/*.json. No editing, no forms, no login.
+ * Help: data-tip attributes feed tooltip.ts; data-tour keys and the ds:* window
+ * events feed the first-run tour (tour.ts, content in tour-steps.ts).
  */
+import { initTooltips } from "./tooltip.js";
+import { initTour } from "./tour.js";
+import { EV_RENDER, EV_SELECT, EV_VIEW, type TourFacts } from "./tour-steps.js";
 
 // ------------------------------------------------------------------ types
 type GateStatus = "pass" | "fail" | "pending";
@@ -90,6 +95,7 @@ const ICON = {
   merge: ["M5 18a2 2 0 1 0 4 0a2 2 0 1 0 -4 0", "M5 6a2 2 0 1 0 4 0a2 2 0 1 0 -4 0", "M15 12a2 2 0 1 0 4 0a2 2 0 1 0 -4 0", "M7 8l0 8", "M7 8a4 4 0 0 0 4 4h4"],
   stack: ["M12 4l-8 4l8 4l8 -4l-8 -4", "M4 12l8 4l8 -4", "M4 16l8 4l8 -4"],
   trophy: ["M8 21l8 0", "M12 17l0 4", "M7 4l10 0", "M17 4v8a5 5 0 0 1 -10 0v-8", "M3 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0", "M17 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"],
+  help: ["M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0", "M12 16v.01", "M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483"],
 };
 const mono = (t: string) => h("span", { class: "mono", text: t });
 const fmtInt = (n: number | null | undefined) => (n === null || n === undefined ? "–" : Math.round(n).toLocaleString("en-US"));
@@ -115,26 +121,37 @@ const isOneAway = (s: Site) => s.in_search_area !== false && !s.viable && !faile
 const isUnrankedViable = (s: Site) => distanceUnknown(s) && s.viable && s.rank === null;
 
 // ------------------------------------------------------------------ components
+// Tooltip text (tooltip.ts shows data-tip). Nothing here is the only place a fact appears.
+function gateTip(gate: "zoning" | "rent" | "flood", g: Gate): string {
+  const label = gate[0]!.toUpperCase() + gate.slice(1);
+  const what = g.status === "pending" && g.warning === "expired" ? "evidence expired; it is re-fetched on the next run"
+    : g.status === "pass" ? "passed on cited evidence"
+    : g.status === "fail" ? "failed, so the site is excluded"
+    : "pending: waiting on a written answer or an official record. Silence is not approval";
+  return `${label} ${what}.${g.detail ? `\n${g.detail}` : ""}`;
+}
 function gateEl(gate: "zoning" | "rent" | "flood", g: Gate, size = 11): HTMLElement {
   const stale = g.status === "pending" && g.warning === "expired";
   const st = stale ? "stale" : g.status;
   const ico = st === "pass" ? ICON.check : st === "fail" ? ICON.x : st === "stale" ? ICON.stale : ICON.clock;
   const label = gate[0]!.toUpperCase() + gate.slice(1);
-  return h("span", { class: `gate ${st}`, title: g.detail ?? "" }, svgIcon(ico, size), h("span", { text: label }), " ", h("span", { class: "w", text: st }));
+  return h("span", { class: `gate ${st}`, "data-tip": gateTip(gate, g) }, svgIcon(ico, size), h("span", { text: label }), " ", h("span", { class: "w", text: st }));
 }
 function gatePill(gate: "zoning" | "rent" | "flood", g: Gate, small = false): HTMLElement {
   const stale = g.status === "pending" && g.warning === "expired";
   const st = stale ? "stale" : g.status === "pass" ? "ok" : g.status === "fail" ? "fail" : "wait";
-  return h("span", { class: `pill ${st}${small ? " sm" : ""}` }, h("span", { text: gate[0]!.toUpperCase() + gate.slice(1) }), " ", h("span", { text: stale ? "stale" : g.status }));
+  return h("span", { class: `pill ${st}${small ? " sm" : ""}`, "data-tip": gateTip(gate, g) }, h("span", { text: gate[0]!.toUpperCase() + gate.slice(1) }), " ", h("span", { text: stale ? "stale" : g.status }));
 }
 const FACTORS = ["traffic", "visibility", "distance", "rent", "competitors"];
 function factorOf(s: Site, key: string): Factor | undefined { return s.factors?.find((f) => f.factor === key); }
 function bars(s: Site, tall = false): HTMLElement {
-  const wrap = h("div", { class: tall ? "factors" : "bars" });
+  const summary = FACTORS.map((k) => `${labelFor(k)} ${Math.round((factorOf(s, k)?.normalized ?? 0) * 100)}`).join(", ");
+  const wrap = h("div", { class: tall ? "factors" : "bars", role: "img", "aria-label": s.factors?.length ? `Score factors out of 100: ${summary}` : "Not scored until viable" });
   FACTORS.forEach((k, i) => {
     const f = factorOf(s, k);
     const pct = Math.round((f?.normalized ?? 0) * 100);
-    const bar = h("div", { class: "bar", title: `${labelFor(k)}: ${pct}%` }, h("span", { class: `f${i + 1}`, style: `height:${pct}%` }));
+    const tip = f ? `${labelFor(k)}: ${rawFor(s, k)}\n${pct} of 100 · weight ${Math.round(f.weight * 100)}%` : `${labelFor(k)}: ${rawFor(s, k)}\nNot scored until viable`;
+    const bar = h("div", { class: "bar", "data-tip": tip }, h("span", { class: `f${i + 1}`, style: `height:${pct}%` }));
     if (!tall) wrap.append(bar);
     else wrap.append(h("div", {}, bar, h("div", { class: "fl", text: labelFor(k) }), h("div", { class: "fv", text: rawFor(s, k) })));
   });
@@ -157,22 +174,27 @@ function photoSlot(s: Site, kind: "street" | "aerial", label: string): HTMLEleme
   return el;
 }
 function statusPill(c: OpenCase, paused: boolean): HTMLElement {
-  if (c.status === "resolved") return h("span", { class: "pill ok", text: "Answered" });
-  if (paused && (c.status === "open" || c.status === "awaiting_reply")) return h("span", { class: "pill fail", text: "Held, sending paused" });
-  if (c.status === "escalated") return h("span", { class: "pill fail", text: c.recipient === "none" ? "Needs a contact" : "Escalated to human" });
-  if (c.status === "open") return h("span", { class: "pill wait", text: "Queued to send" });
-  return h("span", { class: "pill wait", text: "Awaiting reply" });
+  const pill = (cls: string, text: string, tip: string) => h("span", { class: `pill ${cls}`, text, "data-tip": tip });
+  if (c.status === "resolved") return pill("ok", "Answered", "A reply came in and was read into evidence.");
+  if (paused && (c.status === "open" || c.status === "awaiting_reply")) return pill("fail", "Held, sending paused", "Sending is paused, so this email and its follow-ups wait.");
+  if (c.status === "escalated") return c.recipient === "none"
+    ? pill("fail", "Needs a contact", "No contact is published for this site; a person has to find one.")
+    : pill("fail", "Escalated to human", "No answer after the last follow-up; a person takes it from here.");
+  if (c.status === "open") return pill("wait", "Queued to send", "Goes out with the next run's emails.");
+  return pill("wait", "Awaiting reply", "Emailed. Follow-ups are sent automatically.");
 }
+// Tip that shows the full text when an ellipsized element is cut off.
+const trunc = { "data-trunc": "" };
 const caseTypeLabel = (t: string) => (t === "rent" ? "rent quote" : t);
 // DashboardCard: h5 title, subtitle, optional action, then the body.
-function dcard(title: string, sub: Child, body: Child[], opts: { action?: Child; cls?: string } = {}): HTMLElement {
-  return h("section", { class: `dcard${opts.cls ? " " + opts.cls : ""}` },
+function dcard(title: string, sub: Child, body: Child[], opts: { action?: Child; cls?: string; tour?: string } = {}): HTMLElement {
+  return h("section", { class: `dcard${opts.cls ? " " + opts.cls : ""}`, "data-tour": opts.tour },
     h("div", { class: "dc-head" }, h("div", { class: "dc-hl" }, h("h2", { class: "dc-title", text: title }), sub ? h("div", { class: "dc-sub" }, sub) : null), opts.action),
     ...body);
 }
 type Tone = "primary" | "secondary" | "success" | "warning" | "error" | "grey";
-function statCard(label: string, n: number, icon: string[], tone: Tone, note: string): HTMLElement {
-  return h("div", { class: "stat" }, h("span", { class: `av ${tone}` }, svgIcon(icon, 22, 1.75)),
+function statCard(label: string, n: number, icon: string[], tone: Tone, note: string, tip: string): HTMLElement {
+  return h("div", { class: "stat", "data-tip": tip, tabindex: "0" }, h("span", { class: `av ${tone}` }, svgIcon(icon, 22, 1.75)),
     h("div", { class: "stat-t" }, h("div", { class: "k", text: label }), h("div", { class: "n", text: String(n) }), h("div", { class: "d", text: note })));
 }
 
@@ -180,12 +202,29 @@ function statCard(label: string, n: number, icon: string[], tone: Tone, note: st
 let DATA: Data | null = null;
 let SELECTED: string | null = null;
 let NAV_OPEN = false;
+let TOUR: ReturnType<typeof initTour> | null = null;
 const isPhone = () => matchMedia("(max-width: 720px)").matches;
-function selectSite(id: string): void {
+function selectSite(id: string, source: "card" | "marker" = "card"): void {
   SELECTED = id;
   render();
   // One column below 900px: the detail card sits under the lists, so bring it into view.
-  if (matchMedia("(max-width: 899px)").matches) document.getElementById("detail")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  // Not during the tour, which scrolls to its own targets.
+  if (matchMedia("(max-width: 899px)").matches && !TOUR?.active()) document.getElementById("detail")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  window.dispatchEvent(new CustomEvent(EV_SELECT, { detail: { id, source } }));
+}
+function tourFacts(): TourFacts {
+  const sites = DATA?.report.sites ?? [];
+  return {
+    view: currentView(),
+    sites: sites.length,
+    ranked: sites.filter((s) => s.viable && s.rank !== null).length,
+    waiting: sites.filter((s) => isOneAway(s) || isUnrankedViable(s)).length,
+    mapPoints: sites.filter((s) => typeof s.lat === "number" && typeof s.lon === "number").length,
+    paused: !!DATA?.report.sending_paused,
+    wide: matchMedia("(min-width: 1200px)").matches,
+    navOpen: NAV_OPEN,
+    phone: isPhone(),
+  };
 }
 
 function currentView(): "shortlist" | "pipeline" | "exceptions" | "config" {
@@ -208,9 +247,11 @@ function sidebar(d: Data): HTMLElement {
   const st = runState(d);
   const exCount = exceptionCount(d);
   const item = (id: keyof typeof VIEW_TITLE, icon: string[], badge?: number) =>
-    h("a", { class: "sb-item", href: `#${id}`, "aria-current": view === id ? "page" : null },
+    h("a", { class: "sb-item", href: `#${id}`, "aria-current": view === id ? "page" : null, "data-tour": `nav-${id}` },
       svgIcon(icon, 21, 1.5), h("span", { text: VIEW_TITLE[id] }),
-      badge ? h("span", { class: "badge", text: String(badge), title: plural(badge, "exception") }) : null);
+      badge ? h("span", { class: "badge", text: String(badge), "data-tip": `${plural(badge, "item")} for a person to look at` }) : null);
+  const tourLink = h("button", { type: "button", class: "sb-help" }, svgIcon(ICON.help, 16, 1.75), "Take the tour");
+  tourLink.addEventListener("click", () => { NAV_OPEN = false; render(); TOUR?.start(1, null); });
   return h("aside", { class: `sidebar${NAV_OPEN ? " is-open" : ""}`, id: "sidebar" },
     h("div", { class: "sb-logo" }, h("a", { href: "#shortlist" }, h("span", { class: "lg-ico" }, svgIcon(ICON.car, 22, 1.75)), h("span", { text: "dealersource" }))),
     h("nav", { class: "sb-nav", "aria-label": "Views" },
@@ -220,21 +261,28 @@ function sidebar(d: Data): HTMLElement {
     h("div", { class: `sb-card ${st.cls}` },
       h("div", { class: "t" }, svgIcon(st.icon, 18, 1.75), st.cls === "ok" ? "Automation running" : st.word),
       h("div", { class: "s", text: `Report ${d.report.run_date} · ${runPlan(d.report)}` }),
-      st.cls === "ok" ? h("a", { class: "btn", href: "#config", text: "Run details" }) : h("a", { class: "btn", href: "#exceptions", text: "See exceptions" })));
+      st.cls === "ok" ? h("a", { class: "btn", href: "#config", text: "Run details" }) : h("a", { class: "btn", href: "#exceptions", text: "See exceptions" }),
+      tourLink));
 }
 function topbar(d: Data): HTMLElement {
   const st = runState(d);
   const exCount = exceptionCount(d);
-  const menu = h("button", { type: "button", class: "icon-btn menu-btn", "aria-label": "Open navigation", "aria-controls": "sidebar", "aria-expanded": NAV_OPEN ? "true" : "false" }, svgIcon(ICON.menu, 20, 1.5));
+  const menu = h("button", { type: "button", class: "icon-btn menu-btn", "aria-label": "Open navigation", "aria-controls": "sidebar", "aria-expanded": NAV_OPEN ? "true" : "false", "data-tour": "menu" }, svgIcon(ICON.menu, 20, 1.5));
   menu.addEventListener("click", () => { NAV_OPEN = !NAV_OPEN; render(); });
+  const help = h("button", { type: "button", class: "icon-btn", "aria-label": "How to use this dashboard", "data-tip": "Take the tour", "data-tour": "help" }, svgIcon(ICON.help, 21, 1.5));
+  help.addEventListener("click", () => TOUR?.start(1, help));
+  const stTip = d.report.sending_paused ? `Email sending is paused: ${d.report.pause_reason ?? "see Exceptions"}. Runs continue; nothing is sent.`
+    : st.word === "Run failed" ? "The last run reported errors. Open Exceptions for details."
+    : "The last run finished and email sending is on.";
   return h("header", { class: "topbar" }, menu,
-    h("a", { class: "icon-btn", href: "#exceptions", "aria-label": exCount ? `Exceptions: ${exCount}` : "Exceptions: none", title: exCount ? plural(exCount, "exception") : "No exceptions" }, svgIcon(ICON.bell, 21, 1.5), exCount ? h("span", { class: "dot" }) : null),
+    h("a", { class: "icon-btn", href: "#exceptions", "aria-label": exCount ? `Exceptions: ${exCount}` : "Exceptions: none", "data-tip": exCount ? `${plural(exCount, "item")} for a person to look at` : "Exceptions: nothing needs a person", "data-tour": "bell" }, svgIcon(ICON.bell, 21, 1.5), exCount ? h("span", { class: "dot" }) : null),
+    help,
     h("span", { class: "tb-view", text: VIEW_TITLE[currentView()] }),
     h("span", { class: "tb-spacer" }),
     h("div", { class: "tb-right" },
-      h("span", { class: "chip outline report", text: `Report ${d.report.run_date}` }),
-      h("span", { class: `chip ${st.cls}` }, svgIcon(st.icon, 16, 1.75), h("span", { class: "full", text: st.word }), h("span", { class: "short", text: `${st.short} · ${fmtTimeET(d.run?.finished_at)}` })),
-      h("span", { class: "lastrun", text: `Last run ${fmtTimeET(d.run?.finished_at)} ET` })));
+      h("span", { class: "chip outline report", text: `Report ${d.report.run_date}`, "data-tip": "Date of the report on this page. The pipeline writes a new one on every run.", tabindex: "0" }),
+      h("span", { class: `chip ${st.cls}`, "data-tip": stTip, tabindex: "0" }, svgIcon(st.icon, 16, 1.75), h("span", { class: "full", text: st.word }), h("span", { class: "short", text: `${st.short} · ${fmtTimeET(d.run?.finished_at)}` })),
+      h("span", { class: "lastrun", text: `Last run ${fmtTimeET(d.run?.finished_at)} ET`, "data-tip": `Last run finished ${fmtStampET(d.run?.finished_at)}.` })));
 }
 function healthBanner(d: Data): HTMLElement {
   const r = d.report, run = d.run;
@@ -256,7 +304,7 @@ function healthBanner(d: Data): HTMLElement {
       h("span", {}, h("b", { text: String(listings) }), " listings merged into ", h("b", { text: String(r.sites.length) }), " sites"),
       h("span", {}, h("b", { text: String(d.messages.length) }), " emails sent · ", h("b", { text: String(replies) }), " replies"),
       h("span", {}, h("b", { text: String(errors) }), " errors"));
-  return h("div", { class: `health ${cls}`, role: "status" },
+  return h("div", { class: `health ${cls}`, role: "status", "data-tour": "health" },
     h("span", { class: "av" }, svgIcon(icon, 20, 1.75)),
     h("div", { class: "hb" }, h("div", { class: "lead", text: lead }), ms,
       h("div", { class: "phone-only", text: `Report ${r.run_date} · ${plural(d.messages.length, "email")} sent · ${plural(replies, "reply").replace("replys", "replies")} · ${plural(errors, "error")}` })),
@@ -269,9 +317,9 @@ function siteCard(d: Data, s: Site): HTMLElement {
   const selected = s.site_id === SELECTED;
   const card = h("div", { class: `card${selected ? " selected" : ""}`, role: "button", tabindex: "0", "aria-pressed": selected ? "true" : "false", "data-site-id": s.site_id },
     photoSlot(s, "street", "Street photo"),
-    h("span", { class: `rank${s.shared_lot ? " muted" : ""}`, text: String(s.rank ?? "–") }),
-    h("span", { class: "score", text: score100(s) }),
-    h("div", { class: "title" }, h("span", { class: "addr", text: a.street }), s.shared_lot ? h("span", { class: "badge-shared", text: "Shared lot, ranks last" }) : null),
+    h("span", { class: `rank${s.shared_lot ? " muted" : ""}`, text: String(s.rank ?? "–"), "data-tip": s.shared_lot ? "Shared lot: always ranks after every standalone site." : `Rank ${s.rank}, by score.` }),
+    h("span", { class: "score", text: score100(s), "data-tip": "Score out of 100: traffic, visibility, drive time, rent and competitors, weighted as set in business.yaml." }),
+    h("div", { class: "title" }, h("span", { class: "addr", text: a.street, ...trunc }), s.shared_lot ? h("span", { class: "badge-shared", text: "Shared lot, ranks last", "data-tip": "Space on another business's lot. Checked like any site, but ranked after every standalone one." }) : null),
     h("div", { class: "meta" }, mono(s.parcel_id), ` · ${s.drive_minutes ?? "–"} min · ${plural(s.listing_ids.length, "listing")} · ${fmtMoney(s.metrics.rent_monthly)}/mo${isPhone() && s.shared_lot ? " · shared lot, ranks last" : ""}`),
     h("div", { class: "gaterow" }, h("div", { class: "gates" }, gateEl("zoning", s.gates.zoning), gateEl("rent", s.gates.rent), gateEl("flood", s.gates.flood)), bars(s)));
   const select = () => selectSite(s.site_id);
@@ -290,11 +338,16 @@ function pendingCard(d: Data, s: Site): HTMLElement {
     const n = (c.followups_sent ?? 0) + 1;
     caseTxt = c.status === "escalated" ? `escalated after ${plural(c.followups_sent ?? 0, "follow-up")}` : c.status === "open" ? `queued to email ${c.recipient}` : `emailed ${c.recipient}, ${age ?? 0} d old · ${n > max ? "last follow-up sent" : `follow-up ${nextDate} (${n} of ${max})`}`;
   }
-  return h("div", { class: "card pend", "data-site-id": s.site_id },
+  const selected = s.site_id === SELECTED;
+  const card = h("div", { class: `card pend${selected ? " selected" : ""}`, role: "button", tabindex: "0", "aria-pressed": selected ? "true" : "false", "data-site-id": s.site_id },
     photoSlot(s, "street", "Street photo"),
-    h("div", { class: "title" }, h("span", { class: "addr", text: `${a.street}${a.town ? ", " + a.town : ""}` })),
+    h("div", { class: "title" }, h("span", { class: "addr", text: `${a.street}${a.town ? ", " + a.town : ""}`, ...trunc })),
     h("div", { class: "meta" }, mono(s.parcel_id), ` · ${s.drive_minutes ?? "–"} min · ${caseTxt}`),
     h("div", { class: "gaterow nobars" }, h("div", { class: "gates" }, gateEl("zoning", s.gates.zoning), gateEl("rent", s.gates.rent), gateEl("flood", s.gates.flood)), h("div", { class: "noscore", text: "No score until viable" })));
+  const select = () => selectSite(s.site_id);
+  card.addEventListener("click", select);
+  card.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(); } });
+  return card;
 }
 function viewShortlist(d: Data): HTMLElement[] {
   const sites = d.report.sites;
@@ -302,15 +355,16 @@ function viewShortlist(d: Data): HTMLElement[] {
   const oneAway = sites.filter((s) => isOneAway(s) || isUnrankedViable(s));
   const excluded = sites.filter((s) => s.in_search_area === false || failed(s));
   if (!SELECTED || !sites.some((s) => s.site_id === SELECTED)) SELECTED = viable[0]?.site_id ?? null;
-  const stats = h("div", { class: "stats" },
-    statCard("Viable", viable.length, ICON.ok, "success", "all three gates passed"),
-    statCard("One away", oneAway.filter((s) => pendingGates(s).length === 1).length, ICON.hourglass, "warning", "one answer from viable"),
-    statCard("Verifying", oneAway.length, ICON.mail, "primary", "waiting on email"),
-    statCard("Excluded", excluded.length, ICON.ban, "error", "failed a gate or too far"));
+  const maxMin = d.report.business?.max_drive_minutes ?? 60;
+  const stats = h("div", { class: "stats", "data-tour": "stats" },
+    statCard("Viable", viable.length, ICON.ok, "success", "all three gates passed", `Passed zoning, rent and flood on cited evidence, within ${maxMin} minutes of home base. Ranked by score.`),
+    statCard("One away", oneAway.filter((s) => pendingGates(s).length === 1).length, ICON.hourglass, "warning", "one answer from viable", "Waiting on exactly one answer (zoning, rent or flood) before it can be viable."),
+    statCard("Verifying", oneAway.length, ICON.mail, "primary", "waiting on email", "Every site still waiting on an email reply, however many answers it needs."),
+    statCard("Excluded", excluded.length, ICON.ban, "error", "failed a gate or too far", `Failed a gate, or more than ${maxMin} minutes from home base.`));
   const ranked = dcard("Ranked sites", "Bars: traffic, visibility, drive, rent, competitors", [h("div", { class: "list", "aria-label": "Ranked sites" },
-    ...(viable.length ? viable.map((s) => siteCard(d, s)) : [h("div", { class: "empty-center" }, h("div", { class: "h", text: "No viable sites yet." }), h("div", { class: "s", text: `${plural(oneAway.length, "site")} ${oneAway.length === 1 ? "is" : "are"} waiting on an answer.` }))]))]);
+    ...(viable.length ? viable.map((s) => siteCard(d, s)) : [h("div", { class: "empty-center" }, h("div", { class: "h", text: "No viable sites yet." }), h("div", { class: "s", text: `${plural(oneAway.length, "site")} ${oneAway.length === 1 ? "is" : "are"} waiting on an answer.` }))]))], { tour: "ranked" });
   const waiting = dcard("One answer away", "Waiting on email. Silence is not approval.", [h("div", { class: "list" },
-    ...(oneAway.length ? oneAway.map((s) => pendingCard(d, s)) : [h("div", { class: "dashed", text: "Nothing is waiting on a reply." })]))]);
+    ...(oneAway.length ? oneAway.map((s) => pendingCard(d, s)) : [h("div", { class: "dashed", text: "Nothing is waiting on a reply." })]))], { tour: "waiting" });
   const detail = SELECTED ? drawerFor(d, sites.find((s) => s.site_id === SELECTED)!) : null;
   return [healthBanner(d), stats, h("div", { class: "sl" }, h("div", { class: "sl-list" }, ranked, waiting), h("div", { class: "sl-side" }, mapPane(d), detail))];
 }
@@ -327,7 +381,7 @@ function markerEl(s: Site, style?: string): HTMLElement {
   const b = h("button", { type: "button", class: `mk ${kind}${s.site_id === SELECTED ? " selected" : ""}`, style, "aria-label": s.viable ? `Rank ${s.rank}, ${s.address}` : isOneAway(s) ? `One answer away, ${s.address}` : `Excluded, ${s.address}` },
     h("span", { class: "disc" }, kind === "pend" ? svgIcon(ICON.clock, 13) : kind === "excl" ? null : String(s.rank)),
     kind === "excl" ? null : h("span", { class: "lbl", text: splitAddress(s.address).street.replace(/^\d+\s+/, "") }));
-  b.addEventListener("click", () => selectSite(s.site_id));
+  b.addEventListener("click", () => selectSite(s.site_id, "marker"));
   return b;
 }
 const tilesUrl = () => { const u = window.DS_CONFIG?.pmtilesUrl; return u ? new URL(u, location.href).href : ""; };
@@ -347,13 +401,13 @@ function mapPane(d: Data): HTMLElement {
   }
   const online = !!tilesUrl() && !MAPS.failed;
   const canvas = online && MAPS.el ? MAPS.el : h("div", { class: "map-canvas" });
-  const fitBtn = h("button", { type: "button", class: "btn-outline", id: "fit", text: "Fit to sites" });
+  const fitBtn = h("button", { type: "button", class: "btn-outline", id: "fit", text: "Fit to sites", "data-tip": "Zoom to every site in the search area." });
   const map = h("div", { class: `map${online && MAPS.ready ? " has-tiles" : ""}`, id: "map-pane" }, canvas, stat,
     h("div", { class: "map-ctl" },
-      h("div", { class: "zoom" }, h("button", { type: "button", id: "zin", "aria-label": "Zoom in" }, svgIcon(ICON.plus, 16, 1.75)), h("span", { class: "sep" }), h("button", { type: "button", id: "zout", "aria-label": "Zoom out" }, svgIcon(ICON.minus, 16, 1.75)))),
-    h("div", { class: "legend" }, h("span", {}, h("i", { class: "l-rank" }), "Ranked"), h("span", {}, h("i", { class: "l-pend" }), "One answer away"), h("span", {}, h("i", { class: "l-excl" }), "Excluded")),
+      h("div", { class: "zoom" }, h("button", { type: "button", id: "zin", "aria-label": "Zoom in", "data-tip": "Zoom in" }, svgIcon(ICON.plus, 16, 1.75)), h("span", { class: "sep" }), h("button", { type: "button", id: "zout", "aria-label": "Zoom out", "data-tip": "Zoom out" }, svgIcon(ICON.minus, 16, 1.75)))),
+    h("div", { class: "legend" }, h("span", { "data-tip": "Viable sites, numbered by rank." }, h("i", { class: "l-rank" }), "Ranked"), h("span", { "data-tip": "Waiting on an email reply before it can be viable." }, h("i", { class: "l-pend" }), "One answer away"), h("span", { "data-tip": "Failed a gate or outside the search area." }, h("i", { class: "l-excl" }), "Excluded")),
     h("div", { class: "attrib", text: online ? "© OpenStreetMap contributors · Protomaps" : "No basemap in this build · positions relative" }));
-  const card = dcard("Site map", online ? "Ranked, waiting and excluded sites" : "Relative positions; no basemap in this build", [map], { action: fitBtn, cls: "mapcard" });
+  const card = dcard("Site map", online ? "Ranked, waiting and excluded sites" : "Relative positions; no basemap in this build", [map], { action: fitBtn, cls: "mapcard", tour: "map" });
   if (online && sites.length) setTimeout(() => mountMapLibre(card, canvas, sites), 0);
   else fitBtn.addEventListener("click", () => { SELECTED = null; render(); });
   return card;
@@ -446,7 +500,7 @@ const methodLabel = (m: string) => (m === "layer" || m === "layer+use_table" ? "
 function openLink(url: string): HTMLElement {
   return isHttp(url)
     ? h("a", { class: "open", href: url, target: "_blank", rel: "noopener" }, "Open", svgIcon(ICON.ext, 12, 1.75))
-    : h("span", { class: "open disabled", title: url, text: "Stored" });
+    : h("span", { class: "open disabled", "data-tip": `Stored record, nothing to open: ${url}`, text: "Stored" });
 }
 function drawerFor(d: Data, s: Site): HTMLElement {
   const a = splitAddress(s.address);
@@ -462,7 +516,7 @@ function drawerFor(d: Data, s: Site): HTMLElement {
       h("div", { style: "min-width:0" },
         h("div", { class: `g gate ${g.status === "pending" && g.warning === "expired" ? "stale" : g.status}` }, gateEl(gate, g, 12), detail ? h("span", { class: "d", text: `· ${detail}` }) : null),
         e
-          ? h("div", { class: `src${soon ? " wait" : ""}` }, evidenceSource(e), ` · ${methodLabel(e.method)} · fetched ${fmtDay(e.fetched_at)} · ${new Date(e.expires_at).getTime() <= runEnd ? `expired ${fmtDay(e.expires_at)}` : `expires ${fmtDay(e.expires_at)}${soon ? ", re-fetch queued" : ""}`}`)
+          ? h("div", { class: `src${soon ? " wait" : ""}`, ...trunc }, evidenceSource(e), ` · ${methodLabel(e.method)} · fetched ${fmtDay(e.fetched_at)} · ${new Date(e.expires_at).getTime() <= runEnd ? `expired ${fmtDay(e.expires_at)}` : `expires ${fmtDay(e.expires_at)}${soon ? ", re-fetch queued" : ""}`}`)
           : h("div", { class: "src", text: g.status === "pending" ? "no evidence yet; a case is open or queued" : "no evidence recorded" })),
       e ? openLink(e.source_url) : h("span", { class: "open disabled", text: "–" }));
   };
@@ -477,7 +531,7 @@ function drawerFor(d: Data, s: Site): HTMLElement {
     : h("div", { class: "verdict wait" }, h("span", { class: "lead" }, svgIcon(ICON.clock, 14, 2), `Not viable yet. ${pendingGates(s).map((g) => g[0]!.toUpperCase() + g.slice(1)).join(" and ")} pending.`), h("span", { class: "sc muted", text: "No score" }));
   const listingsTxt = (s.listings ?? []).map((l) => `${l.listing_id} ${l.source_id}${l.rent_monthly !== null ? `, ${fmtMoney(l.rent_monthly)}/mo` : ""}`).join(" · ") || s.listing_ids.join(" · ");
   const cases = s.open_cases;
-  return h("section", { class: "dcard detail", id: "detail", "aria-label": `Site ${s.parcel_id}` },
+  return h("section", { class: "dcard detail", id: "detail", "aria-label": `Site ${s.parcel_id}`, "data-tour": "detail" },
     h("div", { class: "dr-head" },
       h("div", { class: "dr-title" }, h("span", { class: `disc${s.rank === null ? " muted" : ""}`, text: s.rank === null ? "–" : String(s.rank) }), h("h2", { class: "t", text: `${a.street}${a.town ? ", " + a.town : ""}` })),
       h("div", { class: "dr-meta" }, mono(s.parcel_id), ` · ${s.drive_minutes === null ? "distance unknown" : `${s.drive_minutes} min from home base`} · ${s.in_search_area === null ? "search area unknown" : s.in_search_area ? "inside" : "outside"} search area · ${s.shared_lot ? "shared lot" : "standalone lot"}`)),
@@ -503,14 +557,14 @@ function viewPipeline(d: Data): HTMLElement[] {
   const verifying = sites.filter((s) => isOneAway(s) || isUnrankedViable(s)).length;
   const viable = sites.filter((s) => s.viable && s.rank !== null).length;
   const outside = sites.filter((s) => s.in_search_area === false).length, failedN = sites.filter((s) => s.in_search_area !== false && failed(s)).length;
-  const stage = (n: number, l: string, dsc: string, i: number, icon: string[]) => h("div", { class: `stage s${i}` }, h("span", { class: "ico" }, svgIcon(icon, 26, 1.5)), h("div", { class: "l", text: l }), h("div", { class: "n", text: String(n) }), h("div", { class: "d", text: dsc }));
+  const stage = (n: number, l: string, dsc: string, i: number, icon: string[], tip: string) => h("div", { class: `stage s${i}`, "data-tip": tip, tabindex: "0" }, h("span", { class: "ico" }, svgIcon(icon, 26, 1.5)), h("div", { class: "l", text: l }), h("div", { class: "n", text: String(n) }), h("div", { class: "d", text: dsc }));
   const stages = h("div", { class: "stages" },
-    stage(listings + unresolved, "Discovered", `listings from ${plural(sourcesOk, "source")}`, 1, ICON.search),
-    stage(sites.length, "Resolved", "sites after merging", 2, ICON.merge),
-    stage(inArea, "Enriched", "in search area", 3, ICON.stack),
-    stage(verifying, "Verifying", "waiting on email", 4, ICON.mail),
-    stage(viable, "Scored", "viable, ranked", 5, ICON.trophy),
-    stage(outside + failedN, "Excluded", `${outside} outside area, ${failedN} failed a gate`, 6, ICON.ban));
+    stage(listings + unresolved, "Discovered", `listings from ${plural(sourcesOk, "source")}`, 1, ICON.search, "Listings found this run on the allowed sources and saved-search alerts."),
+    stage(sites.length, "Resolved", "sites after merging", 2, ICON.merge, "Listings matched to parcels. Several listings for the same parcel become one site."),
+    stage(inArea, "Enriched", "in search area", 3, ICON.stack, "Sites within the drive-time limit, with zoning, flood, traffic, drive time and photos looked up."),
+    stage(verifying, "Verifying", "waiting on email", 4, ICON.mail, "Sites waiting on an email reply about rent or zoning."),
+    stage(viable, "Scored", "viable, ranked", 5, ICON.trophy, "Passed all three gates, then scored and ranked."),
+    stage(outside + failedN, "Excluded", `${outside} outside area, ${failedN} failed a gate`, 6, ICON.ban, "Outside the drive-time limit, or failed zoning, rent or flood."));
   const stageOf = (s: Site): [string, number] => (s.viable && s.rank !== null ? ["Scored", 5] : s.in_search_area === false || failed(s) ? ["Excluded", 6] : isOneAway(s) || isUnrankedViable(s) ? ["Verifying", 4] : s.stage === "resolved" ? ["Resolved", 2] : ["Enriched", 3]);
   const outcome = (s: Site): [string, string] => {
     if (s.viable && s.rank !== null) return s.shared_lot ? [`Rank ${s.rank}, ranks last`, "muted"] : [`Rank ${s.rank}, score ${score100(s)}`, ""];
@@ -530,7 +584,7 @@ function viewPipeline(d: Data): HTMLElement[] {
     const open = s.open_cases.filter((c) => c.status !== "resolved").length;
     return h("div", { class: "trow cols-sites" },
       h("span", { class: "tc-parcel", text: s.parcel_id }),
-      h("div", { class: "tc-site" }, h("div", { class: "a", text: `${a.street}${a.town ? ", " + a.town : ""}` }), h("div", { class: "s", text: `${plural(s.listing_ids.length, "listing")} · ${s.drive_minutes ?? "–"} min${open ? ` · ${plural(open, "case")} open` : answered}${s.shared_lot ? " · shared lot" : ""}` })),
+      h("div", { class: "tc-site" }, h("div", { class: "a", text: `${a.street}${a.town ? ", " + a.town : ""}`, ...trunc }), h("div", { class: "s", ...trunc, text: `${plural(s.listing_ids.length, "listing")} · ${s.drive_minutes ?? "–"} min${open ? ` · ${plural(open, "case")} open` : answered}${s.shared_lot ? " · shared lot" : ""}` })),
       h("span", { class: "stagedot" }, h("i", { class: `st${si}` }), h("span", { text: stg })),
       h("div", { class: "tc-gates" }, ...(s.in_search_area !== false ? (["zoning", "rent", "flood"] as const).map((g) => gatePill(g, s.gates[g], true)) : [h("span", { class: "tc-plain", text: "Not checked" })])),
       h("span", { class: `outcome ${ocls}`, text: otxt }));
@@ -553,10 +607,10 @@ function viewPipeline(d: Data): HTMLElement[] {
     const s = sites.find((x) => x.site_id === m.site_id);
     const followup = /followup/.test(m.template_id);
     return h("div", { class: "tl-row" }, h("span", { class: "tm", text: fmtTimeET(m.sent_at) }), h("span", { class: `rail${followup ? " warning" : ""}` }, h("i", { class: "dot" })),
-      h("div", { class: "body" }, h("div", { class: "subj", text: m.subject.replace(/\s*\[DS-[A-Z0-9]+\]\s*$/, "") }), h("div", { class: "to" }, `To ${m.to} · ${followup ? "follow-up" : "new case"}${s ? ` · ${s.parcel_id}` : ""}`)));
+      h("div", { class: "body" }, h("div", { class: "subj", ...trunc, text: m.subject.replace(/\s*\[DS-[A-Z0-9]+\]\s*$/, "") }), h("div", { class: "to" }, `To ${m.to} · ${followup ? "follow-up" : "new case"}${s ? ` · ${s.parcel_id}` : ""}`)));
   });
   return [
-    dcard("Where every site sits", `${listings + unresolved} listings merged into ${plural(sites.length, "site")} this run`, [stages]),
+    dcard("Where every site sits", `${listings + unresolved} listings merged into ${plural(sites.length, "site")} this run`, [stages], { tour: "stages" }),
     dcard("Sites", "Every site in this report, furthest stage first", [h("div", { class: "tbl" }, h("div", { class: "trow-h cols-sites" }, h("span", { text: "Parcel" }), h("span", { text: "Site" }), h("span", { text: "Stage" }), h("span", { text: "Gates" }), h("span", { class: "right", text: "Outcome" })), ...rows)]),
     h("div", { class: "grid-2" },
       dcard("Open cases", "Silence is not approval. Follow-ups are automatic.", [caseRows.length ? h("div", { class: "tbl" }, ...caseRows) : h("div", { class: "dashed", text: resolvedFromMsgs ? "None open. Every inquiry sent this run was answered." : "None open." })]),
@@ -571,10 +625,10 @@ function viewExceptions(d: Data): HTMLElement[] {
   const held = r.sites.reduce((a, s) => a + s.open_cases.filter((c) => c.status === "open" || c.status === "awaiting_reply").length, 0);
   const waiting = r.sites.filter(isOneAway).length;
   const top = paused
-    ? h("div", { class: "paused-card" }, h("span", { class: "disc" }, svgIcon(ICON.pause, 22, 1.75)),
+    ? h("div", { class: "paused-card", "data-tour": "sending" }, h("span", { class: "disc" }, svgIcon(ICON.pause, 22, 1.75)),
         h("div", {}, h("div", { class: "h", text: `Email sending paused since ${fmtTimeET(run?.finished_at)} ET today.` }), h("div", { class: "p", text: `${r.pause_reason ?? "Paused."} Runs continue and records still update. No outreach or follow-ups go out until the cause is cleared and the pipeline re-runs.` })),
         h("div", { class: "r" }, h("div", { text: plural(waiting, "case") + " waiting" }), h("div", { text: plural(held, "follow-up") + " held" })))
-    : h("div", { class: "paused-card ok" }, h("span", { class: "disc" }, svgIcon(ICON.ok, 22, 1.75)),
+    : h("div", { class: "paused-card ok", "data-tour": "sending" }, h("span", { class: "disc" }, svgIcon(ICON.ok, 22, 1.75)),
         h("div", {}, h("div", { class: "h", text: "Email sending is on." }), h("div", { class: "p", text: `${plural(d.messages.length, "email")} went out this run. Follow-ups are automatic; a bounce rate over ${5}% or a mail quota error pauses sending.` })),
         h("div", { class: "r" }, h("div", { text: plural(waiting, "case") + " waiting" }), h("div", { text: plural(held, "follow-up") + " scheduled" })));
   const dur = run ? Math.max(0, Math.round((new Date(run.finished_at).getTime() - new Date(run.started_at).getTime()) / 1000)) : null;
@@ -594,7 +648,10 @@ function viewExceptions(d: Data): HTMLElement[] {
     .map((s) => {
       const excluded = s.terms_status === "prohibited" || s.robots_txt === "disallowed";
       const grey = s.terms_status === "unclear";
-      const pill = s.last_status === "error" ? h("span", { class: "pill fail", text: "Failed today" }) : excluded ? h("span", { class: "pill off", text: "Excluded by terms" }) : grey ? h("span", { class: "pill off", text: "Not yet allowed" }) : h("span", { class: "pill ok", text: "OK" });
+      const pill = s.last_status === "error" ? h("span", { class: "pill fail", text: "Failed today", "data-tip": "The fetch failed this run; the reason is on the left. It is tried again next run." })
+        : excluded ? h("span", { class: "pill off", text: "Excluded by terms", "data-tip": "Its terms of service or robots.txt forbid automated collection, so it is never fetched." })
+        : grey ? h("span", { class: "pill off", text: "Not yet allowed", "data-tip": "Terms unclear. Someone has to read them and allow it in sources.yaml before it is fetched." })
+        : h("span", { class: "pill ok", text: "OK", "data-tip": "Fetched this run." });
       const txt = s.last_status === "error" ? s.last_error ?? "fetch failed" : excluded ? (s.notes ?? "Terms of service prohibit automated collection. Never fetched.") : grey ? (s.notes ?? "Terms unclear; the PM must flip it to allowed before it is fetched.") : `${s.kind} source · fetched this run`;
       return h("div", { class: "xrow" }, h("div", {}, h("div", { class: "t", text: s.id }), h("div", { class: "s", text: txt })), pill);
     });
@@ -607,11 +664,13 @@ function viewExceptions(d: Data): HTMLElement[] {
     const t = new Date(e.expires_at).getTime();
     const isExp = t <= runEnd, isSoon = !isExp && t <= runEnd + 7 * 86_400_000;
     const site = r.sites.find((s) => s.site_id === e.site_id);
-    const tag = isExp ? h("span", { class: "pill off tag", text: "Expired" }) : isSoon ? h("span", { class: "pill wait tag", text: `Expires in ${dayDiff(e.expires_at, `${r.run_date}T00:00:00Z`)} d` }) : h("span", { class: "pill ok tag", text: "Fresh" });
+    const tag = isExp ? h("span", { class: "pill off tag", text: "Expired", "data-tip": "Past its expiry date, so the gate reads stale until the next run re-fetches it." })
+      : isSoon ? h("span", { class: "pill wait tag", text: `Expires in ${dayDiff(e.expires_at, `${r.run_date}T00:00:00Z`)} d`, "data-tip": "Expires within a week. How long each fact stays valid is set in business.yaml." })
+      : h("span", { class: "pill ok tag", text: "Fresh", "data-tip": "Within its expiry window." });
     return h("div", { class: `evx${isExp ? " stale" : ""}` },
       h("div", { style: "min-width:0" },
-        h("div", { class: "t" }, h("span", { class: "n", text: evidenceTitle(e) }), tag),
-        h("div", { class: "s", text: `${site ? splitAddress(site.address).street : e.site_id} · ${evidenceSource(e)} · ${methodLabel(e.method)} · fetched ${fmtDay(e.fetched_at)} · expires ${fmtDay(e.expires_at)}` })),
+        h("div", { class: "t" }, h("span", { class: "n", text: evidenceTitle(e), ...trunc }), tag),
+        h("div", { class: "s", ...trunc, text: `${site ? splitAddress(site.address).street : e.site_id} · ${evidenceSource(e)} · ${methodLabel(e.method)} · fetched ${fmtDay(e.fetched_at)} · expires ${fmtDay(e.expires_at)}` })),
       openLink(e.source_url));
   });
   return [top,
@@ -688,10 +747,10 @@ function viewConfig(d: Data): HTMLElement[] {
     const sub = layer === "zoning" ? "Greenville OpenData layer 21, Pitt County ZoningPitt + use tables; other towns go to a planning case" : p.sub;
     return h("div", { class: "trow prov cols-prov" },
       h("span", { class: "muted", text: kind }),
-      h("div", { style: "min-width:0" }, h("div", { class: "pname", text: p.name }), h("div", { class: "psub", text: sub })),
+      h("div", { style: "min-width:0" }, h("div", { class: "pname", text: p.name }), h("div", { class: "psub", text: sub, ...trunc })),
       h("span", { class: "pfall", text: p.fallback || "None" }),
-      h("span", { class: `pill center ${paid ? "wait" : "ok"}`, text: paid ? "Paid" : "Free" }),
-      h("span", { class: `pstat ${fixture ? "wait" : "ok"}`, text: fixture ? (r.offline ? "Fixture data" : "Fell back to fixtures") : "OK" }));
+      h("span", { class: `pill center ${paid ? "wait" : "ok"}`, text: paid ? "Paid" : "Free", "data-tip": paid ? "Charged per call. Only used when paid_enabled is true in providers.yaml." : "No charge: a free or official source." }),
+      h("span", { class: `pstat ${fixture ? "wait" : "ok"}`, text: fixture ? (r.offline ? "Fixture data" : "Fell back to fixtures") : "OK", "data-tip": fixture ? (r.offline ? "This run read recorded sample data instead of the live source." : "The live source did not answer, so this run used recorded data.") : "Answered this run." }));
   });
   provRows.push(h("div", { class: "trow prov cols-prov" },
     h("span", { class: "muted", text: "Paid providers" }),
@@ -701,7 +760,7 @@ function viewConfig(d: Data): HTMLElement[] {
     h("span", { class: `pstat ${paidOn.length ? "wait" : "muted"}`, text: paidOn.length ? "On" : "Off" })));
   return [h("div", { class: "cf" },
     h("div", { class: "colgap" },
-      dcard("What the search is looking for", "Set in business.yaml and providers.yaml. Changes take effect on the next run. Nothing here is editable from the dashboard.", [params]),
+      dcard("What the search is looking for", "Set in business.yaml and providers.yaml. Changes take effect on the next run. Nothing here is editable from the dashboard.", [params], { tour: "settings" }),
       dcard("Last run", r.run_id, [lastRun])),
     dcard("Data providers",
       h("span", {}, h("span", { class: `pill ${paidOn.length ? "wait" : "ok"}`, text: paidOn.length ? "Paid" : "Free" }), paidOn.length ? `${plural(paidOn.length, "paid provider")} on.` : `All ${LAYER_ORDER.length} kinds run on free sources. No paid provider is on.`),
@@ -719,6 +778,7 @@ function render(): void {
   const backdrop = h("div", { class: `sb-backdrop${NAV_OPEN ? " is-open" : ""}` });
   backdrop.addEventListener("click", () => { NAV_OPEN = false; render(); });
   app.replaceChildren(sidebar(DATA), backdrop, h("div", { class: "page-wrapper" }, topbar(DATA), h("main", { class: "container" }, ...nodes)));
+  window.dispatchEvent(new CustomEvent(EV_RENDER));
 }
 // Light by default, whatever the OS theme; ?theme=dark opts in to the dark palette.
 function initTheme(): void {
@@ -751,10 +811,17 @@ async function loadData(): Promise<Data> {
 // ------------------------------------------------------------------ boot
 export {};
 initTheme();
-window.addEventListener("hashchange", () => { NAV_OPEN = false; window.scrollTo(0, 0); render(); });
-window.addEventListener("keydown", (e) => { if (e.key === "Escape" && NAV_OPEN) { NAV_OPEN = false; render(); } });
+initTooltips();
+TOUR = initTour({ facts: tourFacts, go: (v) => { location.hash = `#${v}`; } });
+window.addEventListener("hashchange", () => {
+  NAV_OPEN = false;
+  window.scrollTo(0, 0);
+  render();
+  window.dispatchEvent(new CustomEvent(EV_VIEW, { detail: { view: currentView() } }));
+});
+window.addEventListener("keydown", (e) => { if (e.key === "Escape" && NAV_OPEN && !e.defaultPrevented) { e.preventDefault(); NAV_OPEN = false; render(); } });
 matchMedia("(max-width: 720px)").addEventListener("change", render);
 matchMedia("(min-width: 1200px)").addEventListener("change", () => { NAV_OPEN = false; render(); });
-loadData().then((d) => { DATA = d; render(); }).catch((e) => {
+loadData().then((d) => { DATA = d; render(); TOUR?.maybeAutoStart(); }).catch((e) => {
   document.getElementById("app")!.replaceChildren(h("div", { class: "boot" }, h("div", { class: "errcard" }, h("span", { class: "ico" }, svgIcon(ICON.failed, 16, 1.75)), h("div", {}, h("div", { class: "h", text: "Report did not load." }), h("div", { class: "s", text: String(e instanceof Error ? e.message : e) })))));
 });
