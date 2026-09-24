@@ -391,3 +391,6 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
       closing re-selected the first ranked site, so it never closed anything.
     - Fixed while restyling: the detail card's street-photo slot collapsed because `.photo`
       carried a grid-area the photo grid does not define.
+    - Light is the default theme, as in the template, whatever the OS setting (PM request);
+      the dark set is kept behind `?theme=dark`. This replaces the `prefers-color-scheme`
+      behaviour noted in 20.

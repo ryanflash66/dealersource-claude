@@ -688,12 +688,11 @@ function render(): void {
   backdrop.addEventListener("click", () => { NAV_OPEN = false; render(); });
   app.replaceChildren(sidebar(DATA), backdrop, h("div", { class: "page-wrapper" }, topbar(DATA), h("main", { class: "container" }, ...nodes)));
 }
+// Light by default, whatever the OS theme; ?theme=dark opts in to the dark palette.
 function initTheme(): void {
-  const q = new URLSearchParams(location.search).get("theme");
-  const dark = q === "dark" || (q !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+  const dark = new URLSearchParams(location.search).get("theme") === "dark";
   document.body.classList.toggle("dark", dark);
   document.getElementById("app")?.classList.toggle("dark", dark);
-  if (!q) matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => { document.body.classList.toggle("dark", e.matches); document.getElementById("app")?.classList.toggle("dark", e.matches); });
 }
 
 // ------------------------------------------------------------------ data
