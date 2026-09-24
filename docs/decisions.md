@@ -207,7 +207,7 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
     The design is inline-styled; its styles were moved into classes in
     `dashboard/public/styles.css` and the four views plus the shell are rendered from
     `report.json` / `messages.json` / `run.json` (`dashboard/src/app.ts`). Deviations:
-    - **Map basemap.** The sample pages load Esri raster tiles; the spec forbids public tile
+    - **Map basemap** (superseded by 30). The sample pages load Esri raster tiles; the spec forbids public tile
       servers for scheduled use, so offline the map pane is the template's muted canvas with
       the rank/pending/excluded markers placed by relative projection and the legend, and
       MapLibre GL with a self-hosted Protomaps archive mounts when `PMTILES_URL` is set
@@ -394,3 +394,26 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
     - Light is the default theme, as in the template, whatever the OS setting (PM request);
       the dark set is kept behind `?theme=dark`. This replaces the `prefers-color-scheme`
       behaviour noted in 20.
+
+30. **Real basemap, bundled with the dashboard** (2026-09-23, PM request: the map showed no
+    map). Nothing was broken: the map only drew tiles when `PMTILES_URL` pointed at a
+    self-hosted archive, none was ever hosted, so every build showed the relative site plot.
+    - `dashboard/public/tiles/eastern-nc.pmtiles`: `pmtiles extract` of the Protomaps build
+      `20260923` (tiles v4.15.2) for bbox `-78.45,34.74,-76.30,36.48` (Greenville ± ~60 miles,
+      the search area) at zoom 0-14, 46 MB. Zoom 15 would be 91 MB, over GitHub's 50 MB
+      warning; MapLibre overzooms zoom-14 tiles well enough for street level. Committed to the
+      repo and served by Vercel with the dashboard; Vercel returns 206 for byte ranges.
+    - MapLibre GL 6, the PMTiles reader and the Protomaps style (`@protomaps/basemaps` 5,
+      light flavour, dark with `?theme=dark`) are devDependencies copied to
+      `dashboard/public/vendor/` at build time; the Noto Sans Latin glyph ranges and the v4
+      sprites are vendored under `dashboard/public/map/` (sources and licences in its
+      `NOTICE.md`). The unpkg script loads are gone, so the map needs no outside host and
+      also works in an offline build. `PMTILES_URL` still overrides the archive.
+    - The MapLibre map is created once and its container re-attached on every render, so
+      picking a site no longer rebuilds the WebGL map or resets the view; the map eases to
+      the selected site only when it is out of view. Rotation is off; bounds are limited to
+      the archive's area.
+    - `serve-dashboard.mjs` answers single byte-range requests so `npm run dashboard:dev`
+      shows the map too.
+    - `tests/unit/dashboard-map.test.ts` fails if the dashboard references a public tile or
+      CDN host, or if the archive, glyphs or sprites go missing.

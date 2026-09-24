@@ -158,11 +158,13 @@ button { font: inherit; color: inherit; }
 .mapcard { padding: 24px; }
 .mapcard .dc-head { margin-bottom: 16px; }
 .map { position: relative; height: 420px; overflow: hidden; border-radius: var(--radius); background: var(--grey-100); background-image: radial-gradient(circle, color-mix(in srgb, var(--grey-400) 28%, transparent) 1px, transparent 1.5px); background-size: 22px 22px; color: var(--foreground); font-size: 14px; }
-.map-canvas { position: absolute; inset: 0; }
+.map .map-canvas { position: absolute; inset: 0; }  /* beats maplibre-gl.css .maplibregl-map { position: relative } */
+.map .maplibregl-canvas:focus-visible { outline: none; }
 .map.has-tiles { background-image: none; }
 .map.has-tiles .map-static { display: none; }
 .map-static { position: absolute; inset: 0; }
-.mk { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; cursor: pointer; }
+.mk { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; font-family: var(--font-sans); cursor: pointer; }
+.mk.selected { z-index: 2; }
 .mk .disc { display: flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 30px; height: 30px; border: 2.5px solid var(--paper); border-radius: 50%; background: var(--primary-strong); color: #ffffff; box-shadow: var(--shadow-md); font-size: 13px; font-weight: 700; }
 .mk.shared .disc { background: var(--paper); color: var(--muted-foreground); border-color: var(--grey-400); }
 .mk.pend .disc { width: 26px; height: 26px; background: var(--paper); color: var(--wait); border: 2px dashed var(--wait-dot); }

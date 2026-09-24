@@ -92,8 +92,13 @@ npm run dashboard:deploy
 
 Set the same variables in the Vercel project (Environment Variables) so `vercel.json`'s
 `buildCommand` embeds them. Without them the dashboard serves the latest fixture run baked at
-build time. Basemap tiles are self-hosted Protomaps (`PMTILES_URL`); with none set the
-dashboard shows a dependency-free site plot instead of loading public OSM tiles.
+build time. The basemap is self-hosted and needs no setup: the repo ships a Protomaps
+archive for Greenville ± ~60 miles (`dashboard/public/tiles/eastern-nc.pmtiles`, 46 MB, zoom
+0-14) plus MapLibre, glyphs and sprites, all served from the same Vercel deployment (Vercel
+answers byte-range requests, which PMTiles needs). `PMTILES_URL` overrides the archive, e.g.
+for a larger area on your own storage. Refresh or re-cut the archive with the command in
+`dashboard/public/map/NOTICE.md`. If WebGL is unavailable the map pane shows the relative site
+plot instead; public OSM tile servers are never used.
 
 ## 6. Scheduling
 

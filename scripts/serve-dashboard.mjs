@@ -8,6 +8,7 @@
  * SPA-friendly: unknown paths without a file extension serve index.html so
  * deep links work; paths with an extension that do not exist return 404
  * (so a missing config.js is a clean 404, not a page). No dependencies.
+ * Honours single byte-range requests (the PMTiles basemap needs them).
  * Does not open a browser.
  */
 
@@ -28,6 +29,7 @@ const TYPES = {
   ".json": "application/json; charset=utf-8",
   ".svg": "image/svg+xml",
   ".woff2": "font/woff2",
+  ".pbf": "application/x-protobuf",
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
@@ -52,18 +54,42 @@ function send(res, status, body, type = "text/plain; charset=utf-8") {
   res.end(body);
 }
 
-function serveFile(res, filePath, st, method) {
+// Single byte ranges ("bytes=a-b", "bytes=a-", "bytes=-n"), which the PMTiles reader
+// uses to read the basemap archive; anything else gets the whole file.
+function parseRange(header, size) {
+  const m = /^bytes=(\d*)-(\d*)$/.exec(header ?? "");
+  if (!m || (m[1] === "" && m[2] === "")) return null;
+  let start, end;
+  if (m[1] === "") { start = Math.max(0, size - Number(m[2])); end = size - 1; }
+  else { start = Number(m[1]); end = m[2] === "" ? size - 1 : Math.min(Number(m[2]), size - 1); }
+  return start <= end && start < size ? { start, end } : "unsatisfiable";
+}
+
+function serveFile(res, filePath, st, method, rangeHeader) {
   const ext = path.extname(filePath).toLowerCase();
-  res.writeHead(200, {
-    "Content-Type": TYPES[ext] ?? "application/octet-stream",
-    "Content-Length": st.size,
-    "Cache-Control": "no-cache",
-  });
+  const type = TYPES[ext] ?? "application/octet-stream";
+  const range = parseRange(rangeHeader, st.size);
+  if (range === "unsatisfiable") {
+    res.writeHead(416, { "Content-Range": `bytes */${st.size}` });
+    res.end();
+    return;
+  }
+  if (range) {
+    res.writeHead(206, {
+      "Content-Type": type,
+      "Content-Length": range.end - range.start + 1,
+      "Content-Range": `bytes ${range.start}-${range.end}/${st.size}`,
+      "Accept-Ranges": "bytes",
+      "Cache-Control": "no-cache",
+    });
+  } else {
+    res.writeHead(200, { "Content-Type": type, "Content-Length": st.size, "Accept-Ranges": "bytes", "Cache-Control": "no-cache" });
+  }
   if (method === "HEAD") {
     res.end();
     return;
   }
-  createReadStream(filePath).pipe(res);
+  createReadStream(filePath, range ? { start: range.start, end: range.end } : undefined).pipe(res);
 }
 
 const server = http.createServer((req, res) => {
@@ -88,7 +114,7 @@ const server = http.createServer((req, res) => {
 
   const st = fileStat(filePath);
   if (st) {
-    serveFile(res, filePath, st, req.method);
+    serveFile(res, filePath, st, req.method, req.headers.range);
     return;
   }
 

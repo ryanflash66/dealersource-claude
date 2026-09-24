@@ -34,7 +34,7 @@ interface Run { run_id: string; run_date: string; started_at: string; finished_a
 interface Data { report: Report; messages: Message[]; run: Run | null; source: string }
 
 declare global {
-  interface Window { DS_CONFIG?: { supabaseUrl?: string; supabaseAnonKey?: string; pmtilesUrl?: string }; maplibregl?: any; pmtiles?: any; protomaps_themes_base?: any }
+  interface Window { DS_CONFIG?: { supabaseUrl?: string; supabaseAnonKey?: string; pmtilesUrl?: string }; pmtiles?: any; basemaps?: any }
 }
 
 // ------------------------------------------------------------------ DOM helpers
@@ -179,7 +179,6 @@ function statCard(label: string, n: number, icon: string[], tone: Tone, note: st
 // ------------------------------------------------------------------ state
 let DATA: Data | null = null;
 let SELECTED: string | null = null;
-let MAP: any = null;
 let NAV_OPEN = false;
 const isPhone = () => matchMedia("(max-width: 720px)").matches;
 function selectSite(id: string): void {
@@ -317,6 +316,21 @@ function viewShortlist(d: Data): HTMLElement[] {
 }
 
 // ---- map
+// Self-hosted basemap: Protomaps PMTiles (./tiles/eastern-nc.pmtiles by default) drawn by MapLibre GL,
+// with the libraries, glyphs and sprites served from this deployment. render() rebuilds the page on every
+// selection, so the MapLibre container is kept and re-attached rather than creating a new WebGL map each time.
+// Until the tiles load, or if WebGL is unavailable, the relative site plot underneath stays visible.
+const MAPS: { el: HTMLElement | null; map: any; ml: any; markers: any[]; ready: boolean; failed: boolean; fitted: boolean } = { el: null, map: null, ml: null, markers: [], ready: false, failed: false, fitted: false };
+const markerKind = (s: Site) => (s.viable && s.rank !== null ? (s.shared_lot ? "shared" : "rank") : isOneAway(s) || isUnrankedViable(s) ? "pend" : "excl");
+function markerEl(s: Site, style?: string): HTMLElement {
+  const kind = markerKind(s);
+  const b = h("button", { type: "button", class: `mk ${kind}${s.site_id === SELECTED ? " selected" : ""}`, style, "aria-label": s.viable ? `Rank ${s.rank}, ${s.address}` : isOneAway(s) ? `One answer away, ${s.address}` : `Excluded, ${s.address}` },
+    h("span", { class: "disc" }, kind === "pend" ? svgIcon(ICON.clock, 13) : kind === "excl" ? null : String(s.rank)),
+    kind === "excl" ? null : h("span", { class: "lbl", text: splitAddress(s.address).street.replace(/^\d+\s+/, "") }));
+  b.addEventListener("click", () => selectSite(s.site_id));
+  return b;
+}
+const tilesUrl = () => { const u = window.DS_CONFIG?.pmtilesUrl; return u ? new URL(u, location.href).href : ""; };
 function mapPane(d: Data): HTMLElement {
   const sites = d.report.sites.filter((s) => typeof s.lat === "number" && typeof s.lon === "number");
   const inArea = sites.filter((s) => s.in_search_area !== false);
@@ -329,24 +343,18 @@ function mapPane(d: Data): HTMLElement {
   const stat = h("div", { class: "map-static", "aria-hidden": "false" });
   for (const s of sites) {
     const inside = s.lon! >= minLon && s.lon! <= maxLon && s.lat! >= minLat && s.lat! <= maxLat;
-    if (!inside) continue;
-    const kind = s.viable && s.rank !== null ? (s.shared_lot ? "shared" : "rank") : isOneAway(s) || isUnrankedViable(s) ? "pend" : "excl";
-    const street = splitAddress(s.address).street.replace(/^\d+\s+/, "");
-    const b = h("button", { type: "button", class: `mk ${kind}${s.site_id === SELECTED ? " selected" : ""}`, style: `left:${px(s.lon!).toFixed(1)}%;top:${py(s.lat!).toFixed(1)}%`, "aria-label": s.viable ? `Rank ${s.rank}, ${s.address}` : isOneAway(s) ? `One answer away, ${s.address}` : `Excluded, ${s.address}` },
-      h("span", { class: "disc" }, kind === "pend" ? svgIcon(ICON.clock, 13) : kind === "excl" ? null : String(s.rank)),
-      kind === "excl" ? null : h("span", { class: "lbl", text: street }));
-    b.addEventListener("click", () => selectSite(s.site_id));
-    stat.append(b);
+    if (inside) stat.append(markerEl(s, `left:${px(s.lon!).toFixed(1)}%;top:${py(s.lat!).toFixed(1)}%`));
   }
-  const online = !!window.DS_CONFIG?.pmtilesUrl;
+  const online = !!tilesUrl() && !MAPS.failed;
+  const canvas = online && MAPS.el ? MAPS.el : h("div", { class: "map-canvas" });
   const fitBtn = h("button", { type: "button", class: "btn-outline", id: "fit", text: "Fit to sites" });
-  const map = h("div", { class: "map", id: "map-pane" }, h("div", { class: "map-canvas", id: "map" }), stat,
+  const map = h("div", { class: `map${online && MAPS.ready ? " has-tiles" : ""}`, id: "map-pane" }, canvas, stat,
     h("div", { class: "map-ctl" },
       h("div", { class: "zoom" }, h("button", { type: "button", id: "zin", "aria-label": "Zoom in" }, svgIcon(ICON.plus, 16, 1.75)), h("span", { class: "sep" }), h("button", { type: "button", id: "zout", "aria-label": "Zoom out" }, svgIcon(ICON.minus, 16, 1.75)))),
     h("div", { class: "legend" }, h("span", {}, h("i", { class: "l-rank" }), "Ranked"), h("span", {}, h("i", { class: "l-pend" }), "One answer away"), h("span", {}, h("i", { class: "l-excl" }), "Excluded")),
-    h("div", { class: "attrib", text: online ? "© OpenStreetMap contributors · Protomaps" : "No basemap offline · positions relative · set PMTILES_URL" }));
+    h("div", { class: "attrib", text: online ? "© OpenStreetMap contributors · Protomaps" : "No basemap in this build · positions relative" }));
   const card = dcard("Site map", online ? "Ranked, waiting and excluded sites" : "Relative positions; no basemap in this build", [map], { action: fitBtn, cls: "mapcard" });
-  if (online && sites.length) setTimeout(() => mountMapLibre(card, sites), 0);
+  if (online && sites.length) setTimeout(() => mountMapLibre(card, canvas, sites), 0);
   else fitBtn.addEventListener("click", () => { SELECTED = null; render(); });
   return card;
 }
@@ -356,33 +364,57 @@ function loadScript(src: string): Promise<void> {
     const s = document.createElement("script"); s.src = src; s.onload = () => res(); s.onerror = () => rej(new Error(`failed ${src}`)); document.head.append(s);
   });
 }
-async function mountMapLibre(pane: HTMLElement, sites: Site[]): Promise<void> {
+function loadCss(href: string): Promise<void> {
+  return new Promise((res, rej) => {
+    if (document.querySelector(`link[href="${href}"]`)) return res();
+    const l = document.createElement("link"); l.rel = "stylesheet"; l.href = href; l.onload = () => res(); l.onerror = () => rej(new Error(`failed ${href}`)); document.head.append(l);
+  });
+}
+async function mountMapLibre(pane: HTMLElement, canvas: HTMLElement, sites: Site[]): Promise<void> {
   try {
-    if (!document.querySelector('link[href*="maplibre-gl.css"]')) { const css = document.createElement("link"); css.rel = "stylesheet"; css.href = "https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css"; document.head.append(css); }
-    await loadScript("https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js");
-    await loadScript("https://unpkg.com/pmtiles@3/dist/pmtiles.js");
-    await loadScript("https://unpkg.com/protomaps-themes-base@4/dist/protomaps-themes-base.js");
-    const ml = window.maplibregl, pm = window.pmtiles, themes = window.protomaps_themes_base;
-    if (!ml || !pm || !themes) throw new Error("map libraries unavailable");
-    if (!(ml as any).__pmtiles) { const protocol = new pm.Protocol(); ml.addProtocol("pmtiles", protocol.tile); (ml as any).__pmtiles = true; }
-    const dark = document.body.classList.contains("dark");
-    const map = new ml.Map({ container: "map", style: { version: 8, glyphs: "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf", sources: { protomaps: { type: "vector", url: `pmtiles://${window.DS_CONFIG!.pmtilesUrl}`, attribution: "© OpenStreetMap contributors · Protomaps" } }, layers: themes.default("protomaps", dark ? "dark" : "light") }, attributionControl: false });
-    MAP = map;
-    const bounds = new ml.LngLatBounds();
-    for (const s of sites.filter((x) => x.in_search_area !== false)) {
-      bounds.extend([s.lon!, s.lat!]);
-      const kind = s.viable && s.rank !== null ? (s.shared_lot ? "shared" : "rank") : isOneAway(s) || isUnrankedViable(s) ? "pend" : "excl";
-      const el = h("button", { type: "button", class: `mk ${kind}`, style: "position:relative;transform:none" }, h("span", { class: "disc" }, kind === "pend" ? svgIcon(ICON.clock, 13) : kind === "excl" ? null : String(s.rank)), kind === "excl" ? null : h("span", { class: "lbl", text: splitAddress(s.address).street.replace(/^\d+\s+/, "") }));
-      el.addEventListener("click", () => selectSite(s.site_id));
-      new ml.Marker({ element: el, anchor: "left" }).setLngLat([s.lon!, s.lat!]).addTo(map);
+    if (!MAPS.map) {
+      const vendor = new URL("./vendor/", location.href).href;
+      const assets = new URL("./map/", location.href).href;
+      await loadCss(vendor + "maplibre-gl.css");
+      const ml = await import(vendor + "maplibre-gl.mjs");
+      await loadScript(vendor + "pmtiles.js");
+      await loadScript(vendor + "basemaps.js");
+      const pm = window.pmtiles, bm = window.basemaps;
+      if (!ml?.Map || !pm || !bm) throw new Error("map libraries unavailable");
+      ml.addProtocol("pmtiles", new pm.Protocol().tile);
+      const flavor = document.body.classList.contains("dark") ? "dark" : "light";
+      MAPS.ml = ml;
+      MAPS.el = canvas;
+      MAPS.map = new ml.Map({
+        container: canvas,
+        style: { version: 8, glyphs: `${assets}fonts/{fontstack}/{range}.pbf`, sprite: `${assets}sprites/v4/${flavor}`, sources: { protomaps: { type: "vector", url: `pmtiles://${tilesUrl()}` } }, layers: bm.layers("protomaps", bm.namedFlavor(flavor), { lang: "en" }) },
+        attributionControl: false, minZoom: 6, maxZoom: 18, maxBounds: [[-79.6, 34.1], [-75.1, 37.1]], dragRotate: false, pitchWithRotate: false,
+      });
+      MAPS.map.touchZoomRotate.disableRotation();
+      MAPS.map.on("load", () => { MAPS.ready = true; document.getElementById("map-pane")?.classList.add("has-tiles"); });
+    } else {
+      MAPS.map.resize(); // container re-attached by render()
     }
-    const fit = () => map.fitBounds(bounds, { padding: 60, maxZoom: 13, duration: 0 });
-    map.on("load", () => { fit(); pane.querySelector(".map")?.classList.add("has-tiles"); });
-    map.on("zoomend", () => { if (map.getZoom() < 4 && map.setProjection) map.setProjection({ type: "globe" }); });
-    pane.querySelector("#fit")?.addEventListener("click", fit);
+    const { map, ml } = MAPS;
+    for (const m of MAPS.markers) m.remove();
+    const half: Record<string, number> = { rank: 15, shared: 15, pend: 13, excl: 7 };
+    MAPS.markers = sites.map((s) => new ml.Marker({ element: markerEl(s), anchor: "left", offset: [-(half[markerKind(s)] ?? 15), 0] }).setLngLat([s.lon!, s.lat!]).addTo(map));
+    const bounds = new ml.LngLatBounds();
+    for (const s of sites.filter((x) => x.in_search_area !== false)) bounds.extend([s.lon!, s.lat!]);
+    const fit = (animate: boolean) => { if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: Math.round(Math.min(60, canvas.clientHeight * 0.12)), maxZoom: 14, duration: animate ? 400 : 0 }); };
+    if (!MAPS.fitted) { fit(false); MAPS.fitted = true; }
+    else {
+      const sel = sites.find((s) => s.site_id === SELECTED);
+      if (sel && !map.getBounds().contains([sel.lon!, sel.lat!])) map.easeTo({ center: [sel.lon!, sel.lat!], duration: 400 });
+    }
+    pane.querySelector("#fit")?.addEventListener("click", () => fit(true));
     pane.querySelector("#zin")?.addEventListener("click", () => map.zoomIn());
     pane.querySelector("#zout")?.addEventListener("click", () => map.zoomOut());
-  } catch (e) { console.warn("map fallback:", e); }
+  } catch (e) {
+    console.warn("map fallback:", e);
+    MAPS.failed = true;
+    render();
+  }
 }
 
 // ---- drawer

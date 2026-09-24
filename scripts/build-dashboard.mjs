@@ -9,8 +9,11 @@
  *      offline golden pipeline into out/dashboard.
  *   2. Compile dashboard/src/app.ts -> dashboard/public/app.js with tsc.
  *   3. Copy report.json, messages.json, run.json into dashboard/public/data/.
- *   4. Write dashboard/public/config.js from SUPABASE_URL, SUPABASE_ANON_KEY,
- *      PMTILES_URL (all optional; empty strings mean "fixture data, no basemap").
+ *   4. Copy the map libraries (MapLibre GL, PMTiles reader, Protomaps style)
+ *      from node_modules into dashboard/public/vendor/.
+ *   5. Write dashboard/public/config.js from SUPABASE_URL, SUPABASE_ANON_KEY,
+ *      PMTILES_URL (all optional; empty Supabase values mean "fixture data";
+ *      PMTILES_URL defaults to the bundled tiles/eastern-nc.pmtiles).
  *
  * Plain Node ESM, no dependencies. Exits non-zero on any failure.
  */
@@ -88,11 +91,32 @@ for (const name of ["report.json", "messages.json", "run.json"]) {
   copied.push(name);
 }
 
-// 4. Runtime config ---------------------------------------------------------
+// 4. Map libraries ------------------------------------------------------------
+// MapLibre ships ESM that loads its shared chunk and worker relative to itself,
+// so its three .mjs files stay together. pmtiles and basemaps are IIFE globals.
+const vendorDir = path.join(publicDir, "vendor");
+const VENDOR = [
+  ["maplibre-gl/dist/maplibre-gl.mjs", "maplibre-gl.mjs"],
+  ["maplibre-gl/dist/maplibre-gl-shared.mjs", "maplibre-gl-shared.mjs"],
+  ["maplibre-gl/dist/maplibre-gl-worker.mjs", "maplibre-gl-worker.mjs"],
+  ["maplibre-gl/dist/maplibre-gl.css", "maplibre-gl.css"],
+  ["pmtiles/dist/pmtiles.js", "pmtiles.js"],
+  ["@protomaps/basemaps/dist/basemaps.js", "basemaps.js"],
+];
+mkdirSync(vendorDir, { recursive: true });
+const vendorMissing = VENDOR.filter(([src]) => !existsSync(path.join(root, "node_modules", src)));
+if (vendorMissing.length) {
+  console.warn(`${TAG} map libraries missing (run npm install), the map falls back to the site plot: ${vendorMissing.map(([s]) => s).join(", ")}`);
+} else {
+  for (const [src, dst] of VENDOR) copyFileSync(path.join(root, "node_modules", src), path.join(vendorDir, dst));
+}
+
+// 5. Runtime config ---------------------------------------------------------
+const bundledTiles = existsSync(path.join(publicDir, "tiles", "eastern-nc.pmtiles")) ? "./tiles/eastern-nc.pmtiles" : "";
 const cfg = {
   supabaseUrl: process.env.SUPABASE_URL ?? "",
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY ?? "",
-  pmtilesUrl: process.env.PMTILES_URL ?? "",
+  pmtilesUrl: vendorMissing.length ? "" : process.env.PMTILES_URL || bundledTiles,
 };
 const configJs =
   `window.DS_CONFIG = {supabaseUrl: ${JSON.stringify(cfg.supabaseUrl)}, ` +
@@ -101,5 +125,5 @@ const configJs =
 writeFileSync(path.join(publicDir, "config.js"), configJs, "utf8");
 
 const source = cfg.supabaseUrl && cfg.supabaseAnonKey ? `supabase (${cfg.supabaseUrl})` : "fixture data";
-const basemap = cfg.pmtilesUrl ? "pmtiles basemap" : "no basemap (SVG fallback)";
+const basemap = cfg.pmtilesUrl ? `pmtiles basemap ${cfg.pmtilesUrl}` : "no basemap (site plot fallback)";
 console.log(`${TAG} ok: data=${dataLabel}; copied ${copied.join(", ")}; app.js compiled; config -> ${source}, ${basemap}; output ${publicDir}`);
