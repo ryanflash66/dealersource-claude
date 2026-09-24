@@ -1,9 +1,10 @@
 /**
- * dealersource operations dashboard, v2 template ("Calm Confidence").
- * Four views (Shortlist, Pipeline, Exceptions, Configuration) plus the shared
- * shell, rendered from report.json / messages.json / run.json. Component
- * markup follows prompts/dashboard-design/components.html and pages/*.html;
- * the inline styles of the design live in styles.css as classes.
+ * dealersource operations dashboard, Modernize layout.
+ * The shell and components follow the Modernize Next.js Free admin template
+ * (DashboardLayout: sidebar, sticky header, DashboardCard, stat and top cards,
+ * RecentTransactions timeline), rebuilt as plain DOM + CSS so the dashboard
+ * keeps its zero-dependency offline build. Four views (Shortlist, Pipeline,
+ * Exceptions, Configuration) rendered from report.json / messages.json / run.json.
  * Data: Supabase `reports` row when config.js has a URL and anon key, else
  * ./data/*.json. No editing, no forms, no login.
  */
@@ -63,17 +64,32 @@ function svgIcon(paths: string[], size = 11, stroke = 2.5): SVGSVGElement {
   }
   return s;
 }
+// Tabler icons (outline, MIT), the template's icon set (@tabler/icons-react).
 const ICON = {
-  check: ["M20 6 9 17l-5-5"],
-  x: ["M18 6 6 18", "m6 6 12 12"],
-  clock: ["circle:12,12,10", "poly:12 6 12 12 16 14"],
-  stale: ["M12 8v4", "M12 16h.01", "circle:12,12,10"],
-  ok: ["circle:12,12,10", "m9 12 2 2 4-4"],
-  pause: ["rect:6,4,4,16,1", "rect:14,4,4,16,1"],
-  failed: ["circle:12,12,10", "m15 9-6 6", "m9 9 6 6"],
-  ext: ["M15 3h6v6", "M10 14 21 3", "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"],
-  plus: ["M5 12h14", "M12 5v14"],
-  minus: ["M5 12h14"],
+  check: ["M5 12l5 5l10 -10"],
+  x: ["M18 6l-12 12", "M6 6l12 12"],
+  clock: ["M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0", "M12 7v5l3 3"],
+  stale: ["M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0", "M12 8v4", "M12 16h.01"],
+  ok: ["M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0", "M9 12l2 2l4 -4"],
+  pause: ["M6 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12", "M14 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12"],
+  failed: ["M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0", "M10 10l4 4m0 -4l-4 4"],
+  ext: ["M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6", "M11 13l9 -9", "M15 4h5v5"],
+  plus: ["M12 5l0 14", "M5 12l14 0"],
+  minus: ["M5 12l14 0"],
+  dashboard: ["M5 4h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1", "M5 16h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1", "M15 12h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1", "M15 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1"],
+  funnel: ["M4.387 3h15.226a1 1 0 0 1 .948 1.316l-5.105 15.316a2 2 0 0 1 -1.898 1.368h-3.116a2 2 0 0 1 -1.898 -1.368l-5.104 -15.316a1 1 0 0 1 .947 -1.316", "M5 9h14", "M7 15h10"],
+  alert: ["M12 9v4", "M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0", "M12 16h.01"],
+  settings: ["M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065", "M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"],
+  menu: ["M4 6l16 0", "M4 12l16 0", "M4 18l16 0"],
+  bell: ["M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6", "M9 17v1a3 3 0 0 0 6 0v-1", "M21 6.727a11.05 11.05 0 0 0 -2.794 -3.727", "M3 6.727a11.05 11.05 0 0 1 2.792 -3.727"],
+  car: ["M5 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0", "M15 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0", "M5 17h-2v-6l2 -5h9l4 5h1a2 2 0 0 1 2 2v4h-2m-4 0h-6m-6 -6h15m-6 0v-5"],
+  hourglass: ["M6.5 7h11", "M6 20v-2a6 6 0 1 1 12 0v2a1 1 0 0 1 -1 1h-10a1 1 0 0 1 -1 -1", "M6 4v2a6 6 0 1 0 12 0v-2a1 1 0 0 0 -1 -1h-10a1 1 0 0 0 -1 1"],
+  mail: ["M3 7a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-10", "M3 7l9 6l9 -6"],
+  ban: ["M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0", "M5.7 5.7l12.6 12.6"],
+  search: ["M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0", "M21 21l-6 -6"],
+  merge: ["M5 18a2 2 0 1 0 4 0a2 2 0 1 0 -4 0", "M5 6a2 2 0 1 0 4 0a2 2 0 1 0 -4 0", "M15 12a2 2 0 1 0 4 0a2 2 0 1 0 -4 0", "M7 8l0 8", "M7 8a4 4 0 0 0 4 4h4"],
+  stack: ["M12 4l-8 4l8 4l8 -4l-8 -4", "M4 12l8 4l8 -4", "M4 16l8 4l8 -4"],
+  trophy: ["M8 21l8 0", "M12 17l0 4", "M7 4l10 0", "M17 4v8a5 5 0 0 1 -10 0v-8", "M3 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0", "M17 9a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"],
 };
 const mono = (t: string) => h("span", { class: "mono", text: t });
 const fmtInt = (n: number | null | undefined) => (n === null || n === undefined ? "–" : Math.round(n).toLocaleString("en-US"));
@@ -148,12 +164,30 @@ function statusPill(c: OpenCase, paused: boolean): HTMLElement {
   return h("span", { class: "pill wait", text: "Awaiting reply" });
 }
 const caseTypeLabel = (t: string) => (t === "rent" ? "rent quote" : t);
+// DashboardCard: h5 title, subtitle, optional action, then the body.
+function dcard(title: string, sub: Child, body: Child[], opts: { action?: Child; cls?: string } = {}): HTMLElement {
+  return h("section", { class: `dcard${opts.cls ? " " + opts.cls : ""}` },
+    h("div", { class: "dc-head" }, h("div", { class: "dc-hl" }, h("h2", { class: "dc-title", text: title }), sub ? h("div", { class: "dc-sub" }, sub) : null), opts.action),
+    ...body);
+}
+type Tone = "primary" | "secondary" | "success" | "warning" | "error" | "grey";
+function statCard(label: string, n: number, icon: string[], tone: Tone, note: string): HTMLElement {
+  return h("div", { class: "stat" }, h("span", { class: `av ${tone}` }, svgIcon(icon, 22, 1.75)),
+    h("div", { class: "stat-t" }, h("div", { class: "k", text: label }), h("div", { class: "n", text: String(n) }), h("div", { class: "d", text: note })));
+}
 
 // ------------------------------------------------------------------ state
 let DATA: Data | null = null;
 let SELECTED: string | null = null;
 let MAP: any = null;
+let NAV_OPEN = false;
 const isPhone = () => matchMedia("(max-width: 720px)").matches;
+function selectSite(id: string): void {
+  SELECTED = id;
+  render();
+  // One column below 900px: the detail card sits under the lists, so bring it into view.
+  if (matchMedia("(max-width: 899px)").matches) document.getElementById("detail")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 function currentView(): "shortlist" | "pipeline" | "exceptions" | "config" {
   const v = location.hash.replace(/^#/, "").split("/")[0];
@@ -167,21 +201,40 @@ function runState(d: Data): { cls: "ok" | "bad" | "wait"; word: string; short: s
   if (d.run && d.run.errors.length) return { cls: "bad", word: "Run failed", short: "Failed", icon: ICON.failed };
   return { cls: "ok", word: "Running", short: "Running", icon: ICON.ok };
 }
-function header(d: Data): HTMLElement {
+const exceptionCount = (d: Data) => d.report.sites.reduce((a, s) => a + s.open_cases.filter((c) => c.status === "escalated").length, 0) + (d.run?.errors.length ?? 0) + (d.report.sending_paused ? 1 : 0);
+const VIEW_TITLE = { shortlist: "Shortlist", pipeline: "Pipeline", exceptions: "Exceptions", config: "Configuration" } as const;
+const runPlan = (r: Report) => `${r.providers.paid_enabled ? "Paid providers enabled" : "Free sources only"} · ${r.offline ? "offline fixture run" : "next run 06:00 ET tomorrow"}`;
+function sidebar(d: Data): HTMLElement {
   const view = currentView();
   const st = runState(d);
-  const exCount = d.report.sites.reduce((a, s) => a + s.open_cases.filter((c) => c.status === "escalated").length, 0) + (d.run?.errors.length ?? 0) + (d.report.sending_paused ? 1 : 0);
-  const link = (id: string, long: string, short: string, badge?: number) =>
-    h("a", { href: `#${id}`, "aria-current": view === id ? "page" : null },
-      h("span", { class: "long", text: long }), h("span", { class: "short", text: short }),
-      badge ? h("span", { class: "badge", text: String(badge) }) : null,
-      h("span", { class: "lamp" }));
-  const mark = h("span", { class: "mark", "aria-hidden": "true" }, ...Array.from({ length: 9 }, () => h("span")));
-  return h("header", { class: "hdr" },
-    h("div", { class: "hdr-left" }, mark, h("span", { class: "wordmark", text: "dealersource" }), h("span", { class: "report-pill", text: `Report ${d.report.run_date}` })),
-    h("nav", { class: "nav", "aria-label": "Views" }, link("shortlist", "Shortlist", "Shortlist"), link("pipeline", "Pipeline", "Pipeline"), link("exceptions", "Exceptions", "Exceptions", exCount || undefined), link("config", "Configuration", "Config")),
-    h("div", { class: "hdr-right" },
-      h("span", { class: `status ${st.cls}` }, svgIcon(st.icon, 14, 1.75), h("span", { class: "full", text: st.word }), h("span", { class: "short", text: `${st.short} · ${fmtTimeET(d.run?.finished_at)}` })),
+  const exCount = exceptionCount(d);
+  const item = (id: keyof typeof VIEW_TITLE, icon: string[], badge?: number) =>
+    h("a", { class: "sb-item", href: `#${id}`, "aria-current": view === id ? "page" : null },
+      svgIcon(icon, 21, 1.5), h("span", { text: VIEW_TITLE[id] }),
+      badge ? h("span", { class: "badge", text: String(badge), title: plural(badge, "exception") }) : null);
+  return h("aside", { class: `sidebar${NAV_OPEN ? " is-open" : ""}`, id: "sidebar" },
+    h("div", { class: "sb-logo" }, h("a", { href: "#shortlist" }, h("span", { class: "lg-ico" }, svgIcon(ICON.car, 22, 1.75)), h("span", { text: "dealersource" }))),
+    h("nav", { class: "sb-nav", "aria-label": "Views" },
+      h("div", { class: "sb-sub", text: "Home" }), item("shortlist", ICON.dashboard),
+      h("div", { class: "sb-sub", text: "Operations" }), item("pipeline", ICON.funnel), item("exceptions", ICON.alert, exCount || undefined),
+      h("div", { class: "sb-sub", text: "Settings" }), item("config", ICON.settings)),
+    h("div", { class: `sb-card ${st.cls}` },
+      h("div", { class: "t" }, svgIcon(st.icon, 18, 1.75), st.cls === "ok" ? "Automation running" : st.word),
+      h("div", { class: "s", text: `Report ${d.report.run_date} · ${runPlan(d.report)}` }),
+      st.cls === "ok" ? h("a", { class: "btn", href: "#config", text: "Run details" }) : h("a", { class: "btn", href: "#exceptions", text: "See exceptions" })));
+}
+function topbar(d: Data): HTMLElement {
+  const st = runState(d);
+  const exCount = exceptionCount(d);
+  const menu = h("button", { type: "button", class: "icon-btn menu-btn", "aria-label": "Open navigation", "aria-controls": "sidebar", "aria-expanded": NAV_OPEN ? "true" : "false" }, svgIcon(ICON.menu, 20, 1.5));
+  menu.addEventListener("click", () => { NAV_OPEN = !NAV_OPEN; render(); });
+  return h("header", { class: "topbar" }, menu,
+    h("a", { class: "icon-btn", href: "#exceptions", "aria-label": exCount ? `Exceptions: ${exCount}` : "Exceptions: none", title: exCount ? plural(exCount, "exception") : "No exceptions" }, svgIcon(ICON.bell, 21, 1.5), exCount ? h("span", { class: "dot" }) : null),
+    h("span", { class: "tb-view", text: VIEW_TITLE[currentView()] }),
+    h("span", { class: "tb-spacer" }),
+    h("div", { class: "tb-right" },
+      h("span", { class: "chip outline report", text: `Report ${d.report.run_date}` }),
+      h("span", { class: `chip ${st.cls}` }, svgIcon(st.icon, 16, 1.75), h("span", { class: "full", text: st.word }), h("span", { class: "short", text: `${st.short} · ${fmtTimeET(d.run?.finished_at)}` })),
       h("span", { class: "lastrun", text: `Last run ${fmtTimeET(d.run?.finished_at)} ET` })));
 }
 function healthBanner(d: Data): HTMLElement {
@@ -192,22 +245,23 @@ function healthBanner(d: Data): HTMLElement {
   const replies = run?.counts?.["verify.inbound_ingested"] ?? 0;
   const errors = run?.errors.length ?? 0;
   const ageH = run ? Math.round((Date.now() - new Date(run.finished_at).getTime()) / 3_600_000) : 0;
-  const cls = r.sending_paused ? "paused" : errors ? "paused" : ageH > 26 ? "wait" : "";
-  const lead = r.sending_paused
-    ? h("span", { class: "lead desk-only" }, svgIcon(ICON.pause, 14, 1.75), `Email sending paused since ${fmtTimeET(run?.finished_at)} ET.`)
-    : errors ? h("span", { class: "lead desk-only" }, svgIcon(ICON.failed, 14, 1.75), `Run reported ${plural(errors, "error")}.`)
-    : ageH > 26 ? h("span", { class: "lead desk-only" }, svgIcon(ICON.clock, 14, 1.75), `Report is ${ageH >= 48 ? `${Math.floor(ageH / 24)} days` : `${ageH} hours`} old.`)
-    : h("span", { class: "lead desk-only" }, svgIcon(ICON.ok, 14, 1.75), "Automation running");
-  const banner = h("div", { class: `health ${cls}`, role: "status" }, lead);
-  if (r.sending_paused) banner.append(h("span", { class: "desk-only", text: `${r.pause_reason ?? "Paused."} Runs continue; no follow-ups go out.` }));
-  else banner.append(
-    h("span", { class: "m desk-only" }, `Last run ${d.report.run_date} ${fmtTimeET(run?.finished_at)} ET, `, h("b", { text: durTxt })),
-    h("span", { class: "m desk-only" }, h("b", { text: String(listings) }), " listings merged into ", h("b", { text: String(r.sites.length) }), " sites"),
-    h("span", { class: "m desk-only" }, h("b", { text: String(d.messages.length) }), " emails sent · ", h("b", { text: String(replies) }), " replies"),
-    h("span", { class: "m desk-only" }, h("b", { text: String(errors) }), " errors"),
-    h("span", { class: "right desk-only", text: `${r.providers.paid_enabled ? "Paid providers enabled" : "Free sources only"} · ${r.offline ? "offline fixture run" : "next run 06:00 ET tomorrow"}` }));
-  banner.append(h("span", { class: "phone-only", text: `Report ${r.run_date} · ${plural(d.messages.length, "email")} sent · ${plural(replies, "reply").replace("replys", "replies")} · ${plural(errors, "error")}` }));
-  return banner;
+  const cls = r.sending_paused ? "paused" : errors ? "paused" : ageH > 26 ? "wait" : "ok";
+  const [icon, lead]: [string[], string] = r.sending_paused ?[ICON.pause, `Email sending paused since ${fmtTimeET(run?.finished_at)} ET.`]
+    : errors ? [ICON.failed, `Run reported ${plural(errors, "error")}.`]
+    : ageH > 26 ? [ICON.clock, `Report is ${ageH >= 48 ? `${Math.floor(ageH / 24)} days` : `${ageH} hours`} old.`]
+    : [ICON.ok, "Automation running"];
+  const ms = r.sending_paused
+    ? h("div", { class: "ms desk-only", text: `${r.pause_reason ?? "Paused."} Runs continue; no follow-ups go out.` })
+    : h("div", { class: "ms desk-only" },
+      h("span", {}, `Last run ${d.report.run_date} ${fmtTimeET(run?.finished_at)} ET, `, h("b", { text: durTxt })),
+      h("span", {}, h("b", { text: String(listings) }), " listings merged into ", h("b", { text: String(r.sites.length) }), " sites"),
+      h("span", {}, h("b", { text: String(d.messages.length) }), " emails sent · ", h("b", { text: String(replies) }), " replies"),
+      h("span", {}, h("b", { text: String(errors) }), " errors"));
+  return h("div", { class: `health ${cls}`, role: "status" },
+    h("span", { class: "av" }, svgIcon(icon, 20, 1.75)),
+    h("div", { class: "hb" }, h("div", { class: "lead", text: lead }), ms,
+      h("div", { class: "phone-only", text: `Report ${r.run_date} · ${plural(d.messages.length, "email")} sent · ${plural(replies, "reply").replace("replys", "replies")} · ${plural(errors, "error")}` })),
+    r.sending_paused ? null : h("span", { class: "right desk-only", text: runPlan(r) }));
 }
 
 // ------------------------------------------------------------------ shortlist
@@ -221,7 +275,7 @@ function siteCard(d: Data, s: Site): HTMLElement {
     h("div", { class: "title" }, h("span", { class: "addr", text: a.street }), s.shared_lot ? h("span", { class: "badge-shared", text: "Shared lot, ranks last" }) : null),
     h("div", { class: "meta" }, mono(s.parcel_id), ` · ${s.drive_minutes ?? "–"} min · ${plural(s.listing_ids.length, "listing")} · ${fmtMoney(s.metrics.rent_monthly)}/mo${isPhone() && s.shared_lot ? " · shared lot, ranks last" : ""}`),
     h("div", { class: "gaterow" }, h("div", { class: "gates" }, gateEl("zoning", s.gates.zoning), gateEl("rent", s.gates.rent), gateEl("flood", s.gates.flood)), bars(s)));
-  const select = () => { SELECTED = s.site_id; render(); };
+  const select = () => selectSite(s.site_id);
   card.addEventListener("click", select);
   card.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(); } });
   return card;
@@ -249,14 +303,17 @@ function viewShortlist(d: Data): HTMLElement[] {
   const oneAway = sites.filter((s) => isOneAway(s) || isUnrankedViable(s));
   const excluded = sites.filter((s) => s.in_search_area === false || failed(s));
   if (!SELECTED || !sites.some((s) => s.site_id === SELECTED)) SELECTED = viable[0]?.site_id ?? null;
-  const count = (k: string, n: number) => h("div", { class: "count" }, h("div", { class: "k", text: k }), h("div", { class: "n", text: String(n) }));
-  const col = h("aside", { class: "col", "aria-label": "Ranked sites" },
-    h("div", { class: "counts" }, count("Viable", viable.length), count("One away", oneAway.filter((s) => pendingGates(s).length === 1).length), count("Verifying", oneAway.length), count("Excluded", excluded.length)),
-    h("div", { class: "sec" }, h("div", { class: "t", text: "Ranked sites" }), h("div", { class: "s", text: "Bars: traffic, visibility, drive, rent, competitors" })),
-    ...(viable.length ? viable.map((s) => siteCard(d, s)) : [h("div", { class: "empty-center" }, h("div", { class: "h", text: "No viable sites yet." }), h("div", { class: "s", text: `${plural(oneAway.length, "site")} ${oneAway.length === 1 ? "is" : "are"} waiting on an answer.` }))]),
-    h("div", { class: "sec" }, h("div", { class: "t", text: "One answer away" }), h("div", { class: "s", text: "Waiting on email. Silence is not approval." })),
-    ...(oneAway.length ? oneAway.map((s) => pendingCard(d, s)) : [h("div", { class: "dashed", text: "Nothing is waiting on a reply." })]));
-  return [healthBanner(d), h("div", { class: "sl" }, col, mapPane(d))];
+  const stats = h("div", { class: "stats" },
+    statCard("Viable", viable.length, ICON.ok, "success", "all three gates passed"),
+    statCard("One away", oneAway.filter((s) => pendingGates(s).length === 1).length, ICON.hourglass, "warning", "one answer from viable"),
+    statCard("Verifying", oneAway.length, ICON.mail, "primary", "waiting on email"),
+    statCard("Excluded", excluded.length, ICON.ban, "error", "failed a gate or too far"));
+  const ranked = dcard("Ranked sites", "Bars: traffic, visibility, drive, rent, competitors", [h("div", { class: "list", "aria-label": "Ranked sites" },
+    ...(viable.length ? viable.map((s) => siteCard(d, s)) : [h("div", { class: "empty-center" }, h("div", { class: "h", text: "No viable sites yet." }), h("div", { class: "s", text: `${plural(oneAway.length, "site")} ${oneAway.length === 1 ? "is" : "are"} waiting on an answer.` }))]))]);
+  const waiting = dcard("One answer away", "Waiting on email. Silence is not approval.", [h("div", { class: "list" },
+    ...(oneAway.length ? oneAway.map((s) => pendingCard(d, s)) : [h("div", { class: "dashed", text: "Nothing is waiting on a reply." })]))]);
+  const detail = SELECTED ? drawerFor(d, sites.find((s) => s.site_id === SELECTED)!) : null;
+  return [healthBanner(d), stats, h("div", { class: "sl" }, h("div", { class: "sl-list" }, ranked, waiting), h("div", { class: "sl-side" }, mapPane(d), detail))];
 }
 
 // ---- map
@@ -278,20 +335,20 @@ function mapPane(d: Data): HTMLElement {
     const b = h("button", { type: "button", class: `mk ${kind}${s.site_id === SELECTED ? " selected" : ""}`, style: `left:${px(s.lon!).toFixed(1)}%;top:${py(s.lat!).toFixed(1)}%`, "aria-label": s.viable ? `Rank ${s.rank}, ${s.address}` : isOneAway(s) ? `One answer away, ${s.address}` : `Excluded, ${s.address}` },
       h("span", { class: "disc" }, kind === "pend" ? svgIcon(ICON.clock, 13) : kind === "excl" ? null : String(s.rank)),
       kind === "excl" ? null : h("span", { class: "lbl", text: street }));
-    b.addEventListener("click", () => { SELECTED = s.site_id; render(); });
+    b.addEventListener("click", () => selectSite(s.site_id));
     stat.append(b);
   }
   const online = !!window.DS_CONFIG?.pmtilesUrl;
+  const fitBtn = h("button", { type: "button", class: "btn-outline", id: "fit", text: "Fit to sites" });
   const map = h("div", { class: "map", id: "map-pane" }, h("div", { class: "map-canvas", id: "map" }), stat,
-    h("div", { class: "map-ctl" }, h("button", { type: "button", class: "btn-outline", id: "fit", text: "Fit to sites" }),
+    h("div", { class: "map-ctl" },
       h("div", { class: "zoom" }, h("button", { type: "button", id: "zin", "aria-label": "Zoom in" }, svgIcon(ICON.plus, 16, 1.75)), h("span", { class: "sep" }), h("button", { type: "button", id: "zout", "aria-label": "Zoom out" }, svgIcon(ICON.minus, 16, 1.75)))),
     h("div", { class: "legend" }, h("span", {}, h("i", { class: "l-rank" }), "Ranked"), h("span", {}, h("i", { class: "l-pend" }), "One answer away"), h("span", {}, h("i", { class: "l-excl" }), "Excluded")),
     h("div", { class: "attrib", text: online ? "© OpenStreetMap contributors · Protomaps" : "No basemap offline · positions relative · set PMTILES_URL" }));
-  const drawer = SELECTED ? drawerFor(d, d.report.sites.find((s) => s.site_id === SELECTED)!) : null;
-  const wrap = h("div", { class: "mapwrap" }, map, drawer);
-  if (online && sites.length) setTimeout(() => mountMapLibre(map, sites), 0);
-  else { map.querySelector<HTMLButtonElement>("#fit")!.addEventListener("click", () => { SELECTED = null; render(); }); }
-  return wrap;
+  const card = dcard("Site map", online ? "Ranked, waiting and excluded sites" : "Relative positions; no basemap in this build", [map], { action: fitBtn, cls: "mapcard" });
+  if (online && sites.length) setTimeout(() => mountMapLibre(card, sites), 0);
+  else fitBtn.addEventListener("click", () => { SELECTED = null; render(); });
+  return card;
 }
 function loadScript(src: string): Promise<void> {
   return new Promise((res, rej) => {
@@ -316,11 +373,11 @@ async function mountMapLibre(pane: HTMLElement, sites: Site[]): Promise<void> {
       bounds.extend([s.lon!, s.lat!]);
       const kind = s.viable && s.rank !== null ? (s.shared_lot ? "shared" : "rank") : isOneAway(s) || isUnrankedViable(s) ? "pend" : "excl";
       const el = h("button", { type: "button", class: `mk ${kind}`, style: "position:relative;transform:none" }, h("span", { class: "disc" }, kind === "pend" ? svgIcon(ICON.clock, 13) : kind === "excl" ? null : String(s.rank)), kind === "excl" ? null : h("span", { class: "lbl", text: splitAddress(s.address).street.replace(/^\d+\s+/, "") }));
-      el.addEventListener("click", () => { SELECTED = s.site_id; render(); });
+      el.addEventListener("click", () => selectSite(s.site_id));
       new ml.Marker({ element: el, anchor: "left" }).setLngLat([s.lon!, s.lat!]).addTo(map);
     }
     const fit = () => map.fitBounds(bounds, { padding: 60, maxZoom: 13, duration: 0 });
-    map.on("load", () => { fit(); pane.classList.add("has-tiles"); });
+    map.on("load", () => { fit(); pane.querySelector(".map")?.classList.add("has-tiles"); });
     map.on("zoomend", () => { if (map.getZoom() < 4 && map.setProjection) map.setProjection({ type: "globe" }); });
     pane.querySelector("#fit")?.addEventListener("click", fit);
     pane.querySelector("#zin")?.addEventListener("click", () => map.zoomIn());
@@ -388,24 +445,20 @@ function drawerFor(d: Data, s: Site): HTMLElement {
     : h("div", { class: "verdict wait" }, h("span", { class: "lead" }, svgIcon(ICON.clock, 14, 2), `Not viable yet. ${pendingGates(s).map((g) => g[0]!.toUpperCase() + g.slice(1)).join(" and ")} pending.`), h("span", { class: "sc muted", text: "No score" }));
   const listingsTxt = (s.listings ?? []).map((l) => `${l.listing_id} ${l.source_id}${l.rent_monthly !== null ? `, ${fmtMoney(l.rent_monthly)}/mo` : ""}`).join(" · ") || s.listing_ids.join(" · ");
   const cases = s.open_cases;
-  const drawer = h("div", { class: "drawer", role: "dialog", "aria-label": `Site ${s.parcel_id}` },
+  return h("section", { class: "dcard detail", id: "detail", "aria-label": `Site ${s.parcel_id}` },
     h("div", { class: "dr-head" },
-      h("div", {},
-        h("div", { class: "dr-title" }, h("span", { class: `disc${s.rank === null ? " muted" : ""}`, text: s.rank === null ? "–" : String(s.rank) }), h("span", { class: "t", text: `${a.street}${a.town ? ", " + a.town : ""}` })),
-        h("div", { class: "dr-meta" }, mono(s.parcel_id), ` · ${s.drive_minutes === null ? "distance unknown" : `${s.drive_minutes} min from home base`} · ${s.in_search_area === null ? "search area unknown" : s.in_search_area ? "inside" : "outside"} search area · ${s.shared_lot ? "shared lot" : "standalone lot"}`)),
-      h("button", { type: "button", class: "dr-close", "aria-label": "Close", id: "dr-close" }, svgIcon(ICON.x, 16, 1.75))),
+      h("div", { class: "dr-title" }, h("span", { class: `disc${s.rank === null ? " muted" : ""}`, text: s.rank === null ? "–" : String(s.rank) }), h("h2", { class: "t", text: `${a.street}${a.town ? ", " + a.town : ""}` })),
+      h("div", { class: "dr-meta" }, mono(s.parcel_id), ` · ${s.drive_minutes === null ? "distance unknown" : `${s.drive_minutes} min from home base`} · ${s.in_search_area === null ? "search area unknown" : s.in_search_area ? "inside" : "outside"} search area · ${s.shared_lot ? "shared lot" : "standalone lot"}`)),
     h("div", { class: "dr-body" },
       h("div", { class: "dr-photos" }, photoSlot(s, "street", "Street photo"), photoSlot(s, "aerial", "Aerial")),
       verdict,
-      h("div", {}, h("div", { class: "eyebrow", style: "margin-bottom:6px", text: "Gates and evidence" }), gateRow("zoning"), gateRow("rent"), gateRow("flood")),
-      s.in_search_area !== false ? h("div", {}, h("div", { class: "eyebrow", style: "margin-bottom:8px", text: s.rank === 1 ? "Why it ranks first" : s.viable ? `Why it ranks ${s.rank}` : "Score factors (not scored until viable)" }), bars(s, true)) : null,
-      h("div", {}, h("div", { class: "eyebrow", style: "margin-bottom:6px", text: `Merged from ${plural(s.listing_ids.length, "listing")}` }), h("div", { class: "dr-text", text: listingsTxt })),
-      h("div", {}, h("div", { class: "eyebrow", style: "margin-bottom:6px", text: "Open cases" }),
+      h("div", {}, h("div", { class: "eyebrow", text: "Gates and evidence" }), gateRow("zoning"), gateRow("rent"), gateRow("flood")),
+      s.in_search_area !== false ? h("div", {}, h("div", { class: "eyebrow", text: s.rank === 1 ? "Why it ranks first" : s.viable ? `Why it ranks ${s.rank}` : "Score factors (not scored until viable)" }), bars(s, true)) : null,
+      h("div", {}, h("div", { class: "eyebrow", text: `Merged from ${plural(s.listing_ids.length, "listing")}` }), h("div", { class: "dr-text", text: listingsTxt })),
+      h("div", {}, h("div", { class: "eyebrow", text: "Open cases" }),
         cases.length
           ? h("div", { class: "dr-text" }, ...cases.map((c) => h("div", {}, `${caseTypeLabel(c.case_type)} → ${c.recipient === "none" ? "no contact published" : c.recipient} · ${c.status.replace("_", " ")}${c.next_action ? ` · ${c.next_action}` : ""}`)))
           : h("div", { class: "dr-text", text: "None. Every gate was answered by public records, a listing or a reply." }))));
-  drawer.querySelector("#dr-close")!.addEventListener("click", () => { SELECTED = null; render(); });
-  return drawer;
 }
 
 // ------------------------------------------------------------------ pipeline
@@ -418,14 +471,14 @@ function viewPipeline(d: Data): HTMLElement[] {
   const verifying = sites.filter((s) => isOneAway(s) || isUnrankedViable(s)).length;
   const viable = sites.filter((s) => s.viable && s.rank !== null).length;
   const outside = sites.filter((s) => s.in_search_area === false).length, failedN = sites.filter((s) => s.in_search_area !== false && failed(s)).length;
-  const stage = (n: number, l: string, dsc: string, i: number) => h("div", { class: `stage s${i}` }, h("div", { class: "l", text: l }), h("div", { class: "n", text: String(n) }), h("div", { class: "d", text: dsc }));
+  const stage = (n: number, l: string, dsc: string, i: number, icon: string[]) => h("div", { class: `stage s${i}` }, h("span", { class: "ico" }, svgIcon(icon, 26, 1.5)), h("div", { class: "l", text: l }), h("div", { class: "n", text: String(n) }), h("div", { class: "d", text: dsc }));
   const stages = h("div", { class: "stages" },
-    stage(listings + unresolved, "Discovered", `listings from ${plural(sourcesOk, "source")}`, 1),
-    stage(sites.length, "Resolved", "sites after merging", 2),
-    stage(inArea, "Enriched", "in search area", 3),
-    stage(verifying, "Verifying", "waiting on email", 4),
-    stage(viable, "Scored", "viable, ranked", 5),
-    stage(outside + failedN, "Excluded", `${outside} outside area, ${failedN} failed a gate`, 6));
+    stage(listings + unresolved, "Discovered", `listings from ${plural(sourcesOk, "source")}`, 1, ICON.search),
+    stage(sites.length, "Resolved", "sites after merging", 2, ICON.merge),
+    stage(inArea, "Enriched", "in search area", 3, ICON.stack),
+    stage(verifying, "Verifying", "waiting on email", 4, ICON.mail),
+    stage(viable, "Scored", "viable, ranked", 5, ICON.trophy),
+    stage(outside + failedN, "Excluded", `${outside} outside area, ${failedN} failed a gate`, 6, ICON.ban));
   const stageOf = (s: Site): [string, number] => (s.viable && s.rank !== null ? ["Scored", 5] : s.in_search_area === false || failed(s) ? ["Excluded", 6] : isOneAway(s) || isUnrankedViable(s) ? ["Verifying", 4] : s.stage === "resolved" ? ["Resolved", 2] : ["Enriched", 3]);
   const outcome = (s: Site): [string, string] => {
     if (s.viable && s.rank !== null) return s.shared_lot ? [`Rank ${s.rank}, ranks last`, "muted"] : [`Rank ${s.rank}, score ${score100(s)}`, ""];
@@ -466,18 +519,17 @@ function viewPipeline(d: Data): HTMLElement[] {
   });
   const mails = d.messages.map((m) => {
     const s = sites.find((x) => x.site_id === m.site_id);
-    return h("div", { class: "mailrow" }, h("span", { class: "tm", text: fmtTimeET(m.sent_at) }),
-      h("div", { style: "min-width:0" }, h("div", { class: "subj", text: m.subject.replace(/\s*\[DS-[A-Z0-9]+\]\s*$/, "") }), h("div", { class: "to" }, `To ${m.to} · ${/followup/.test(m.template_id) ? "follow-up" : "new case"}${s ? ` · ${s.parcel_id}` : ""}`)));
+    const followup = /followup/.test(m.template_id);
+    return h("div", { class: "tl-row" }, h("span", { class: "tm", text: fmtTimeET(m.sent_at) }), h("span", { class: `rail${followup ? " warning" : ""}` }, h("i", { class: "dot" })),
+      h("div", { class: "body" }, h("div", { class: "subj", text: m.subject.replace(/\s*\[DS-[A-Z0-9]+\]\s*$/, "") }), h("div", { class: "to" }, `To ${m.to} · ${followup ? "follow-up" : "new case"}${s ? ` · ${s.parcel_id}` : ""}`)));
   });
-  return [h("div", { class: "page" }, h("div", { class: "pl" },
-    h("div", { class: "colgap" },
-      h("div", {}, h("div", { class: "h-row" }, h("h1", { class: "pt", text: "Where every site sits" }), h("span", { class: "s", text: `${listings + unresolved} listings merged into ${plural(sites.length, "site")} this run` })), stages),
-      h("div", { class: "tbl" }, h("div", { class: "trow-h cols-sites" }, h("span", { text: "Parcel" }), h("span", { text: "Site" }), h("span", { text: "Stage" }), h("span", { text: "Gates" }), h("span", { class: "right", text: "Outcome" })), ...rows)),
-    h("div", { class: "colgap tight" },
-      h("div", { class: "sect-h" }, h("div", { class: "ht", text: "Open cases" }), h("span", { class: "s", text: "Silence is not approval. Follow-ups are automatic." })),
-      caseRows.length ? h("div", { class: "tbl" }, ...caseRows) : h("div", { class: "dashed", text: resolvedFromMsgs ? "None open. Every inquiry sent this run was answered." : "None open." }),
-      h("div", { class: "ht", style: "margin-top:8px", text: "Emails sent today" }),
-      mails.length ? h("div", { class: "tbl" }, ...mails) : h("div", { class: "dashed", text: "No emails went out this run." }))))];
+  return [
+    dcard("Where every site sits", `${listings + unresolved} listings merged into ${plural(sites.length, "site")} this run`, [stages]),
+    dcard("Sites", "Every site in this report, furthest stage first", [h("div", { class: "tbl" }, h("div", { class: "trow-h cols-sites" }, h("span", { text: "Parcel" }), h("span", { text: "Site" }), h("span", { text: "Stage" }), h("span", { text: "Gates" }), h("span", { class: "right", text: "Outcome" })), ...rows)]),
+    h("div", { class: "grid-2" },
+      dcard("Open cases", "Silence is not approval. Follow-ups are automatic.", [caseRows.length ? h("div", { class: "tbl" }, ...caseRows) : h("div", { class: "dashed", text: resolvedFromMsgs ? "None open. Every inquiry sent this run was answered." : "None open." })]),
+      dcard("Emails sent today", `${plural(d.messages.length, "email")} this run`, [mails.length ? h("div", { class: "tl" }, ...mails) : h("div", { class: "dashed", text: "No emails went out this run." })])),
+  ];
 }
 
 // ------------------------------------------------------------------ exceptions
@@ -530,15 +582,13 @@ function viewExceptions(d: Data): HTMLElement[] {
         h("div", { class: "s", text: `${site ? splitAddress(site.address).street : e.site_id} · ${evidenceSource(e)} · ${methodLabel(e.method)} · fetched ${fmtDay(e.fetched_at)} · expires ${fmtDay(e.expires_at)}` })),
       openLink(e.source_url));
   });
-  const sec = (title: string, sub: string, body: HTMLElement) => h("div", {}, h("div", { class: "sect-h" }, h("div", { class: "ht", text: title }), h("span", { class: "s", text: sub })), body);
-  return [h("div", { class: "page" }, h("div", { class: "colgap" }, top,
+  return [top,
     h("div", { class: "ex" },
       h("div", { class: "colgap" },
-        sec("Failed runs", "This report", failedRuns),
-        sec("Provider errors", "This run", providerErrors),
-        sec("Sources failed or excluded", "Excluded sources are never fetched", srcRows.length ? h("div", { class: "tbl" }, ...srcRows) : h("div", { class: "dashed", text: "No sources configured." }))),
-      h("div", { class: "colgap tight" },
-        sec("Evidence expiring or expired", "Expired facts are re-fetched next run; until then the gate reads stale", evRows.length ? h("div", { class: "tbl" }, ...evRows) : h("div", { class: "dashed", text: "No evidence recorded." }))))))];
+        dcard("Failed runs", "This report", [failedRuns]),
+        dcard("Provider errors", "This run", [providerErrors]),
+        dcard("Sources failed or excluded", "Excluded sources are never fetched", [srcRows.length ? h("div", { class: "tbl" }, ...srcRows) : h("div", { class: "dashed", text: "No sources configured." })])),
+      dcard("Evidence expiring or expired", "Expired facts are re-fetched next run; until then the gate reads stale", [evRows.length ? h("div", { class: "tbl" }, ...evRows) : h("div", { class: "dashed", text: "No evidence recorded." })]))];
 }
 function rankSrc(s: SourceRow): number { return s.last_status === "error" ? 0 : s.terms_status === "prohibited" || s.robots_txt === "disallowed" ? 1 : s.terms_status === "unclear" ? 2 : 3; }
 
@@ -617,16 +667,14 @@ function viewConfig(d: Data): HTMLElement[] {
     h("span", { class: "pfall", text: "" }),
     h("span", { class: `pill center ${paidOn.length ? "wait" : "off"}`, text: paidOn.length ? "Paid" : "Off" }),
     h("span", { class: `pstat ${paidOn.length ? "wait" : "muted"}`, text: paidOn.length ? "On" : "Off" })));
-  return [h("div", { class: "page" }, h("div", { class: "cf" },
+  return [h("div", { class: "cf" },
     h("div", { class: "colgap" },
-      h("div", {}, h("h1", { class: "pt", style: "margin-bottom:4px", text: "What the search is looking for" }), h("div", { class: "s", style: "font-size:12.5px;color:var(--muted-foreground)", text: "Set in business.yaml and providers.yaml. Changes take effect on the next run. Nothing here is editable from the dashboard." })),
-      params,
-      h("div", {}, h("div", { class: "ht", style: "margin-bottom:8px", text: "Last run" }), lastRun)),
-    h("div", { class: "colgap tight" },
-      h("div", { class: "sect-h" }, h("div", { class: "ht", text: "Data providers" }),
-        h("span", { style: "display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted-foreground)" }, h("span", { class: `pill ${paidOn.length ? "wait" : "ok"}`, text: paidOn.length ? "Paid" : "Free" }), paidOn.length ? `${plural(paidOn.length, "paid provider")} on.` : `All ${LAYER_ORDER.length} kinds run on free sources. No paid provider is on.`)),
-      h("div", { class: "tbl" }, h("div", { class: "trow-h cols-prov" }, h("span", { text: "Kind" }), h("span", { text: "In use" }), h("span", { text: "Fallback" }), h("span", { text: "Cost" }), h("span", { class: "right", text: "Status this run" })), ...provRows),
-      h("div", { class: "fine", text: 'A paid provider, when switched on in providers.yaml with paid_enabled: true, shows here as "Paid" and every call it makes is logged with its cost class in run.json.' }))))];
+      dcard("What the search is looking for", "Set in business.yaml and providers.yaml. Changes take effect on the next run. Nothing here is editable from the dashboard.", [params]),
+      dcard("Last run", r.run_id, [lastRun])),
+    dcard("Data providers",
+      h("span", {}, h("span", { class: `pill ${paidOn.length ? "wait" : "ok"}`, text: paidOn.length ? "Paid" : "Free" }), paidOn.length ? `${plural(paidOn.length, "paid provider")} on.` : `All ${LAYER_ORDER.length} kinds run on free sources. No paid provider is on.`),
+      [h("div", { class: "tbl" }, h("div", { class: "trow-h cols-prov" }, h("span", { text: "Kind" }), h("span", { text: "In use" }), h("span", { text: "Fallback" }), h("span", { text: "Cost" }), h("span", { class: "right", text: "This run" })), ...provRows),
+        h("div", { class: "fine", text: 'A paid provider, when switched on in providers.yaml with paid_enabled: true, shows here as "Paid" and every call it makes is logged with its cost class in run.json.' })]))];
 }
 
 // ------------------------------------------------------------------ render
@@ -634,10 +682,11 @@ function render(): void {
   if (!DATA) return;
   const app = document.getElementById("app")!;
   const view = currentView();
-  app.classList.toggle("has-banner", view === "shortlist");
-  document.title = `dealersource ${view === "config" ? "Configuration" : view[0]!.toUpperCase() + view.slice(1)}`;
+  document.title = `dealersource ${VIEW_TITLE[view]}`;
   const nodes = view === "pipeline" ? viewPipeline(DATA) : view === "exceptions" ? viewExceptions(DATA) : view === "config" ? viewConfig(DATA) : viewShortlist(DATA);
-  app.replaceChildren(header(DATA), ...nodes);
+  const backdrop = h("div", { class: `sb-backdrop${NAV_OPEN ? " is-open" : ""}` });
+  backdrop.addEventListener("click", () => { NAV_OPEN = false; render(); });
+  app.replaceChildren(sidebar(DATA), backdrop, h("div", { class: "page-wrapper" }, topbar(DATA), h("main", { class: "container" }, ...nodes)));
 }
 function initTheme(): void {
   const q = new URLSearchParams(location.search).get("theme");
@@ -671,8 +720,10 @@ async function loadData(): Promise<Data> {
 // ------------------------------------------------------------------ boot
 export {};
 initTheme();
-window.addEventListener("hashchange", render);
+window.addEventListener("hashchange", () => { NAV_OPEN = false; window.scrollTo(0, 0); render(); });
+window.addEventListener("keydown", (e) => { if (e.key === "Escape" && NAV_OPEN) { NAV_OPEN = false; render(); } });
 matchMedia("(max-width: 720px)").addEventListener("change", render);
+matchMedia("(min-width: 1200px)").addEventListener("change", () => { NAV_OPEN = false; render(); });
 loadData().then((d) => { DATA = d; render(); }).catch((e) => {
-  document.getElementById("app")!.replaceChildren(h("div", { class: "page" }, h("div", { class: "errcard" }, h("span", { class: "ico" }, svgIcon(ICON.failed, 16, 1.75)), h("div", {}, h("div", { class: "h", text: "Report did not load." }), h("div", { class: "s", text: String(e instanceof Error ? e.message : e) })))));
+  document.getElementById("app")!.replaceChildren(h("div", { class: "boot" }, h("div", { class: "errcard" }, h("span", { class: "ico" }, svgIcon(ICON.failed, 16, 1.75)), h("div", {}, h("div", { class: "h", text: "Report did not load." }), h("div", { class: "s", text: String(e instanceof Error ? e.message : e) })))));
 });

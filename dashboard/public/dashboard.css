@@ -1,7 +1,0 @@
-/* dashboard.css — app shell rules from the design. Component styling is inline in the pages, as designed. */
-
-body { margin: 0; background: var(--background); }
-    a{color:var(--link)}a:hover{color:var(--link)}
-    :root,.app{--nav-active:var(--primary-hover);--ok:oklch(0.42 0.12 155);--ok-bg:oklch(0.50 0.12 155 / 0.08);--ok-border:oklch(0.50 0.12 155 / 0.35);--wait:oklch(0.50 0.13 70);--wait-bg:oklch(0.60 0.13 75 / 0.10);--wait-border:oklch(0.55 0.13 70 / 0.5)}
-    .dark{--nav-active:var(--primary);--ok:oklch(0.74 0.12 155);--ok-bg:oklch(0.68 0.12 155 / 0.14);--ok-border:oklch(0.68 0.12 155 / 0.45);--wait:oklch(0.80 0.13 80);--wait-bg:oklch(0.75 0.13 80 / 0.14);--wait-border:oklch(0.75 0.13 80 / 0.5)}
-    .app{color:var(--foreground);background:var(--background);font-family:var(--font-sans);font-size:14px;line-height:1.45;position:relative;overflow:hidden}

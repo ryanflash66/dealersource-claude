@@ -95,7 +95,7 @@ sources.yaml ──discover──> raw_documents + listings
 | `fixtures/http/` | recorded API responses used by the adapter unit tests |
 | `supabase/migrations/` | Postgres + PostGIS schema and RLS policies |
 | `docker-compose.yml` | local PostGIS + PostgREST stack |
-| `dashboard/` | static dashboard (TypeScript, no framework), deployable to Vercel |
+| `dashboard/` | static dashboard on the Modernize admin layout (TypeScript + CSS, no framework), deployable to Vercel |
 | `agent/` | scheduled Claude Code routine definition and prompt |
 | `docs/` | decisions, deploy, scheduling, costs |
 

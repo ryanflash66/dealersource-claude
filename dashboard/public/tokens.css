@@ -1,302 +1,149 @@
-/* tokens.css — generated from the Claude Design export "Dealersource Operations Dashboard" (2026-09-16).
-   Lumigrid "Calm Confidence" design system plus the dealersource status tokens. Light on :root, dark under .dark. */
-
-/* ---- fonts.css ---- */
-/* Lumigrid Calm Confidence — webfonts.
-   Hanken Grotesk (sans) + IBM Plex Mono (mono), loaded from Google Fonts.
-   NOTE: font binaries are not vendored in this system; if self-hosted
-   woff2 files become available, add @font-face rules here instead. */
+/* tokens.css — Modernize design tokens.
+   Palette, type scale, radius and shadow from the Modernize Next.js Free admin template
+   (AdminMart, MIT): package/src/utils/theme/DefaultColors.tsx and the MuiCard / elevation-9
+   overrides. The template is light only; the dark set follows Modernize's dark palette.
+   Status text colours are darker steps of the template hues so small text stays WCAG AA
+   on the template's light washes. Status is never colour alone: pair with glyph and word. */
 @import url("fonts.css");
 
 :root {
-  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
-}
+  --font-sans: "Plus Jakarta Sans", Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
 
+  /* ---- template palette ---- */
+  --primary: #5D87FF;
+  --primary-light: #ECF2FF;
+  --primary-dark: #4570EA;
+  --primary-strong: #3F6AE0;      /* filled nav item / button: white text at AA */
+  --primary-text: #3A63D8;        /* primary as text on white or primary-light */
+  --primary-foreground: #ffffff;
+  --secondary: #49BEFF;
+  --secondary-light: #E8F7FF;
+  --secondary-text: #0B6EA6;
+  --success: #13DEB9;
+  --success-light: #E6FFFA;
+  --warning: #FFAE1F;
+  --warning-light: #FEF5E5;
+  --error: #FA896B;
+  --error-light: #FDEDE8;
+  --grey-100: #F2F6FA;
+  --grey-200: #EAEFF4;
+  --grey-300: #DFE5EF;
+  --grey-400: #7C8FAC;
+  --grey-500: #5A6A85;
+  --grey-600: #2A3547;
 
-/* ---- colors.css ---- */
-/* Lumigrid Calm Confidence — color tokens.
-   Light theme is the default. Dark is a secondary theme scoped to `.dark`.
-   Primary blue is the codebase's original electric blue oklch(0.55 0.25 250),
-   used flat (no glows, no gradients). Teal accent is for links and small highlights
-   ONLY — never large surfaces. Background washes never exceed 8% opacity.
-   All text pairings meet WCAG AA. */
+  /* ---- surfaces and text ---- */
+  --background: #ffffff;
+  --paper: #ffffff;
+  --foreground: #2A3547;          /* text.primary */
+  --muted-foreground: #5A6A85;    /* text.secondary */
+  --hover: #f6f9fc;               /* action.hover */
+  --border: #e5eaef;              /* divider */
+  --input: var(--grey-300);
+  --ring: var(--primary);
+  --scrollbar: #eff2f7;
 
-:root {
-  /* ---- Base palette ---- */
-  --blue-700: oklch(0.47 0.24 250);
-  --blue-600: oklch(0.55 0.25 250);  /* primary — original codebase blue */
-  --blue-500: oklch(0.62 0.22 250);
-  --blue-400: oklch(0.70 0.17 250);
-  --blue-100: oklch(0.93 0.05 250);
-  --teal-600: oklch(0.50 0.11 215);  /* accent / links (AA on light bg) */
-  --teal-400: oklch(0.72 0.10 210);  /* accent on dark bg */
-  --ink-900: oklch(0.22 0.03 255);
-  --ink-600: oklch(0.45 0.02 255);
-  --ink-300: oklch(0.80 0.01 252);
-  --ice-50: oklch(0.99 0.002 250);
-  --ice-100: oklch(0.965 0.005 250);
-  --ice-200: oklch(0.94 0.008 250);
+  /* ---- status ---- */
+  --ok: #007B66;
+  --ok-dot: var(--success);
+  --wait: #8A5A00;
+  --wait-dot: var(--warning);
+  --destructive: #B93A14;
+  --destructive-dot: var(--error);
+  --destructive-foreground: #ffffff;
+  --stale-hatch: repeating-linear-gradient(135deg, transparent 0 6px, rgb(90 106 133 / 0.08) 6px 8px);
 
-  /* ---- Semantic: surfaces & text ---- */
-  --background: var(--ice-50);
-  --foreground: var(--ink-900);
-  --card: oklch(1 0 0);
-  --card-foreground: var(--ink-900);
-  --popover: oklch(1 0 0);
-  --popover-foreground: var(--ink-900);
-  --muted: var(--ice-100);
-  --muted-foreground: var(--ink-600);
+  /* score factor shades, importance order: traffic, visibility, drive, rent, competitors */
+  --factor-1: #4570EA;
+  --factor-2: #5D87FF;
+  --factor-3: #86A6FF;
+  --factor-4: #49BEFF;
+  --factor-5: #A5DEFF;
+  /* pipeline stages: discovered, resolved, enriched, verifying, scored, excluded */
+  --stage-1: var(--grey-400);
+  --stage-2: var(--secondary);
+  --stage-3: var(--primary);
+  --stage-4: var(--warning);
+  --stage-5: var(--success);
+  --stage-6: var(--error);
 
-  /* ---- Semantic: brand ---- */
-  --primary: oklch(0.672 0.131 38.8);              /* claude-solution: #D97757 terracotta */
-  --primary-hover: oklch(0.592 0.131 38.8);        /* darker step of the same hue */
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.955 0.01 250);
-  --secondary-foreground: oklch(0.27 0.03 255);
-  --accent: var(--teal-600);
-  --accent-foreground: oklch(0.99 0 0);
-  --link: var(--teal-600);
+  /* ---- shape ---- */
+  --radius: 7px;                  /* MuiCard borderRadius */
+  --radius-sm: 4px;
+  --radius-item: 8px;             /* sidebar items */
+  --radius-full: 9999px;
+  --shadow-card: rgb(145 158 171 / 30%) 0 0 2px 0, rgb(145 158 171 / 12%) 0 12px 24px -4px;  /* elevation 9 */
+  --shadow-sm: 0 1px 2px rgb(145 158 171 / 24%);
+  --shadow-md: 0 2px 8px rgb(145 158 171 / 28%);
+  --shadow-lg: rgb(145 158 171 / 24%) 0 0 2px 0, rgb(145 158 171 / 24%) -20px 20px 40px -4px;
 
-  /* ---- Semantic: feedback ---- */
-  --destructive: oklch(0.50 0.16 25);
-  --destructive-foreground: oklch(0.99 0 0);
-  --success: oklch(0.50 0.12 155);
+  /* ---- layout (DashboardLayout) ---- */
+  --sidebar-w: 270px;
+  --header-h: 70px;
+  --container-max: 1200px;
+  --gap: 24px;                    /* Grid spacing 3 */
 
-  /* ---- Lines & focus ---- */
-  --border: oklch(0.91 0.01 250);
-  --input: oklch(0.88 0.012 250);
-  --ring: var(--blue-600);
-
-  /* ---- Washes (background tints, hard cap 8% opacity) ---- */
-  --wash-primary: oklch(0.672 0.131 38.8 / 0.06);   /* primary at 6% */
-  --wash-accent: oklch(0.55 0.11 215 / 0.05);
-  --wash-muted: oklch(0.45 0.02 255 / 0.04);
-
-  /* ---- Brand dot grid (low-contrast layer, never competes with copy) ---- */
-  --dot-grid-color: oklch(0.55 0.20 250 / 0.14);
-  --dot-grid-size: 24px;
+  /* ---- motion ---- */
+  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
 }
 
 .dark {
-  --background: oklch(0.16 0.02 255);
-  --foreground: oklch(0.95 0.005 250);
-  --card: oklch(0.20 0.02 255);
-  --card-foreground: oklch(0.95 0.005 250);
-  --popover: oklch(0.20 0.02 255);
-  --popover-foreground: oklch(0.95 0.005 250);
-  --muted: oklch(0.23 0.02 255);
-  --muted-foreground: oklch(0.74 0.012 252);
+  --primary-light: #253662;
+  --primary-text: #8FA6FF;
+  --secondary-light: #1C455D;
+  --secondary-text: #49BEFF;
+  --success-light: #1B3C48;
+  --warning-light: #4D3A2A;
+  --error-light: #4B313D;
+  --grey-100: #333F55;
+  --grey-200: #465670;
+  --grey-300: #465670;
 
-  --primary: oklch(0.732 0.124 38.8);       /* claude-solution: lighter step for dark */
-  --primary-hover: oklch(0.782 0.118 38.8);
-  --primary-foreground: oklch(0.14 0.02 255);
-  --secondary: oklch(0.24 0.02 255);
-  --secondary-foreground: oklch(0.92 0.008 250);
-  --accent: var(--teal-400);
-  --accent-foreground: oklch(0.13 0.02 255);
-  --link: var(--teal-400);
+  --background: #202936;
+  --paper: #2A3447;
+  --foreground: #EAEFF4;
+  --muted-foreground: #9AA9C2;
+  --hover: #333F55;
+  --border: #333F55;
+  --input: #465670;
+  --scrollbar: #465670;
 
-  --destructive: oklch(0.64 0.15 25);
-  --destructive-foreground: oklch(0.13 0.02 255);
-  --success: oklch(0.68 0.11 155);
+  --ok: #13DEB9;
+  --wait: #FFAE1F;
+  --destructive: #FA896B;
+  --destructive-foreground: #202936;
+  --stale-hatch: repeating-linear-gradient(135deg, transparent 0 6px, rgb(234 239 244 / 0.06) 6px 8px);
 
-  --border: oklch(0.29 0.02 255);
-  --input: oklch(0.32 0.02 255);
-  --ring: oklch(0.68 0.22 250);
-
-  --wash-primary: oklch(0.732 0.124 38.8 / 0.07);
-  --wash-accent: oklch(0.72 0.10 210 / 0.05);
-  --wash-muted: oklch(0.90 0.01 250 / 0.04);
-
-  --dot-grid-color: oklch(0.70 0.18 250 / 0.12);
+  --shadow-card: rgb(0 0 0 / 30%) 0 0 2px 0, rgb(0 0 0 / 18%) 0 12px 24px -4px;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 30%);
+  --shadow-md: 0 2px 8px rgb(0 0 0 / 35%);
+  --shadow-lg: rgb(0 0 0 / 30%) 0 0 2px 0, rgb(0 0 0 / 30%) -20px 20px 40px -4px;
 }
 
-
-/* ---- typography.css ---- */
-/* Lumigrid Calm Confidence — type tokens.
-   Hanken Grotesk everywhere; IBM Plex Mono for small technical labels only.
-   Responsive clamp() scale carried over from the codebase.
-   Body copy is always set at a 65–75ch measure. */
-
-:root {
-  /* Scale */
-  --text-display: clamp(3rem, 6vw, 4.75rem); /* tighter ceiling: the hero line lands harder */
-  --text-heading: clamp(1.875rem, 4.5vw, 3rem);
-  --text-subheading: clamp(1.25rem, 3vw, 1.75rem);
-  --text-body: clamp(1rem, 1.5vw, 1.125rem);
-  --text-small: clamp(0.8125rem, 1vw, 0.875rem);
-  --text-eyebrow: 0.75rem;
-  --text-stat: clamp(2.5rem, 5vw, 4rem); /* Stat component numbers */
-
-  /* Weights — display headings use 700 (Hanken Grotesk reads lighter than the
-     previous face); everything else tops out at semibold */
-  --weight-regular: 400;
-  --weight-medium: 500;
-  --weight-semibold: 600;
-  --weight-display: 700;
-
-  /* Leading */
-  --leading-display: 1.05;
-  --leading-heading: 1.15;
-  --leading-body: 1.65;
-
-  /* Tracking */
-  --tracking-tight: -0.02em;
-  --tracking-eyebrow: 0.18em;
-  --tracking-wordmark: 0.2em;
-
-  /* Measure */
-  --measure-body: 70ch;   /* keep between 65ch and 75ch */
-  --measure-lede: 56ch;
+/* Aliases of theme-dependent tokens. Declared on both selectors so .dark resolves them
+   against its own palette (a var() resolved on :root would keep the light value). */
+:root, .dark {
+  --muted: var(--grey-100);
+  --ok-bg: var(--success-light);
+  --wait-bg: var(--warning-light);
+  --destructive-bg: var(--error-light);
 }
 
-
-/* ---- spacing.css ---- */
-/* Lumigrid Calm Confidence — spacing, radius, borders, shadows.
-   Sections are separated by space, not dividers. Shadows are quiet
-   neutral ambient shadows — never colored, never glowing. */
-
-:root {
-  /* Spacing scale (4px base) */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.5rem;
-  --space-6: 2rem;
-  --space-7: 3rem;
-  --space-8: 4rem;
-  --space-9: 6rem;
-
-  /* Layout rhythm */
-  --section-y: clamp(5rem, 10vw, 8rem); /* @kind spacing */ /* vertical gap between sections */
-  --container-max: 72rem;                  /* 1152px */
-  --container-pad: 1.5rem;
-  --grid-gap: 1.5rem;
-
-  /* Radius (0.625rem base from the codebase) */
-  --radius: 0.625rem;
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: 1.25rem;
-  --radius-full: 9999px;
-
-  /* Borders */
-  --border-w: 1px;
-
-  /* Shadows — neutral, low-spread, no color */
-  --shadow-sm: 0 1px 2px oklch(0.22 0.02 255 / 0.05);
-  --shadow-md: 0 2px 8px oklch(0.22 0.02 255 / 0.06), 0 1px 2px oklch(0.22 0.02 255 / 0.04);
-  --shadow-lg: 0 12px 32px oklch(0.22 0.02 255 / 0.08), 0 2px 6px oklch(0.22 0.02 255 / 0.05);
-}
-
-
-/* ---- motion.css ---- */
-/* Lumigrid Calm Confidence — motion.
-   Subtle fade/slide reveals only: max 12px travel, max 450ms, once per
-   element. No parallax. Nothing follows the pointer. No infinite loops
-   on content (the brand dot grid may drift very slowly as a background
-   layer only). */
-
-:root {
-  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94); /* @kind other */
-  --duration-fast: 150ms; /* @kind other */    /* hovers, presses */
-  --duration-base: 250ms; /* @kind other */    /* accordions, toggles */
-  --duration-reveal: 450ms; /* @kind other */  /* entrance reveals — never exceed 500ms */
-  --reveal-distance: 12px;    /* never exceed 16px */
-}
-
-/* Entrance reveal utility. The visible state must be the BASE state:
-   either apply .lg-reveal via JS once the element is on screen (preferred;
-   see HomeScreen), or accept that hidden/static contexts freeze the
-   animation at frame 0. Never bake .lg-reveal into static markup. */
-@media (prefers-reduced-motion: no-preference) {
-  @keyframes lg-reveal {
-    from { opacity: 0; transform: translateY(var(--reveal-distance)); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .lg-reveal {
-    animation: lg-reveal var(--duration-reveal) var(--ease-out) both;
-  }
-  .lg-reveal-delay-1 { animation-delay: 80ms; }
-  .lg-reveal-delay-2 { animation-delay: 160ms; }
-  .lg-reveal-delay-3 { animation-delay: 240ms; }
-
-  /* Brand dot-grid drift — background layer only */
-  @keyframes lg-dot-drift {
-    from { background-position: 0 0; }
-    to   { background-position: var(--dot-grid-size) var(--dot-grid-size); }
-  }
-}
-
-
-/* ---- base.css ---- */
-/* Lumigrid Calm Confidence — base element styles. */
-
+/* ---- base (CssBaseline + global.css) ---- */
+*, *::before, *::after { box-sizing: border-box; }
 body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  font-size: var(--text-body);
-  line-height: var(--leading-body);
+  font-size: 14px;                /* body1 */
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
-
-a {
-  color: var(--link);
-  text-decoration: underline;
-  text-decoration-color: color-mix(in oklch, var(--link) 35%, transparent);
-  text-underline-offset: 3px;
-  transition: text-decoration-color var(--duration-fast) var(--ease-out);
-}
-a:hover { text-decoration-color: var(--link); }
-
-::selection { background: var(--blue-100); }
-
-:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
-
-
-/* ---- dealersource status tokens (added to the Lumigrid set) ----
-   Status is never color alone: pair with the glyph (check, x, clock, alert) and the word. */
-:root {
-  --nav-active: var(--primary-hover);
-  --ok: oklch(0.42 0.12 155);            /* gate pass, running, answered, free */
-  --ok-bg: oklch(0.50 0.12 155 / 0.08);
-  --ok-border: oklch(0.50 0.12 155 / 0.35);
-  --wait: oklch(0.50 0.13 70);           /* pending, awaiting reply, expiring, fell back */
-  --wait-bg: oklch(0.60 0.13 75 / 0.10);
-  --wait-border: oklch(0.55 0.13 70 / 0.5);
-  --stale-hatch: repeating-linear-gradient(135deg, transparent 0 6px, oklch(0.45 0.02 255 / 0.06) 6px 8px);
-  /* fail, paused, failed run, held: use --destructive / --destructive-foreground */
-  /* score factor shades, importance order: traffic, visibility, drive, rent, competitors */
-  --factor-1: oklch(0.582 0.131 38.8);
-  --factor-2: oklch(0.672 0.131 38.8);
-  --factor-3: oklch(0.742 0.118 38.8);
-  --factor-4: oklch(0.822 0.092 38.8);
-  --factor-5: oklch(0.912 0.059 38.8);
-  /* pipeline stages: discovered, resolved, enriched, verifying, scored, excluded */
-  --stage-1: oklch(0.80 0.01 252);
-  --stage-2: oklch(0.70 0.17 250);
-  --stage-3: oklch(0.62 0.22 250);
-  --stage-4: oklch(0.60 0.13 75);
-  --stage-5: oklch(0.50 0.12 155);
-  --stage-6: oklch(0.50 0.16 25);
-}
-.dark {
-  --nav-active: var(--primary);
-  --ok: oklch(0.74 0.12 155);
-  --ok-bg: oklch(0.68 0.12 155 / 0.14);
-  --ok-border: oklch(0.68 0.12 155 / 0.45);
-  --wait: oklch(0.80 0.13 80);
-  --wait-bg: oklch(0.75 0.13 80 / 0.14);
-  --wait-border: oklch(0.75 0.13 80 / 0.5);
-}
-/* Dashboard density: the marketing clamp() body scale is too large for a tool. */
-.app { font-size: 14px; line-height: 1.45; }
+a { color: var(--primary-text); text-decoration: none; }
+a:hover { text-decoration: underline; }
+::selection { background: var(--primary-light); }
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }

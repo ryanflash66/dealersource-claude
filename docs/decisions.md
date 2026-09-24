@@ -195,7 +195,7 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
     report payload and `sites` include leasing/planning emails so the owner can act; protect
     the Vercel deployment (password or Supabase auth) if that matters.
 
-20. **Dashboard template v2** (`prompts/dashboard-design`, published 2026-09-16, replaces v1
+20. **Dashboard template v2** (superseded by 29 on 2026-09-23) (`prompts/dashboard-design`, published 2026-09-16, replaces v1
     entirely; everything built on v1 was discarded). `dashboard/public/tokens.css` is the
     template file with only the brand lines changed: `--primary: oklch(0.672 0.131 38.8)`
     (= `#D97757`), `--primary-hover: oklch(0.592 0.131 38.8)` (= `#BE5E3F`, a darker step of
@@ -360,3 +360,34 @@ Each entry: the gap, the choice, why. Section numbers refer to the task spec.
     - Without Gmail credentials the sources are recorded as skipped, not as errors.
     - The database's `sources_kind_check` constraint gains `email_alert` (migration
       `20260923000100`).
+
+29. **Dashboard restyled on the Modernize admin template** (2026-09-23, PM direction;
+    supersedes the look in 20, keeps its views and data behaviour). The PM supplied the
+    Modernize Next.js Free template (AdminMart, MIT; MUI + Next.js). Its layout, palette,
+    typography and components are rebuilt in the existing plain TypeScript + CSS dashboard
+    rather than porting to Next.js/MUI: a port would add React, MUI, Emotion and Next to a
+    pipeline repo, change the Vercel build, and `next/font/google` fetches fonts at build
+    time, breaking the offline `dashboard:build` the evaluator and README require.
+    - Shell = the template's DashboardLayout: 270px sidebar (logo, Home / Operations /
+      Settings subheaders, Tabler icons, Exceptions badge, a run-status card in place of the
+      "Upgrade" card) that becomes a drawer below 1200px, a 70px sticky header (menu, bell
+      to Exceptions with a dot, view name, report and run-status chips), 1200px container.
+    - Every section is a DashboardCard (7px radius, elevation-9 shadow, h5 title and
+      subtitle). Shortlist: run-health alert, four stat cards, ranked and waiting lists beside
+      a sticky map card and a site-detail card. Pipeline: stages as the template's coloured
+      top cards, a sites table, open cases, and emails sent as the RecentTransactions
+      timeline.
+    - `tokens.css` holds the template palette (`DefaultColors.tsx`: primary `#5D87FF`,
+      text `#2A3547` / `#5A6A85`, divider `#e5eaef`) plus a dark set on Modernize's dark
+      palette. Status text uses darker steps of the template hues (`#007B66`, `#8A5A00`,
+      `#B93A14`) because the template's own success/warning/error colours fail WCAG AA as
+      small text; the filled nav item uses `#3F6AE0` for the same reason. The terracotta
+      agent accent from 20 is retired.
+    - Plus Jakarta Sans (the template's face) is vendored as latin woff2 from
+      `@fontsource/plus-jakarta-sans` (OFL, `fonts/OFL.txt`); Hanken Grotesk, IBM Plex Mono
+      and `dashboard.css` are removed. Parcel ids use the system monospace stack.
+    - The site detail is now a card, not a drawer over the map, and it also shows on phones
+      (below the lists; tapping a site scrolls to it). The drawer's close button is gone:
+      closing re-selected the first ranked site, so it never closed anything.
+    - Fixed while restyling: the detail card's street-photo slot collapsed because `.photo`
+      carried a grid-area the photo grid does not define.
