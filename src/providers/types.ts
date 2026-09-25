@@ -65,6 +65,8 @@ export interface ParcelResult {
 export interface ParcelProvider {
   readonly name: string;
   lookup(point: LatLon, hints?: LookupHints): Promise<ParcelResult | null>;
+  /** The single parcel whose site address matches, when the geocoder or the point lookup fails. */
+  findByAddress?(address: string, near?: LatLon | null): Promise<ParcelResult | null>;
 }
 
 // ---------------------------------------------------------------- zoning

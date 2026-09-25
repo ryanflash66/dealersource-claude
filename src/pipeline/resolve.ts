@@ -34,13 +34,36 @@ export async function resolve(ctx: RunContext): Promise<StageCounter> {
       continue;
     }
     try {
-      const geo = await ctx.providers.geocoder.geocode(l.address_text);
+      let geo = await ctx.providers.geocoder.geocode(l.address_text);
+      let geocodedBy = ctx.providers.geocoder.name;
+      let parcel = geo
+        ? await ctx.providers.parcels.lookup({ lat: geo.lat, lon: geo.lon }, { parcel_id: geo.parcel_id_hint, address: geo.canonical_address })
+        : null;
+      if (!parcel) {
+        // New or private roads the geocoder does not know, or a point that lands on no parcel:
+        // the one parcel whose site address matches, placed at its centroid when the geocoder had nothing.
+        const byAddr = (await ctx.providers.parcels.findByAddress?.(l.address_text, geo ? { lat: geo.lat, lon: geo.lon } : null)) ?? null;
+        const at = byAddr?.centroid ?? (byAddr?.geometry ? polyCentroid(byAddr.geometry) : null);
+        if (byAddr && (geo || at)) {
+          parcel = byAddr;
+          c.inc("listings_resolved_by_parcel_address");
+          if (!geo) geocodedBy = `${ctx.providers.parcels.name} site address`;
+          geo ??= {
+            lat: at!.lat,
+            lon: at!.lon,
+            canonical_address: l.address_text.toUpperCase(),
+            city: null,
+            zip: null,
+            parcel_id_hint: byAddr.parcel_id,
+            source_url: byAddr.source_url,
+          };
+        }
+      }
       if (!geo) {
         await markUnresolved(ctx, l, "geocode: no match");
         c.inc("listings_unresolved");
         continue;
       }
-      const parcel = await ctx.providers.parcels.lookup({ lat: geo.lat, lon: geo.lon }, { parcel_id: geo.parcel_id_hint, address: geo.canonical_address });
       if (!parcel) {
         await markUnresolved(ctx, l, "parcel: none found at geocoded point");
         c.inc("listings_unresolved");
@@ -105,7 +128,7 @@ export async function resolve(ctx: RunContext): Promise<StageCounter> {
       await writeEvidence(ctx, {
         site_id: siteId,
         fact: "geocode",
-        value: { lat: geo.lat, lon: geo.lon, formatted_address: geo.canonical_address, provider: ctx.providers.geocoder.name, listing_id: l.id },
+        value: { lat: geo.lat, lon: geo.lon, formatted_address: geo.canonical_address, provider: geocodedBy, listing_id: l.id },
         source_url: geo.source_url,
         method: "api",
       });

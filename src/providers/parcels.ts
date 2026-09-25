@@ -85,6 +85,33 @@ export class NcOneMapParcels implements ParcelProvider {
     return chosen ? toResult(chosen.feature, chosen.geometry, url) : null;
   }
 
+  /**
+   * The one parcel whose site address is the listing's house number, direction and street
+   * name, for listings the geocoder cannot place (new or private roads) or whose point lands
+   * on no parcel. Number, direction, name and suffix must agree (suffixes normalized:
+   * `siteadd` writes "SUGG PW" for Sugg Pkwy). More than one candidate (or one farther than 500 m from
+   * a known point) is no answer. The layer's city field is empty, so the match is statewide.
+   */
+  async findByAddress(address: string, near?: LatLon | null): Promise<ParcelResult | null> {
+    const want = splitStreet(address.split(",")[0] ?? "");
+    if (!want || want.number === "0") return null;
+    const prefix = [want.number, want.dir, want.name].filter(Boolean).join(" ").replace(/'/g, "''");
+    const url = `${this.layerUrl()}/query?${new URLSearchParams({
+      where: `siteadd LIKE '${prefix} %'`,
+      outFields: NC_ONEMAP_FIELDS,
+      returnGeometry: "true",
+      outSR: "4326",
+      f: "json",
+    })}`;
+    const json = await arcgisGet<Record<string, unknown>>(this.ctx.http, url);
+    const hits = (json.features ?? [])
+      .map((f) => ({ f, geometry: geometryOf(f, json.spatialReference), site: splitStreet(String(attr(f.attributes, "siteadd") ?? "")) }))
+      .filter((x) => x.site && x.site.number === want.number && x.site.dir === want.dir && x.site.name === want.name && (!x.site.suffix || !want.suffix || x.site.suffix === want.suffix))
+      .filter((x) => !near || (x.geometry !== null && distanceToPolygonMeters(near, x.geometry) <= 500));
+    const ids = new Set(hits.map((x) => str(attr(x.f.attributes, "parno"))));
+    return ids.size === 1 && hits[0]!.geometry ? toResult(hits[0]!.f, hits[0]!.geometry, url) : null;
+  }
+
   private async tryQuery(url: string): Promise<ArcgisQueryResponse<Record<string, unknown>> | null> {
     try {
       return await arcgisGet<Record<string, unknown>>(this.ctx.http, url);
@@ -153,6 +180,37 @@ function addressScores<T extends { feature: ArcgisFeature<Record<string, unknown
       return { x, score };
     })
     .sort((a, b) => b.score - a.score);
+}
+
+const DIRS: Record<string, string> = { N: "N", NORTH: "N", S: "S", SOUTH: "S", E: "E", EAST: "E", W: "W", WEST: "W" };
+// Street suffixes, spelled out and as abbreviated in listings and in NC OneMap `siteadd` ("SUGG PW").
+const SUFFIXES: Record<string, string> = Object.fromEntries(
+  Object.entries({
+    ST: "ST STREET",
+    AVE: "AVE AV AVENUE",
+    RD: "RD ROAD",
+    DR: "DR DRIVE",
+    BLVD: "BLVD BV BOULEVARD",
+    HWY: "HWY HY HIGHWAY",
+    LN: "LN LANE",
+    PKWY: "PKWY PKY PW PARKWAY",
+    CT: "CT COURT",
+    CIR: "CIR CI CIRCLE",
+    PL: "PL PLACE",
+    WAY: "WAY WY",
+    TRL: "TRL TR TRAIL",
+  }).flatMap(([canon, all]) => all.split(" ").map((w) => [w, canon])),
+);
+
+/** "3201 North Memorial Drive" -> { number: "3201", dir: "N", name: "MEMORIAL", suffix: "DR" }. */
+export function splitStreet(line: string): { number: string; dir: string; name: string; suffix: string } | null {
+  const words = line.toUpperCase().replace(/\./g, "").trim().split(/\s+/);
+  const number = /^\d+$/.test(words[0] ?? "") ? words.shift()! : null;
+  if (!number) return null;
+  const dir = words.length > 1 && DIRS[words[0]!] ? DIRS[words.shift()!]! : "";
+  const suffix = words.length > 1 ? (SUFFIXES[words[words.length - 1]!] ?? "") : "";
+  if (suffix) words.pop();
+  return words.length ? { number, dir, name: words.join(" "), suffix } : null;
 }
 
 function toResult(f: ArcgisFeature<Record<string, unknown>>, geometry: Polygon | null, url: string): ParcelResult | null {

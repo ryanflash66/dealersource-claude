@@ -1,10 +1,18 @@
 import { describe, expect, it } from "vitest";
+import { resolve as resolveStage } from "../../src/pipeline/resolve.js";
+import { JsonFileStore } from "../../src/store/json-store.js";
+import { CostLedger } from "../../src/http/cost-ledger.js";
+import { makeClock } from "../../src/core/clock.js";
+import { silentLogger } from "../../src/core/logger.js";
+import type { ListingRow, RunRow } from "../../src/core/types.js";
+import type { RunContext } from "../../src/pipeline/context.js";
+import type { GeocodeResult, ParcelResult, ProviderMap } from "../../src/providers/types.js";
 import { resolve } from "node:path";
-import { NcOneMapParcels, pickFeature, attr } from "../../src/providers/parcels.js";
+import { NcOneMapParcels, pickFeature, attr, splitStreet } from "../../src/providers/parcels.js";
 import { nc2264ToLonLat, ringsFrom2264, isNcStatePlane } from "../../src/core/proj.js";
 import { pointInPolygon, distanceToPolygonMeters } from "../../src/core/geo.js";
 import { FixtureHttpClient, type FixtureEntry } from "../../src/http/fixture-client.js";
-import { ROOT, adapterCtx, readJson } from "../helpers.js";
+import { ROOT, adapterCtx, config, readJson } from "../helpers.js";
 
 // 2100 Dickinson Ave, Greenville NC: inside parcel 4677776335 (WARD HOLDINGS LLC), among 4 neighbours.
 const P = { lat: 35.600682, lon: -77.392251 };
@@ -155,5 +163,83 @@ describe("NC OneMap selection without an address hint", () => {
     const nearest = dists.sort((a: any, b: any) => a.d - b.d)[0];
     expect(r!.parcel_id).toBe(nearest.id);
     expect(nearest.d).toBeLessThan(60);
+  });
+});
+
+describe("NC OneMap parcel by site address (listings the geocoder cannot place)", () => {
+  const sq = (lon: number, lat: number) => ({ rings: [[[lon, lat], [lon + 0.001, lat], [lon + 0.001, lat + 0.001], [lon, lat + 0.001], [lon, lat]]] });
+  const feat = (parno: string, siteadd: string, lon: number, lat: number) => ({ attributes: { parno, siteadd, scity: "", cntyname: "Pitt" }, geometry: sq(lon, lat) });
+  const ctxWith = (features: unknown[]) => {
+    const ctx = adapterCtx("nc_onemap");
+    const entries: FixtureEntry[] = [{ match: { url_pattern: "where=" }, response: { json: { spatialReference: { wkid: 4326 }, features } } }];
+    ctx.http = new FixtureHttpClient("nc_onemap", resolve(ROOT, "fixtures"), entries);
+    return ctx;
+  };
+
+  it("matches number, direction, name and normalized suffix (siteadd writes Pkwy as PW)", async () => {
+    const ctx = ctxWith([feat("111", "1370 SUGG PW", -77.333, 35.653), feat("222", "1370 SUGG RD", -78.1, 35.9)]);
+    const r = await new NcOneMapParcels(ctx).findByAddress("1370 Sugg Pkwy, Greenville, NC 27834");
+    expect(r).toMatchObject({ parcel_id: "111", site_address: "1370 SUGG PW", county: "Pitt" });
+    expect(r!.geometry?.type).toBe("Polygon");
+    expect(new URL(ctx.http.requests[0]!.url).searchParams.get("where")).toBe("siteadd LIKE '1370 SUGG %'");
+  });
+
+  it("gives no answer for another street type, another direction, two parcels, a far point, or house number 0", async () => {
+    const p = (features: unknown[]) => new NcOneMapParcels(ctxWith(features));
+    expect(await p([feat("1", "3201 MEMORIAL AVE", -75.6, 35.9)]).findByAddress("3201 Memorial Drive, Greenville, NC")).toBeNull();
+    expect(await p([feat("1", "3201 S MEMORIAL DR", -77.38, 35.57)]).findByAddress("3201 North Memorial Drive, Greenville, NC")).toBeNull();
+    expect(await p([feat("1", "905 JOHNS HOPKINS DR", -77.41, 35.6), feat("2", "905 JOHNS HOPKINS DR", -78.6, 35.8)]).findByAddress("905 Johns Hopkins Dr, Greenville, NC")).toBeNull();
+    const near = { lat: 35.669, lon: -77.361 };
+    expect(await p([feat("1", "3201 N MEMORIAL DR", -77.3618, 35.6700)]).findByAddress("3201 N Memorial Dr, Greenville, NC", near)).toMatchObject({ parcel_id: "1" });
+    expect(await p([feat("1", "3201 N MEMORIAL DR", -77.30, 35.70)]).findByAddress("3201 N Memorial Dr, Greenville, NC", near)).toBeNull();
+    const zero = ctxWith([feat("1", "0 JOHNS HOPKINS DR", -77.41, 35.6)]);
+    expect(await new NcOneMapParcels(zero).findByAddress("0 Johns Hopkins Drive, Greenville, NC 27858")).toBeNull();
+    expect(zero.http.requests).toHaveLength(0);
+  });
+
+  it("splitStreet", () => {
+    expect(splitStreet("3201 North Memorial Drive")).toEqual({ number: "3201", dir: "N", name: "MEMORIAL", suffix: "DR" });
+    expect(splitStreet("1370 SUGG PW")).toEqual({ number: "1370", dir: "", name: "SUGG", suffix: "PKWY" });
+    expect(splitStreet("1800 TW Alexander Drive")).toEqual({ number: "1800", dir: "", name: "TW ALEXANDER", suffix: "DR" });
+    expect(splitStreet("West Street")).toBeNull();
+  });
+});
+
+describe("resolve: parcel by site address", () => {
+  const parcel = (id: string) => ({
+    parcel_id: id, owner: "X LLC", acreage: 17.28, centroid: null, frontage_ft: null, corner_lot: null, fronting_road: null,
+    geometry: { type: "Polygon" as const, coordinates: [[[-77.334, 35.653], [-77.332, 35.653], [-77.332, 35.655], [-77.334, 35.655], [-77.334, 35.653]]] },
+    jurisdiction: null, county: "Pitt", site_address: "1370 SUGG PW", source_url: "https://parcels.test/q",
+  });
+  const run = async (geocode: GeocodeResult | null, byAddress: ParcelResult | null) => {
+    const store = new JsonFileStore(null);
+    const listing = { id: "lst_1", source_id: "crexi-alerts", raw_document_id: "doc", url: "u", title: null, address_text: "1370 Sugg Pkwy, Greenville, NC 27834", address_key: "k", fetched_at: "2026-09-24T00:00:00Z", extraction: { contact_email: null }, site_id: null, status: "unresolved", status_detail: "geocode: no match", first_seen_at: "2026-09-24T00:00:00Z", last_seen_at: "2026-09-24T00:00:00Z", run_id: "r" };
+    await store.upsert("listings", [listing as unknown as ListingRow]);
+    const providers = {
+      geocoder: { name: "census", geocode: async () => geocode },
+      parcels: { name: "nc_onemap", lookup: async () => null, findByAddress: async () => byAddress },
+    } as unknown as ProviderMap;
+    const ctx = { config: config(), store, providers, clock: makeClock("2026-09-25T10:00:00.000Z"), logger: silentLogger, run: { id: "r", run_date: "2026-09-25", warnings: [], errors: [], counts: {} } as unknown as RunRow, offline: false, fixtures: null, outDir: "", ledger: new CostLedger(), hosts: new Set(), runDate: "2026-09-25", cutoffIso: "2026-09-25T23:59:59.999Z", homeBase: null, sentThisRun: [] } as unknown as RunContext;
+    const c = await resolveStage(ctx);
+    return { c, listing: (await store.get("listings", "lst_1"))!, sites: await store.list("sites"), evidence: await store.list("evidence") };
+  };
+
+  it("a listing the geocoder cannot place resolves to the one parcel with its site address, placed at the parcel centroid", async () => {
+    const { c, listing, sites, evidence } = await run(null, parcel("4699479106"));
+    expect(listing).toMatchObject({ status: "resolved", site_id: "site_4699479106", status_detail: null });
+    expect(sites[0]).toMatchObject({ canonical_address: "1370 SUGG PKWY, GREENVILLE, NC 27834", county: "Pitt" });
+    expect(sites[0]!.lat).toBeCloseTo(35.654, 3);
+    expect(c.counts).toMatchObject({ sites_created: 1, listings_resolved_by_parcel_address: 1 });
+    expect(evidence.find((e) => e.fact === "geocode")!.value).toMatchObject({ provider: "nc_onemap site address" });
+  });
+
+  it("with no address match it stays unresolved with the old reason", async () => {
+    expect((await run(null, null)).listing).toMatchObject({ status: "unresolved", status_detail: "geocode: no match" });
+    const geo = { lat: 35.66915, lon: -77.3611, canonical_address: "3201 N MEMORIAL DR, GREENVILLE, NC, 27834", city: "GREENVILLE", zip: "27834", parcel_id_hint: null, source_url: "g" };
+    expect((await run(geo, null)).listing).toMatchObject({ status: "unresolved", status_detail: "parcel: none found at geocoded point" });
+    const ok = await run(geo, parcel("4780624727"));
+    expect(ok.listing.site_id).toBe("site_4780624727");
+    expect(ok.sites[0]!.canonical_address).toBe("3201 N MEMORIAL DR, GREENVILLE, NC, 27834"); // the geocoder's point and address are kept
+    expect(ok.evidence.find((e) => e.fact === "geocode")!.value).toMatchObject({ provider: "census" });
   });
 });
