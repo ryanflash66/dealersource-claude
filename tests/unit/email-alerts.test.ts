@@ -102,6 +102,35 @@ describe("alert email parsing", () => {
     expect(canonicalListingUrl("https://links.crexi.com/ls/click?upn=opaque123", CREXI)).toBeNull();
     expect(canonicalListingUrl("https://www.crexi.com/properties/555", null)).toBeNull();
   });
+
+  it("reads LoopNet's bar-separated card line, and its listing link from the Outlook-only button", async () => {
+    // Synthetic, in the shape of LoopNet's saved-search alert (first seen 2026-09-24, noreply@loopnet.com):
+    // every <a> is an encrypted ls/click redirect; the listing link is only in a <v:roundrect> inside <!--[if mso]>.
+    const sp = "&nbsp;&nbsp;|&nbsp;&nbsp;";
+    const card = (name: string, street: string, zip: string, id: string) => `<tr><td><table>
+      <tr><td><a href="https://link.mail.example.test/ls/click?upn=u001.OPAQUE${id}-2B-3D_x"><span>${name}${sp}${street}${sp}Greenville, NC ${zip}${sp}Retail${sp}For Lease
+        <br />1,000 SF${sp}$18.00 - $22.00 /SF/Year</span></a></td></tr>
+      <tr><td><!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="https://www.loopnet.com/listing/${id}?utm_source=savedsearch&amp;utm_medium=email" arcsize="16%"><center>View Listing</center></v:roundrect><![endif]-->
+        <!--[if !mso]><!-- --><a href="https://link.mail.example.test/ls/click?upn=u001.OPAQUEBTN${id}_y">View Listing</a><!--<![endif]--></td></tr></table></td></tr>`;
+    const html = `<html><body><table>
+      <tr><td>2 new properties matched your saved search for Test search.</td></tr>
+      ${card("Test Plaza", "100 Sample St", "27858", "11111111")}
+      ${card("Demo Center", "200 W Example Blvd", "27834", "22222222")}
+      <tr><td><!--[if mso]><v:roundrect href="https://www.loopnet.com/search/for-lease/"><center>See Search Results</center></v:roundrect><![endif]-->
+        Please do not reply to this message. If you require assistance, contact help@loopnet.com. &copy; 2026 Example Group, 1 Test Boulevard, Arlington, VA 22209</td></tr>
+    </table></body></html>`;
+    const cards = parseAlert({ html, text: null }, LOOPNET);
+    expect(cards.map((c) => c.url)).toEqual(["https://www.loopnet.com/listing/11111111", "https://www.loopnet.com/listing/22222222"]);
+    const rules = new RulesLlm(adapterCtx("rules"));
+    const blocked = (e: string) => /loopnet\.com$|^no-?reply/i.test(e);
+    const ex = await Promise.all(
+      cards.map(async (c) => alertExtraction(await rules.extractListing({ url: c.url!, source_id: "s", html, block: c.block }), c.text, blocked)),
+    );
+    expect(ex.map((e) => [e.address_text, e.rent_monthly, e.contact_email])).toEqual([
+      ["100 Sample St, Greenville, NC 27858", null, null],
+      ["200 W Example Blvd, Greenville, NC 27834", null, null],
+    ]);
+  });
 });
 
 describe("alert extraction", () => {

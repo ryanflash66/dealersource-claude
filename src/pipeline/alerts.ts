@@ -25,8 +25,15 @@ export interface AlertCard {
 }
 
 export function parseAlert(mail: { html: string | null; text: string | null }, listingUrl: RegExp | null): AlertCard[] {
-  const cards = mail.html ? htmlCards(mail.html, listingUrl) : [];
-  return cards.length ? cards : mail.text ? textCards(mail.text, listingUrl) : [];
+  const cards = mail.html ? htmlCards(unpipe(mail.html), listingUrl) : [];
+  return cards.length ? cards : mail.text ? textCards(unpipe(mail.text), listingUrl) : [];
+}
+
+// LoopNet writes a card on one line, "Name | 301 S Evans St | Greenville, NC 27858 | For Lease",
+// with &nbsp; around the bars: read a spaced bar as a comma so the street and city join up.
+const PIPE_RE = /(?:[ \t]|&nbsp;|&#160;|&#xa0;| )+\|(?=(?:[ \t]|&nbsp;|&#160;|&#xa0;| )+)/gi;
+function unpipe(s: string): string {
+  return s.replace(PIPE_RE, " ,");
 }
 
 const ADDRESS_G = new RegExp(ADDRESS_RE.source, "g");
@@ -148,9 +155,13 @@ function hrefs(html: string): string[] {
 }
 
 function htmlCards(raw: string, listingUrl: RegExp | null): AlertCard[] {
-  // Comments (Outlook conditionals hold whole tables), scripts, styles and <head> are blanked
-  // to spaces so offsets into the original stay valid.
-  const html = raw.replace(/<!--[\s\S]*?-->|<(script|style|head)\b[\s\S]*?<\/\1\s*>/gi, (s) => " ".repeat(s.length));
+  // Comments (Outlook conditionals hold whole tables), scripts, styles and <head> are blanked.
+  // A listing link inside a comment is kept as an empty <a>: LoopNet's only readable listing
+  // link is the Outlook-only <v:roundrect href> button; its other links are encrypted redirects.
+  const html = raw.replace(/<!--[\s\S]*?-->|<(script|style|head)\b[\s\S]*?<\/\1\s*>/gi, (s) => {
+    const kept = s.startsWith("<!--") ? [...s.matchAll(/\shref\s*=\s*"([^"]*)"/gi)].filter((m) => canonicalListingUrl(m[1]!, listingUrl)) : [];
+    return kept.length ? ` ${kept.map((m) => `<a href="${m[1]}"></a>`).join(" ")} ` : " ";
+  });
   const root = parseTree(html);
   const slice = (el: El) => html.slice(el.start, el.end);
   const memo = new Map<El, string[]>();
