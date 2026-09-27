@@ -167,6 +167,31 @@ jurisdictions:
     planning_email: jonas.hill@pittcountync.gov
     source_url: https://www.pittcountync.gov/m/directory/department?did=25
     verified: true
+  Tarboro:
+    county: Edgecombe
+    # Catherine Grimm, Director of Planning and Economic Development.
+    # audit 2026-09-27: catherinegrimm@tarboro-nc.com verbatim on source_url (no redirect),
+    #   Planning & Building Inspections staff directory. No departmental planning inbox
+    #   published (the other addresses there are named staff).
+    planning_email: catherinegrimm@tarboro-nc.com
+    source_url: https://www.tarboro-nc.com/departments/planning___building_inspections/index.php
+    verified: true
+  Rocky Mount:
+    county: Edgecombe          # the city spans Nash and Edgecombe
+    # Development Services Department inbox (handles planning and zoning); departmental.
+    # audit 2026-09-27: devserv@rockymountnc.gov on source_url (no redirect) as the
+    #   "Email:" link under "City of Rocky Mount - Development Services Department". The page
+    #   hides it from scrapers (Cloudflare email protection); decoded exactly and shown as-is
+    #   in a browser.
+    planning_email: devserv@rockymountnc.gov
+    source_url: https://www.rockymountnc.gov/219/Planning-Zoning
+    verified: true
+  # Checked 2026-09-27 and NOT added (no published planning or zoning address; do not guess):
+  #   Goldsboro: https://www.goldsboronc.gov/division/planning names Mark Helmer, Planning
+  #     Services Manager, with no email on it, the Development Services, applications or
+  #     contact-information pages. Phone (919) 580-4313.
+  #   Simpson (village): https://villageofsimpsonnc.com/?page_id=255 has no email; the site
+  #     lists only the town clerk and the mayor. Phone 252-757-1430 (Town Hall).
 
 schedule:
   scheduler: claude-routine      # claude-routine | github-actions | pg_cron (docs/scheduling.md)

@@ -93,3 +93,14 @@ export function splitReplyByProperty(body: string, props: PropertyRef[]): Map<st
 function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
+
+/**
+ * A mail server's "still trying" notice (Gmail: "Delivery Status Notification (Delay)",
+ * "Delivery incomplete ... Gmail will retry for 47 more hours"). It is neither a bounce nor a
+ * reply: the message may still arrive, and a real failure sends its own "(Failure)" notice.
+ */
+export function isDelayNotice(subject: string, body: string): boolean {
+  if (/message not delivered|delivery has failed|permanent(?:ly)? fail|address not found|\(Failure\)/i.test(`${subject}\n${body}`)) return false;
+  if (/\(Delay\)|\bdelayed\b/i.test(subject)) return true;
+  return /\bdelivery incomplete\b|\bwill (?:continue to )?retry\b|\btemporary problem delivering\b|\bstill trying to deliver\b/i.test(body);
+}

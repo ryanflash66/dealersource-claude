@@ -46,7 +46,9 @@ try {
     $r = Get-Content $run -Raw | ConvertFrom-Json
     # run.json carries no status field; derive one from the exit code and error count.
     $status = if ($code -eq 0 -and $r.errors.Count -eq 0) { "ok" } else { "failed" }
-    $viable = $r.counts.'report.sites_reported' - $r.counts.'score.sites_not_viable'
+    # Viable = sites the report marks viable (out-of-area sites are "not scored", never viable).
+    $reportFile = Join-Path $repo "$out\report.json"
+    $viable = if (Test-Path $reportFile) { @((Get-Content $reportFile -Raw | ConvertFrom-Json).sites | Where-Object { $_.viable }).Count } else { "n/a" }
     Log ("done exit=$code status=$status sites=" + $r.counts.'report.sites_reported' + " viable=$viable emails_sent=" + [int]$r.counts.'verify.emails_sent' + " messages_sent=" + $r.counts.messages_sent + " errors=" + $r.errors.Count + " paused=" + $r.sending_paused)
   } else {
     Log "done exit=$code (no run.json written)"

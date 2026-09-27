@@ -5,7 +5,7 @@ import type { InboundMail, KnownThread } from "../providers/types.js";
 import { GmailQuotaError } from "../providers/mail.js";
 import { evaluateGates, requirements } from "./gates.js";
 import { renderEmail, renderLeasingBundle } from "./templates.js";
-import { splitReplyByProperty, stripQuotedReply, type PropertyRef } from "./replies.js";
+import { isDelayNotice, splitReplyByProperty, stripQuotedReply, type PropertyRef } from "./replies.js";
 import { StageCounter, allEvidence, currentEvidence, errMsg, writeEvidence, type RunContext } from "./context.js";
 
 /**
@@ -432,6 +432,12 @@ async function ingestReplies(ctx: RunContext, c: StageCounter): Promise<void> {
   }
 
   for (const mail of inbound) {
+    // "Still trying to deliver" notices are not bounces: the message may yet arrive, and a real
+    // failure sends its own notice. Counting them as bounces blocked contacts too early.
+    if (isDelayNotice(mail.subject, mail.body)) {
+      c.inc("inbound_delay_notices_ignored");
+      continue;
+    }
     const msgId = `in_${sha256(mail.provider_message_id).slice(0, 16)}`;
     if (await ctx.store.get("messages", msgId)) {
       c.inc("inbound_already_ingested");
