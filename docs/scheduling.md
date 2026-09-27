@@ -51,6 +51,28 @@ directly; the pattern is:
 
 This option is documented, not implemented (task spec section 7).
 
+## Option D (in use for this deployment): Windows Task Scheduler
+
+`scripts/run-daily.ps1` runs the pipeline on a Windows PC that stays on or asleep (not shut down)
+with the operator logged in. Task `dealersource daily`, every day at 05:30 local time, runs as the
+logged-on user, wakes the machine, starts when available if a run was missed, one-hour limit.
+
+- Action: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File <checkout>\scripts\run-daily.ps1`
+  (in the parent superproject: `agents\claude-solution\scripts\run-daily.ps1`), "Start in" set to
+  the repo root.
+- The script pulls `main` (fast-forward only), runs `npm ci` only when the commit changed or
+  `node_modules` is missing, installs Playwright's Chromium headless shell once if it is missing
+  (`scripts/ensure-browser.mjs`), loads the git-ignored `.env` into the process (values never
+  logged), runs `node_modules\.bin\tsx.cmd src/cli.ts run --out out/<date> --run-date <date>`, and
+  appends to `out/logs/<date>.log`, ending with one summary line (exit, sites, viable, emails sent,
+  errors, paused).
+- It calls `tsx.cmd` directly because `npm run pipeline -- <flags>` from PowerShell loses the
+  flags (the `npm.ps1` shim swallows `--`; see the README's PowerShell note), and it uses
+  `$ErrorActionPreference = 'Continue'` with explicit `$LASTEXITCODE` checks because Windows
+  PowerShell 5.1 turns redirected git/npm stderr progress into terminating errors under `Stop`.
+- `business.yaml schedule.scheduler` stays one of `claude-routine | github-actions | pg_cron`
+  (the config schema accepts only those); the Task Scheduler setup lives outside the config.
+
 ## Run-date and time zone
 
 `--run-date` defaults to today's date in `schedule.timezone`. The routine passes it
