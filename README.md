@@ -37,6 +37,21 @@ npm run pipeline -- --offline --fixtures fixtures/golden-v1 --out out/golden --r
 npm run dashboard:dev      # builds from fixture data, serves http://localhost:4173
 ```
 
+**Windows (PowerShell).** In PowerShell, `npm` is the `npm.ps1` shim, and it swallows the bare
+`--`. The flags after it are then read by npm itself (`--offline` becomes npm's own offline
+mode), the CLI receives none of them, and the "offline" commands above silently run **online**
+with default settings. The same applies to every `npm run pipeline -- ...` in this README. Use one
+of these instead:
+
+- `npm run pipeline:golden` for the golden run (no `--` needed);
+- `npm.cmd run pipeline -- <flags>` (passes the flags through in PowerShell 5.1 and 7);
+- `node_modules\.bin\tsx.cmd src/cli.ts run <flags>`, which is what `scripts/run-daily.ps1` does;
+- or run the commands from Git Bash or cmd, where they work as written.
+
+In Windows PowerShell 5.1, a script with `$ErrorActionPreference = 'Stop'` also treats git's and
+npm's progress output on stderr (when redirected with `2>&1`) as a terminating error; keep
+`Continue` and check `$LASTEXITCODE`, as the runner does.
+
 The dashboard offers a short guided tour on a first visit (once per browser) and explains most
 numbers, chips and gates on hover. Replay the tour from the `?` button; `?tour=1` forces it,
 `?tour=0` turns it off (handy for screenshots), and `localStorage.removeItem("ds.tour")` resets it.
@@ -153,7 +168,9 @@ Steps:
 3. **Pipeline**: `npm run pipeline -- --out out/$(date +%F)` (online; `--fixtures` may still be
    passed as a fallback for layers whose variables are unset). Schedule it as a Claude Code routine
    using `agent/routine.md` (setup in `docs/scheduling.md`; GitHub Actions and pg_cron alternatives
-   are documented there).
+   are documented there). On Windows see the PowerShell note in section 1 (`$(date +%F)` is bash;
+   PowerShell's equivalent is `$(Get-Date -Format yyyy-MM-dd)`); the deployment on this project runs
+   from Windows Task Scheduler with `scripts/run-daily.ps1` (Option D in `docs/scheduling.md`).
 4. **Dashboard**: `SUPABASE_URL=... SUPABASE_ANON_KEY=... PMTILES_URL=... npm run dashboard:build`
    then `npm run dashboard:deploy` (Vercel; `vercel.json` is included). With no Supabase variables
    the build embeds the latest fixture run instead. Set the same three variables in the Vercel
